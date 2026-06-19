@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Атлетикс Корп — Анализ движения и осанки</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0A0A08;--bg2:#0E0E0C;--bg3:#121210;
+  --line:rgba(255,255,255,0.055);--line2:rgba(255,255,255,0.09);
+  --gold:#C8B882;--gold2:#E0D09A;
+  --cream:#F0EDE6;--cream2:#FAF8F3;
+  --dim:#7A7A70;--muted:#4A4A42;
+  --serif:'Playfair Display',Georgia,serif;
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--cream);font-family:var(--sans);font-weight:300;line-height:1.75;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+html,body,*{cursor:none!important;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:80px 80px;}
+#cur{position:fixed;z-index:9999;pointer-events:none;width:28px;height:28px;border-radius:50%;border:1px solid rgba(200,184,130,.5);transform:translate(-50%,-50%);will-change:left,top;transition:width .15s,height .15s,border-color .15s,background .15s;}
+#cur.h{width:44px;height:44px;border-color:rgba(200,184,130,.85);background:rgba(200,184,130,.05);}
+#pre{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2rem;}
+.pr{position:relative;width:100px;height:100px;display:flex;align-items:center;justify-content:center;}
+.prr{position:absolute;border-radius:50%;border:1px solid rgba(200,184,130,.18);animation:rP 2.2s ease-in-out infinite;}
+.prr:nth-child(1){width:100px;height:100px;}
+.prr:nth-child(2){width:70px;height:70px;animation-delay:.4s;border-color:rgba(200,184,130,.35);}
+.prr:nth-child(3){width:40px;height:40px;animation-delay:.8s;border-color:rgba(200,184,130,.6);}
+.prl{position:relative;z-index:2;width:30px;animation:lB 2.2s ease-in-out infinite;}
+.prb{width:70px;height:1px;background:rgba(255,255,255,.05);}
+.prbf{height:100%;width:0;background:var(--gold);animation:bF 1.6s ease-out forwards;}
+@keyframes rP{0%,100%{transform:scale(.9);opacity:.15;}50%{transform:scale(1.08);opacity:.6;}}
+@keyframes lB{0%,100%{opacity:.4;transform:scale(.9);}50%{opacity:1;transform:scale(1);}}
+@keyframes bF{0%{width:0}100%{width:100%}}
+@keyframes fU{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:none;}}
+@keyframes fI{from{opacity:0;}to{opacity:1;}}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:1.2rem 3.5rem;background:rgba(10,10,8,.8);backdrop-filter:blur(16px);border-bottom:1px solid var(--line2);}
+.nav-l{display:flex;align-items:center;gap:.7rem;text-decoration:none;}
+.nav-l img{height:22px;width:auto;}
+.nav-l span{font-family:var(--mono);font-size:.65rem;font-weight:400;letter-spacing:.18em;text-transform:uppercase;color:var(--cream);}
+.nav-r{font-family:var(--mono);font-size:.6rem;color:var(--dim);letter-spacing:.15em;text-transform:uppercase;}
+#hero{position:relative;min-height:100vh;display:grid;grid-template-rows:1fr auto;z-index:1;}
+.hero-body{display:grid;grid-template-columns:1fr 1fr;max-width:1160px;margin:0 auto;width:100%;padding:9rem 3.5rem 3rem;align-items:center;gap:3rem;}
+.hero-text{display:flex;flex-direction:column;}
+.hero-eye{font-family:var(--mono);font-size:.57rem;color:var(--gold);letter-spacing:.24em;text-transform:uppercase;display:flex;align-items:center;gap:.75rem;margin-bottom:2.5rem;opacity:0;animation:fU .9s .2s ease forwards;}
+.hero-eye::before{content:'';width:1.1rem;height:1px;background:var(--gold);display:block;}
+h1.hh{font-family:var(--serif);font-size:clamp(3.2rem,6vw,7rem);font-weight:300;line-height:1.04;letter-spacing:-.03em;color:var(--cream2);margin-bottom:2.5rem;opacity:0;animation:fU 1s .4s ease forwards;}
+h1.hh em{font-style:italic;}
+.hero-sub{font-size:.92rem;color:var(--dim);line-height:1.9;max-width:44ch;margin-bottom:2rem;opacity:0;animation:fU 1s .6s ease forwards;}
+.hero-sub strong{color:var(--cream);font-weight:400;}
+.hero-co{font-family:var(--mono);font-size:.62rem;color:var(--dim);letter-spacing:.15em;text-transform:uppercase;border-top:1px solid var(--line2);padding-top:1.5rem;opacity:0;animation:fU .9s .8s ease forwards;}
+.hero-canvas-col{position:relative;height:560px;border:1px solid var(--line2);background:var(--bg2);overflow:hidden;opacity:0;animation:fI 1.2s .7s ease forwards;}
+.hero-canvas-col::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 65% 70% at 50% 45%,rgba(200,184,130,.06) 0%,transparent 65%);pointer-events:none;z-index:1;}
+#heroSpineC{position:absolute;inset:0;width:100%;height:100%;z-index:2;}
+.spine-hint{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:.6rem;color:rgba(180,175,160,.45);letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;z-index:3;pointer-events:none;}
+.htk{border-top:1px solid var(--line2);padding:1.5rem 3.5rem;display:grid;grid-template-columns:1fr 1fr;background:rgba(10,10,8,.5);position:relative;z-index:1;opacity:0;animation:fU .8s 1s ease forwards;}
+.htk-left{display:flex;align-items:center;gap:3rem;}
+.htk-right{display:flex;align-items:center;justify-content:flex-end;font-family:var(--mono);font-size:.6rem;color:var(--dim);letter-spacing:.14em;text-transform:uppercase;}
+.ti{display:flex;flex-direction:column;gap:.1rem;}
+.tn{font-family:var(--serif);font-size:1.6rem;font-weight:300;color:var(--gold2);line-height:1;}
+.tl{font-family:var(--mono);font-size:.6rem;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;}
+.ts{width:1px;height:1.75rem;background:var(--line2);}
+section{position:relative;z-index:1;}
+.w{max-width:1120px;margin:0 auto;padding:0 3.5rem;}
+h2{font-family:var(--serif);font-size:clamp(2rem,3.8vw,4rem);font-weight:300;line-height:1.1;color:var(--cream2);letter-spacing:-.015em;}
+h2 em{font-style:italic;}
+.dv{padding:1.4rem 3.5rem;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;}
+.dn,.dt{font-family:var(--mono);font-size:.52rem;color:var(--muted);letter-spacing:.22em;text-transform:uppercase;}
+.dl{flex:1;height:1px;background:linear-gradient(to right,transparent,var(--line2),transparent);margin:0 2rem;}
+#problem{padding:12rem 0 13rem;}
+.prob-inner{max-width:560px;}
+.pl{display:block;font-family:var(--serif);font-size:clamp(1.3rem,2.3vw,1.85rem);font-weight:300;line-height:1.5;color:var(--cream2);opacity:0;transform:translateY(18px);transition:opacity .9s ease,transform .9s ease;}
+.pl.d{color:var(--dim);font-size:clamp(1rem,1.7vw,1.3rem);}
+.pl.v{opacity:1;transform:none;}
+.pl+.pl{margin-top:1.1rem;}
+.pl.d+.pl.d{margin-top:.5rem;}
+.pk{display:block;margin-top:4rem;padding-top:4rem;border-top:1px solid var(--line2);font-family:var(--serif);font-size:clamp(1.05rem,1.8vw,1.45rem);font-weight:300;line-height:1.65;color:var(--cream2);opacity:0;transform:translateY(18px);transition:opacity .9s ease,transform .9s ease;transition-delay:.5s;}
+.pk.v{opacity:1;transform:none;}
+#what{padding:10rem 0;background:var(--bg2);}
+.what-grid{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:start;margin-top:5rem;}
+.what-body p{font-size:.9rem;color:var(--dim);line-height:1.95;margin-bottom:1.4rem;}
+.what-body strong{color:var(--cream);font-weight:400;}
+.what-callout{margin-top:2.5rem;padding:1.75rem 2.25rem;border-left:1px solid var(--gold);background:rgba(200,184,130,.03);}
+.what-callout p{font-family:var(--serif);font-size:1.05rem;font-weight:300;color:var(--cream2);line-height:1.8;font-style:italic;}
+.what-diff{margin-top:3rem;}
+.diff-row{padding:1.1rem 0;border-bottom:1px solid var(--line2);display:grid;grid-template-columns:1fr 1.4fr;gap:1.5rem;font-size:.85rem;}
+.diff-row:first-child{border-top:1px solid var(--line2);}
+.diff-who{color:var(--cream);font-family:var(--mono);font-size:.76rem;letter-spacing:.06em;}
+.diff-what{color:var(--cream);font-size:.85rem;}
+#product{padding:10rem 0;}
+.product-grid{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:start;margin-top:5rem;}
+.product-desc p{font-size:.9rem;color:var(--dim);line-height:1.95;margin-bottom:1.4rem;}
+.product-desc strong{color:var(--cream);font-weight:400;}
+.product-included{margin-top:2rem;padding:1.5rem 2rem;background:var(--bg3);border:1px solid var(--line2);}
+.product-included p{font-family:var(--mono);font-size:.76rem;color:var(--cream);opacity:.7;letter-spacing:.06em;line-height:1.8;}
+.product-included strong{color:var(--gold);font-weight:400;}
+.formats{display:flex;flex-direction:column;gap:0;}
+.format{padding:1.75rem 0;border-bottom:1px solid var(--line2);display:grid;grid-template-columns:1fr auto;align-items:center;}
+.format:first-child{border-top:1px solid var(--line2);}
+.format-name{font-family:var(--serif);font-size:1.1rem;font-weight:400;color:var(--cream2);}
+.format-note{font-family:var(--mono);font-size:.68rem;color:var(--cream);opacity:.55;letter-spacing:.06em;margin-top:.2rem;}
+.format-price{font-family:var(--serif);font-size:1.5rem;font-weight:300;color:var(--gold2);line-height:1;}
+#scale{padding:8rem 0;background:var(--bg2);border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);}
+.scale-inner{display:grid;grid-template-columns:auto 1fr;gap:5rem;align-items:center;}
+.scale-num{font-family:var(--serif);font-size:clamp(5rem,10vw,11rem);font-weight:300;line-height:1;color:var(--gold2);white-space:nowrap;}
+.scale-text p{font-size:.92rem;color:var(--dim);line-height:1.9;max-width:48ch;}
+.scale-text p+p{margin-top:1rem;}
+.scale-text strong{color:var(--cream);font-weight:400;}
+#founder{padding:10rem 0;}
+.founder-grid{display:grid;grid-template-columns:1fr 1.6fr;gap:6rem;align-items:start;margin-top:5rem;}
+.founder-photo-wrap{position:relative;}
+.founder-img{width:100%;aspect-ratio:1/1;object-fit:cover;object-position:center 20%;display:block;filter:grayscale(15%) contrast(1.05);max-width:100%;}
+.founder-name-block{margin-top:1.5rem;}
+.founder-name{font-family:var(--serif);font-size:1.15rem;font-weight:400;color:var(--cream2);}
+.founder-role{font-family:var(--mono);font-size:.64rem;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-top:.25rem;}
+.founder-body p{font-size:.92rem;color:var(--dim);line-height:1.95;margin-bottom:1.4rem;}
+.founder-body strong{color:var(--cream);font-weight:400;}
+#cta{padding:13rem 0 11rem;border-top:1px solid var(--line2);}
+.cta-inner{max-width:560px;}
+.cta-h{font-family:var(--serif);font-size:clamp(2.2rem,4vw,4.2rem);font-weight:300;line-height:1.1;color:var(--cream2);letter-spacing:-.015em;margin-bottom:1.75rem;}
+.cta-h em{font-style:italic;}
+.cta-sub{font-size:.9rem;color:var(--dim);line-height:1.9;max-width:44ch;margin-bottom:3rem;}
+.cta-form{display:flex;flex-direction:column;max-width:360px;}
+.inp{width:100%;background:transparent;border:none;border-bottom:1px solid var(--line2);color:var(--cream2);font-family:var(--sans);font-size:.88rem;font-weight:300;padding:1.1rem 0;outline:none;transition:border-color .3s;}
+.inp::placeholder{color:var(--muted);}
+.inp:focus{border-color:rgba(240,237,230,.25);}
+.cbtn{margin-top:2.25rem;padding:.9rem 2.5rem;align-self:flex-start;border:1px solid rgba(240,237,230,.35);color:var(--cream2);background:transparent;font-family:var(--mono);font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;transition:all .3s;cursor:pointer;}
+.cbtn:hover{border-color:var(--gold);color:var(--gold);}
+.cpv{font-family:var(--mono);font-size:.62rem;color:var(--dim);letter-spacing:.1em;margin-top:1.1rem;}
+#disclaimer{padding:3rem 3.5rem;border-top:1px solid var(--line2);position:relative;z-index:1;}
+.disc-text{font-family:var(--mono);font-size:.64rem;color:var(--dim);letter-spacing:.06em;line-height:1.8;max-width:72ch;}
+footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;}
+.fm{display:flex;gap:2.5rem;align-items:center;}
+.fm span,.fm a{font-family:var(--mono);font-size:.58rem;color:var(--dim);letter-spacing:.12em;text-decoration:none;transition:color .2s;}
+.fm a{color:var(--dim)!important;}
+.fm a:hover{color:var(--cream)!important;}
+.up{opacity:0;transform:translateY(24px);transition:opacity 1s cubic-bezier(.16,1,.3,1),transform 1s cubic-bezier(.16,1,.3,1);}
+.up.go{opacity:1;transform:none;}
+.up2{opacity:0;transform:translateY(18px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1);transition-delay:.16s;}
+.up2.go{opacity:1;transform:none;}
+.up3{opacity:0;transform:translateY(14px);transition:opacity .85s cubic-bezier(.16,1,.3,1),transform .85s cubic-bezier(.16,1,.3,1);transition-delay:.3s;}
+.lite-cta{display:inline-flex;align-items:center;gap:.7rem;margin-top:1.75rem;padding:.75rem 1.9rem;border:1px solid rgba(200,184,130,.28);color:var(--gold);background:rgba(200,184,130,.03);font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:border-color .3s,color .3s,background .3s;opacity:0;animation:fU .9s 1s ease forwards;}
+.lite-cta:hover{border-color:var(--gold);background:rgba(200,184,130,.07);color:var(--gold2);}
+.lite-arrow{font-size:.8rem;transition:transform .25s;}
+.lite-cta:hover .lite-arrow{transform:translateX(4px);}
+.lite-hint{margin-top:1.75rem;padding:1rem 1.5rem;border:1px solid var(--line2);border-left:1px solid rgba(200,184,130,.22);background:rgba(200,184,130,.02);font-size:.82rem;color:var(--dim);line-height:1.8;}
+.lite-hint-lbl{font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-right:.4rem;}
+.lite-hint-link{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(200,184,130,.28);transition:color .2s,border-color .2s;}
+.lite-hint-link:hover{color:var(--gold2);border-color:var(--gold2);}
+.up3.go{opacity:1;transform:none;}
+.fd{opacity:0;transition:opacity 1.2s ease;}
+.fd.go{opacity:1;}
+@media(max-width:768px){
+  nav{padding:.8rem 1.2rem!important;}
+  .nav-l span{display:none!important;}
+  .nav-r{display:none!important;}
+  .hero-body{
+    grid-template-columns:1fr!important;
+    padding:5.5rem 1.2rem 1.5rem!important;
+    gap:1.5rem!important;
+  }
+  h1.hh{font-size:clamp(2.6rem,11vw,3.6rem)!important;margin-bottom:1.5rem!important;line-height:1.08!important;}
+  .hero-sub{max-width:100%!important;font-size:.88rem!important;}
+  .hero-co{font-size:.52rem!important;}
+  .hero-eye{font-size:.5rem!important;margin-bottom:1.5rem!important;}
+  .hero-canvas-col{height:280px!important;}
+  .htk{
+    grid-template-columns:1fr!important;
+    padding:.8rem 1.2rem!important;
+  }
+  .htk-left{gap:1.2rem!important;flex-wrap:wrap!important;}
+  .htk-right{display:none!important;}
+  .tn{font-size:1.3rem!important;}
+  .tl{font-size:.55rem!important;}
+  .dv{padding:.8rem 1.2rem!important;}
+  .dn,.dt{font-size:.45rem!important;}
+  .w{padding:0 1.2rem!important;}
+  #problem{padding:4.5rem 0 5rem!important;}
+  #what{padding:4.5rem 0!important;}
+  #product{padding:4.5rem 0!important;}
+  #scale{padding:4rem 0!important;}
+  #founder{padding:4.5rem 0!important;}
+  #cta{padding:5rem 0 4rem!important;}
+  #disclaimer{padding:1.5rem 1.2rem!important;}
+  section[style*="padding-top:8rem"]{padding-top:3.5rem!important;padding-bottom:3.5rem!important;}
+  h2{font-size:clamp(1.8rem,7vw,2.6rem)!important;}
+  .prob-inner{max-width:100%!important;}
+  .pl{font-size:clamp(1.15rem,5vw,1.5rem)!important;}
+  .pl.d{font-size:clamp(.9rem,4vw,1.1rem)!important;}
+  .pk{font-size:clamp(.95rem,4vw,1.2rem)!important;margin-top:2.5rem!important;padding-top:2.5rem!important;}
+  .what-grid{grid-template-columns:1fr!important;gap:2.5rem!important;}
+  .what-body p{font-size:.87rem!important;}
+  .what-callout{padding:1.2rem 1.5rem!important;}
+  .what-callout p{font-size:.95rem!important;}
+  .diff-row{grid-template-columns:1fr!important;gap:.3rem!important;padding:.8rem 0!important;}
+  .diff-who{font-size:.7rem!important;}
+  .diff-what{font-size:.82rem!important;}
+  .product-grid{grid-template-columns:1fr!important;gap:2.5rem!important;}
+  .product-desc p{font-size:.87rem!important;}
+  .format{grid-template-columns:1fr auto!important;padding:1.1rem 0!important;}
+  .format-name{font-size:1rem!important;}
+  .format-note{font-size:.62rem!important;}
+  .format-price{font-size:1.25rem!important;}
+  .product-included{padding:1.1rem 1.4rem!important;}
+  .scale-inner{grid-template-columns:1fr!important;gap:1.2rem!important;}
+  .scale-num{font-size:clamp(3.8rem,16vw,6rem)!important;}
+  .scale-text p{font-size:.87rem!important;max-width:100%!important;}
+  .founder-grid{grid-template-columns:1fr!important;gap:2rem!important;}
+  .founder-img{max-width:260px!important;aspect-ratio:1/1!important;}
+  .founder-photo-wrap{max-width:260px!important;}
+  .founder-name{font-size:1rem!important;}
+  .founder-body p{font-size:.87rem!important;}
+  #cta .w > div[style*="grid"]{grid-template-columns:1fr!important;gap:2rem!important;}
+  #logoWrap3d{height:240px!important;}
+  .cta-h{font-size:clamp(1.9rem,7vw,2.6rem)!important;}
+  .cta-sub{font-size:.87rem!important;max-width:100%!important;}
+  .cta-inner,.cta-form{max-width:100%!important;}
+  .cbtn{width:100%!important;text-align:center!important;padding:.85rem 1rem!important;}
+  .inp{font-size:.85rem!important;}
+  .cpv{font-size:.58rem!important;}
+  footer{padding:1.2rem 1.2rem!important;flex-direction:column!important;align-items:flex-start!important;gap:.8rem!important;}
+  .fm{flex-wrap:wrap!important;gap:.8rem!important;}
+  .fm span,.fm a{font-size:.52rem!important;}
+  #cur{display:none!important;}
+  .disc-text{font-size:.58rem!important;}
+}
+#liteModal{position:fixed;inset:0;z-index:9000;display:none;align-items:flex-end;justify-content:center;}
+#liteModal.open{display:flex;}
+.lm-bg{position:absolute;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);}
+.lm-panel{position:relative;z-index:1;background:var(--bg2);border:1px solid var(--line2);border-bottom:none;width:100%;max-width:680px;height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .42s cubic-bezier(.16,1,.3,1);scrollbar-width:thin;scrollbar-color:var(--muted) transparent;}
+#liteModal.open .lm-panel{transform:translateY(0);}
+.lm-bar{position:sticky;top:0;z-index:10;background:rgba(14,14,12,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--line2);padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
+.lm-title{font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);}
+.lm-close{width:32px;height:32px;border-radius:50%;border:1px solid var(--line2);background:transparent;color:var(--dim);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:border-color .2s,color .2s;}
+.lm-close:hover{border-color:var(--gold);color:var(--gold);}
+.li-top{padding:2.5rem 1.75rem 2rem;border-bottom:1px solid var(--line2);}
+.li-tag{font-family:var(--mono);font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:.6rem;margin-bottom:1.2rem;}
+.li-tag::before{content:'';width:.8rem;height:1px;background:var(--gold);}
+.li-h{font-family:var(--serif);font-size:clamp(1.5rem,4vw,2.2rem);font-weight:300;line-height:1.1;color:var(--cream2);letter-spacing:-.015em;margin-bottom:.7rem;}
+.li-h em{font-style:italic;}
+.li-sub{font-size:.85rem;color:var(--dim);line-height:1.8;}
+.li-sub strong{color:var(--cream);font-weight:400;}
+.li-sdv{padding:.75rem 1.75rem;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);display:flex;align-items:center;justify-content:space-between;}
+.li-sn,.li-st{font-family:var(--mono);font-size:.5rem;color:var(--muted);letter-spacing:.2em;text-transform:uppercase;}
+.li-sl{flex:1;height:1px;background:linear-gradient(to right,transparent,var(--line2),transparent);margin:0 1.2rem;}
+.li-step{padding:1.75rem 1.75rem 0;}
+.li-shd{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;}
+.li-snum{width:24px;height:24px;border-radius:50%;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.55rem;color:var(--gold);flex-shrink:0;}
+.li-stitle{font-family:var(--serif);font-size:1rem;font-weight:400;color:var(--cream2);}
+.li-items{display:flex;flex-direction:column;gap:2px;padding-bottom:1.75rem;}
+.li-item{background:var(--bg3);border:1px solid var(--line2);padding:.75rem 1rem;display:flex;gap:.75rem;align-items:flex-start;}
+.li-ico{font-size:.95rem;width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line2);flex-shrink:0;}
+.li-lbl{font-family:var(--mono);font-size:.62rem;letter-spacing:.06em;color:var(--gold);margin-bottom:.15rem;}
+.li-txt{font-size:.8rem;color:var(--dim);line-height:1.65;}
+.li-shots{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:2px;}
+.li-shot{background:var(--bg3);border:1px solid var(--line2);padding:1rem;}
+.li-sbadge{font-family:var(--mono);font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(200,184,130,.22);background:rgba(200,184,130,.04);padding:2px 7px;display:inline-block;margin-bottom:.6rem;}
+.li-sttl{font-size:.82rem;font-weight:400;color:var(--cream2);margin-bottom:.5rem;}
+.li-srow{font-size:.78rem;color:var(--dim);display:flex;gap:.45rem;align-items:flex-start;padding:.15rem 0;border-bottom:1px solid var(--line);line-height:1.5;}
+.li-srow:last-child{border-bottom:none;}
+.li-dot{color:var(--gold);font-size:.55rem;flex-shrink:0;padding-top:.2rem;}
+.li-tip{background:rgba(200,184,130,.04);border:1px solid rgba(200,184,130,.16);padding:.75rem 1rem;display:flex;gap:.75rem;align-items:flex-start;margin-top:2px;margin-bottom:1.75rem;}
+.li-tlbl{font-family:var(--mono);font-size:.62rem;color:var(--gold);letter-spacing:.06em;margin-bottom:.1rem;}
+.li-txt2{font-size:.8rem;color:var(--dim);line-height:1.65;}
+.li-donts{display:flex;flex-direction:column;gap:2px;padding-bottom:1.75rem;}
+.li-dont{background:var(--bg3);border:1px solid var(--line2);border-left:2px solid rgba(200,100,80,.35);padding:.7rem 1rem;display:flex;gap:.7rem;align-items:flex-start;}
+.li-dx{font-family:var(--mono);font-size:.65rem;color:rgba(220,130,110,.65);flex-shrink:0;}
+.li-dt{font-size:.8rem;color:var(--dim);line-height:1.6;}
+.li-dt strong{color:var(--cream);font-weight:400;}
+.li-send{background:var(--bg3);border-top:1px solid var(--line2);padding:2rem 1.75rem;}
+.li-slbl{font-family:var(--mono);font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem;}
+.li-srows{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem;}
+.li-srow2{display:flex;gap:.75rem;align-items:flex-start;}
+.li-sn2{font-family:var(--mono);font-size:.62rem;color:var(--gold);flex-shrink:0;width:1.1rem;}
+.li-st2{font-size:.82rem;color:var(--dim);line-height:1.65;}
+.li-st2 strong{color:var(--cream);font-weight:400;}
+.li-email{border:1px solid rgba(200,184,130,.2);background:rgba(200,184,130,.03);padding:.9rem 1.1rem;font-family:var(--mono);font-size:.76rem;color:var(--gold);letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;}
+.li-ecopy{background:none;border:none;font-family:var(--mono);font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:color .2s;}
+.li-ecopy:hover{color:var(--gold);}
+@media(max-width:480px){
+  .lm-panel{height:95vh;border-radius:12px 12px 0 0;}
+  .li-shots{grid-template-columns:1fr;}
+  .li-top,.li-step,.li-send{padding-left:1.2rem;padding-right:1.2rem;}
+  .li-sdv{padding:.7rem 1.2rem;}
+}
+</style>
+</head>
+<body>
+<div id="cur"></div>
+<div id="pre">
+  <div class="pr">
+    <div class="prr"></div><div class="prr"></div><div class="prr"></div>
+    <img class="prl" data-logo="1" alt=""/>
+  </div>
+  <div class="prb"><div class="prbf"></div></div>
+</div>
+
+<nav>
+  <a href="#" class="nav-l">
+    <img data-logo="1" alt="AC" style="height:22px;"/>
+    <span>Атлетикс Корп</span>
+  </a>
+  <span class="nav-r">Анализ движения и осанки</span>
+</nav>
+
+<section id="hero">
+  <div class="hero-body">
+    <div class="hero-text">
+      <p class="hero-eye">AC — 001</p>
+      <h1 class="hh">Тело теряет ресурс<br><em>до того как</em><br>начинает болеть</h1>
+      <p class="hero-sub">Не фитнес. Не медицина.<br><strong>Управление тем, как нервная система организует движение</strong> — и что это означает для вашей работоспособности, энергии и долголетия.</p>
+      <p class="hero-co">Атлетикс Корп — исследовательско-продуктовая компания</p>
+      <button class="lite-cta" onclick="openLite()">Получить LITE-анализ бесплатно <span class="lite-arrow">→</span></button>
+    </div>
+    <div class="hero-canvas-col" id="heroSpineWrap">
+      <canvas id="heroSpineC" width="500" height="560"></canvas>
+      <div class="spine-hint">↻ Перетащите для поворота</div>
+    </div>
+  </div>
+  <div class="htk">
+    <div class="htk-left">
+      <div class="ti"><span class="tn">1000+</span><span class="tl">Анализов с 2023</span></div>
+      <div class="ts"></div>
+      <div class="ti"><span class="tn">7+</span><span class="tl">Лет практики</span></div>
+      <div class="ts"></div>
+      <div class="ti"><span class="tn">2023</span><span class="tl">Год основания</span></div>
+    </div>
+    <div class="htk-right">Атлетикс Корп — Анализ движения и осанки</div>
+  </div>
+</section>
+
+<div class="dv"><span class="dn">002</span><div class="dl"></div><span class="dt">Контекст</span></div>
+
+<section id="problem">
+  <div class="w">
+    <div class="prob-inner" id="pb">
+      <span class="pl">Тело работает.</span>
+      <span class="pl d">Но что-то забирает энергию раньше,<br>чем заканчивается день.</span>
+      <span class="pl d">Спина не болит — но напряжение есть.</span>
+      <span class="pl d">Голова работает — но ясность не та.</span>
+      <span class="pl d">К вечеру остаётся меньше, чем должно.</span>
+      <span class="pk">Это не усталость и не болезнь.<br>Это накопленное адаптационное напряжение —<br>то, что ещё не болит, но уже снижает работоспособность.</span>
+    </div>
+  </div>
+</section>
+
+<div class="dv"><span class="dn">003</span><div class="dl"></div><span class="dt">Суть</span></div>
+
+<section id="what">
+  <div class="w" style="padding-top:8rem;padding-bottom:8rem;">
+    <h2 class="up">Мы работаем с тем,<br><em>что обычно невидимо</em></h2>
+    <div class="what-grid">
+      <div class="what-body up2">
+        <p>Атлетикс Корп анализирует как нервная система организует движение и осанку под нагрузкой — и показывает где тело теряет ресурс впустую.</p>
+        <p>Результат: <strong>конкретная, научно обоснованная картина двигательных и постуральных паттернов</strong> — то, что влияет на энергию, ясность и работоспособность, но обычно невидимо.</p>
+        <div class="what-callout"><p>Не лечение. Не тренировка.<br>Анализ — точный, индивидуальный, научно обоснованный.</p></div>
+      </div>
+      <div class="up3">
+        <div class="what-diff">
+          <div class="diff-row"><span class="diff-who">Физиотерапевт</span><span class="diff-what">Работает с болью и травмой</span></div>
+          <div class="diff-row"><span class="diff-who">Остеопат</span><span class="diff-what">Работает со структурой</span></div>
+          <div class="diff-row"><span class="diff-who">Тренер</span><span class="diff-what">Работает с кондицией</span></div>
+          <div class="diff-row"><span class="diff-who" style="color:var(--gold);">Атлетикс Корп</span><span class="diff-what" style="color:var(--cream2);">Работает с двигательной стратегией нервной системы</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="dv"><span class="dn">004</span><div class="dl"></div><span class="dt">Продукт</span></div>
+
+<section id="product">
+  <div class="w" style="padding-top:8rem;padding-bottom:8rem;">
+    <h2 class="up">Анализ движения<br>и <em>осанки</em></h2>
+    <div class="product-grid">
+      <div class="product-desc up2">
+        <p>Точный, индивидуальный, научно обоснованный анализ постурального и двигательного паттерна.</p>
+        <p>Клиент двигается в стандартных паттернах — специалист наблюдает и фиксирует. Длительность от 30 до 60 минут в зависимости от формата.</p>
+        <div class="product-included"><p><strong>В любом формате:</strong><br>Устная интерпретация сразу после.<br>PDF-отчёт — через 16–24 часа на почту или в мессенджер.</p></div>
+      </div>
+      <div class="up3">
+        <div class="formats">
+          <div class="format"><div><p class="format-name">Онлайн</p><p class="format-note">Анализ в видеоформате. Подходит для первичного знакомства с методологией.</p></div><span class="format-price">2 000 ₽</span></div>
+          <div class="format"><div><p class="format-name">Очно</p><p class="format-note">Полноценный анализ при личной встрече. Максимальная точность наблюдения.</p></div><span class="format-price">5 000 ₽</span></div>
+          <div class="format"><div><p class="format-name">Выезд</p><p class="format-note">Анализ в вашей локации — офис, дом, корпоративное пространство.</p></div><span class="format-price">15 000 ₽</span></div>
+        </div>
+        <div class="lite-hint"><span class="lite-hint-lbl">Не уверены?</span> Попробуйте <a href="#" class="lite-hint-link" onclick="openLite();return false;">бесплатный LITE-анализ</a> — пришлите два фото, получите первичный разбор осанки.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="dv"><span class="dn">005</span><div class="dl"></div><span class="dt">Масштаб</span></div>
+
+<section id="scale">
+  <div class="w">
+    <div class="scale-inner fd">
+      <div class="scale-num">1000+</div>
+      <div class="scale-text">
+        <p><strong>Анализов движения и осанки — с 2023 года.</strong></p>
+        <p>Клиент определяется не по профессии или доходу. По типу мышления — замечает тонкие сигналы тела, инвестирует в себя осознанно, хочет понять механизм.</p>
+        <p>Возраст 30–50. Как правило высокая интеллектуальная или физическая нагрузка.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="dv"><span class="dn">006</span><div class="dl"></div><span class="dt">Основатель</span></div>
+
+<section id="founder">
+  <div class="w" style="padding-top:8rem;padding-bottom:8rem;">
+    <div class="founder-grid">
+      <div class="up">
+        <div class="founder-photo-wrap">
+          <img src="https://i.imgur.com/KTEJ9N3.jpeg" alt="Арсений Кулаков" class="founder-img"/>
+        </div>
+        <div class="founder-name-block">
+          <p class="founder-name">Арсений Кулаков</p>
+          <p class="founder-role">Основатель, методолог</p>
+        </div>
+      </div>
+      <div class="founder-body up2">
+        <p style="font-family:var(--mono);font-size:.54rem;color:var(--muted);letter-spacing:.22em;text-transform:uppercase;margin-bottom:2rem;">006 — Основатель</p>
+        <p><strong>7+ лет практики</strong> с клиентами высокой ответственности. Основал Атлетикс Корп и Институт физической адаптации человека.</p>
+        <p>Специализация — биомеханика, нейрофизиология движения, управление физической адаптацией человека.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="cta">
+  <div class="w">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;">
+    <div class="cta-inner">
+      <h2 class="cta-h up">Записаться<br>на <em>анализ</em></h2>
+      <p class="cta-sub up2">Анализ — точка входа. Он даёт конкретную картину ваших двигательных паттернов. Формат и длительность подбираются под запрос.</p>
+      <div class="cta-form up3" id="ctaForm">
+        <input class="inp" id="fName" type="text" placeholder="Имя" required/>
+        <input class="inp" id="fEmail" type="email" placeholder="Email" required/>
+        <input class="inp" id="fPhone" type="tel" placeholder="Телефон (необязательно)"/>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:2.25rem;">
+          <button class="cbtn" style="margin-top:0;" onclick="submitForm(event)">Записаться на анализ</button>
+          <button class="lite-cta" style="margin-top:0;opacity:1;animation:none;" onclick="openLite()">LITE — бесплатно <span class="lite-arrow">→</span></button>
+        </div>
+        <p class="cpv" id="fStatus">Никаких рассылок. Только прямой контакт.</p>
+      </div>
+    </div>
+
+    <div id="logoWrap3d" style="position:relative;height:500px;display:flex;align-items:center;justify-content:center;">
+      <div style="position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(200,184,130,0.07) 0%,transparent 70%);pointer-events:none;"></div>
+      <canvas id="logoCanvas3d" style="width:100%;height:100%;display:block;"></canvas>
+    </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="disclaimer">
+  <div class="w">
+    <p class="disc-text">Анализ движения и осанки Атлетикс Корп — немедицинская оценка постурального и двигательного паттерна. Не является постановкой диагноза и не заменяет консультацию врача.</p>
+  </div>
+</section>
+
+<footer>
+  <div style="display:flex;align-items:center;gap:.7rem;">
+    <img data-logo="1" alt="AC" style="height:18px;opacity:.4;"/>
+    <span style="font-family:var(--mono);font-size:.52rem;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;">Атлетикс Корп</span>
+  </div>
+  <div class="fm">
+    <span>© 2026</span>
+    <a href="mailto:ac@athleticscorp.ru">Контакт</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var s='https://i.imgur.com/cuiy9Zo.png';
+  function i(){document.querySelectorAll('[data-logo]').forEach(function(e){e.src=s;});}
+  i(); document.addEventListener('DOMContentLoaded',i);
+})();
+</script>
+
+<script>
+window.addEventListener('load',function(){
+  var pre=document.getElementById('pre');
+  setTimeout(function(){pre.style.transition='opacity .7s ease';pre.style.opacity='0';setTimeout(function(){pre.style.display='none';},720);},1400);
+});
+var cur=document.getElementById('cur');
+document.addEventListener('mousemove',function(e){cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});
+document.querySelectorAll('a,button,input,.format,.diff-row').forEach(function(el){
+  el.addEventListener('mouseenter',function(){cur.classList.add('h');});
+  el.addEventListener('mouseleave',function(){cur.classList.remove('h');});
+});
+var io=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('go');io.unobserve(x.target);}});},{threshold:.07});
+document.querySelectorAll('.up,.up2,.up3,.fd').forEach(function(el){io.observe(el);});
+var pls=document.querySelectorAll('#pb .pl,#pb .pk');
+var pio=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){pls.forEach(function(l,i){setTimeout(function(){l.classList.add('v');},i*220);});pio.unobserve(x.target);}});},{threshold:.1});
+var pb=document.getElementById('pb');if(pb)pio.observe(pb);
+
+function submitForm(e){
+  e.preventDefault();
+  var name=document.getElementById('fName').value.trim();
+  var email=document.getElementById('fEmail').value.trim();
+  var phone=document.getElementById('fPhone').value.trim();
+  var btn=e.target;
+  var status=document.getElementById('fStatus');
+  if(!name||!email){status.textContent='Заполните имя и email.';status.style.color='var(--gold)';return;}
+  btn.textContent='Отправляем...';btn.disabled=true;btn.style.opacity='.6';
+  fetch('https://formspree.io/f/mlgvapod',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify({name:name,email:email,phone:phone||'—',_subject:'Запись на анализ — Атлетикс Корп',_replyto:email})
+  }).then(function(r){return r.json();}).then(function(d){
+    if(d.ok||d.next){
+      document.getElementById('ctaForm').innerHTML='<p style="font-family:var(--serif);font-size:1.2rem;font-weight:300;color:var(--cream2);line-height:1.8;">Спасибо, '+name+'.<br>Мы свяжемся с вами в ближайшее время.</p>';
+    }else{throw 0;}
+  }).catch(function(){
+    btn.textContent='Записаться на анализ';btn.disabled=false;btn.style.opacity='1';
+    status.textContent='Ошибка. Напишите напрямую: ac@athleticscorp.ru';status.style.color='var(--gold)';
+  });
+}
+</script>
+
+<!-- ============== LITE MODAL ============== -->
+<div id="liteModal">
+  <div class="lm-bg" onclick="closeLite()"></div>
+  <div class="lm-panel" id="lmPanel">
+    <div class="lm-bar">
+      <span class="lm-title">LITE — Бесплатный анализ осанки</span>
+      <button class="lm-close" onclick="closeLite()">✕</button>
+    </div>
+    <div style="padding:0 0 3rem;">
+      <div class="li-top">
+        <div class="li-tag">LITE / Бесплатный анализ</div>
+        <h2 class="li-h">Как сделать фото<br>для <em>анализа осанки</em></h2>
+        <p class="li-sub">Два снимка — специалист получит всё необходимое.<br><strong>Пришлите фото — мы пришлём первичный анализ.</strong></p>
+      </div>
+      <div class="li-sdv"><span class="li-sn">01</span><div class="li-sl"></div><span class="li-st">Подготовка</span></div>
+      <div class="li-step">
+        <div class="li-shd"><div class="li-snum">1</div><div class="li-stitle">Подготовьтесь</div></div>
+        <div class="li-items">
+          <div class="li-item"><div class="li-ico">👕</div><div><div class="li-lbl">Одежда</div><div class="li-txt">Облегающая — леггинсы и майка или футболка. Контуры тела должны быть чётко видны.</div></div></div>
+          <div class="li-item"><div class="li-ico">🧍</div><div><div class="li-lbl">Поза</div><div class="li-txt">Ноги на ширине плеч, руки свободно опущены. Стойте естественно — не выпрямляйтесь специально.</div></div></div>
+          <div class="li-item"><div class="li-ico">💡</div><div><div class="li-lbl">Освещение</div><div class="li-txt">Равномерный свет со всех сторон. Тени не должны скрывать контуры тела.</div></div></div>
+        </div>
+      </div>
+      <div class="li-sdv"><span class="li-sn">02</span><div class="li-sl"></div><span class="li-st">Съёмка</span></div>
+      <div class="li-step">
+        <div class="li-shd"><div class="li-snum">2</div><div class="li-stitle">Сделайте два снимка</div></div>
+        <div class="li-shots">
+          <div class="li-shot"><div class="li-sbadge">Снимок 1</div><div class="li-sttl">Спереди или сзади</div><div class="li-srow"><div class="li-dot">→</div>Лицом или спиной к камере</div><div class="li-srow"><div class="li-dot">→</div>Камера на уровне пупка</div><div class="li-srow"><div class="li-dot">→</div>Голова, тело и ноги в кадре</div></div>
+          <div class="li-shot"><div class="li-sbadge">Снимок 2</div><div class="li-sttl">Сбоку</div><div class="li-srow"><div class="li-dot">→</div>Повернитесь боком</div><div class="li-srow"><div class="li-dot">→</div>Камера на уровне пупка</div><div class="li-srow"><div class="li-dot">→</div>Голова, тело и ноги в кадре</div></div>
+        </div>
+        <div class="li-tip"><div style="font-size:.95rem;flex-shrink:0;">📐</div><div><div class="li-tlbl">Высота камеры</div><div class="li-txt2">Поставьте телефон на стол или книги — объектив на уровне пупка. Снимает другой человек — попросите его присесть.</div></div></div>
+      </div>
+      <div class="li-sdv"><span class="li-sn">03</span><div class="li-sl"></div><span class="li-st">Ошибки</span></div>
+      <div class="li-step">
+        <div class="li-shd"><div class="li-snum">3</div><div class="li-stitle">Чего избегать</div></div>
+        <div class="li-donts">
+          <div class="li-dont"><div class="li-dx">✕</div><div class="li-dt"><strong>Камера сверху или снизу</strong> — только строго на уровне пупка</div></div>
+          <div class="li-dont"><div class="li-dx">✕</div><div class="li-dt"><strong>Широкоугольный режим</strong> — исказит пропорции тела</div></div>
+          <div class="li-dont"><div class="li-dx">✕</div><div class="li-dt"><strong>Скрещенные руки, напряжение</strong> — стойте свободно</div></div>
+          <div class="li-dont"><div class="li-dx">✕</div><div class="li-dt"><strong>Тёмные или размытые фото</strong> — тело должно быть видно полностью</div></div>
+          <div class="li-dont"><div class="li-dx">✕</div><div class="li-dt"><strong>Мешковатая одежда</strong> — скрывает контуры, снижает точность</div></div>
+        </div>
+      </div><div class="li-sdv"><span class="li-sn">04</span><div class="li-sl"></div><span class="li-st">Примеры</span></div>
+      <div class="li-step">
+        <div class="li-shd"><div class="li-snum">4</div><div class="li-stitle">Примеры удачных снимков</div></div>
+        <div class="li-shots" style="gap:4px;margin-bottom:0;">
+          <div class="li-shot" style="padding:0;overflow:hidden;background:var(--bg3);border:1px solid var(--line2);">
+            <img src="https://i.ibb.co/sJ9DTF3k/photo-2026-06-10-14-53-51.jpg" alt="Снимок спереди — пример" style="width:100%;display:block;object-fit:cover;max-height:380px;">
+          </div>
+          <div class="li-shot" style="padding:0;overflow:hidden;background:var(--bg3);border:1px solid var(--line2);">
+            <img src="https://i.ibb.co/n8grM3XH/photo-2026-06-10-14-53-53.jpg" alt="Снимок сбоку — пример" style="width:100%;display:block;object-fit:cover;max-height:380px;">
+          </div>
+        </div>
+        <div class="li-tip" style="margin-top:4px;margin-bottom:1.75rem;">
+          <div style="font-size:.9rem;flex-shrink:0;color:var(--muted);">ℹ️</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.65;">Маркеры на теле клеить не надо&nbsp;— это примеры с разметкой из профессиональной съёмки.</div>
+        </div>
+      </div>
+      <div class="li-send">
+        <div class="li-slbl">— Как отправить</div>
+        <div class="li-srows">
+          <div class="li-srow2"><div class="li-sn2">1.</div><div class="li-st2">Сделайте два фото по инструкции выше</div></div>
+          <div class="li-srow2"><div class="li-sn2">2.</div><div class="li-st2">Напишите на почту с темой <strong>«LITE»</strong></div></div>
+          <div class="li-srow2"><div class="li-sn2">3.</div><div class="li-st2">Приложите оба фото к письму</div></div>
+          <div class="li-srow2"><div class="li-sn2">4.</div><div class="li-st2">Через <strong>2–3 рабочих дня</strong> пришлём первичный анализ</div></div>
+        </div>
+        <div class="li-email">
+          <span>ac@athleticscorp.ru</span>
+          <button class="li-ecopy" onclick="navigator.clipboard.writeText('ac@athleticscorp.ru');this.textContent='Скопировано ✓'">Копировать</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function openLite(){var m=document.getElementById('liteModal');m.classList.add('open');document.body.style.overflow='hidden';var p=document.getElementById('lmPanel');if(p)p.scrollTop=0;}
+function closeLite(){document.getElementById('liteModal').classList.remove('open');document.body.style.overflow='';}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLite();});
+</script>
+
+<!-- ============== THREE.JS LIBRARY ============== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<!-- ============== 3D LOGO (CTA SECTION) ============== -->
+<script>
+setTimeout(function(){
+  var wrap=document.getElementById('logoWrap3d');
+  var canvas=document.getElementById('logoCanvas3d');
+  if(!wrap||!canvas)return;
+  var W=wrap.offsetWidth||500,H=wrap.offsetHeight||500;
+  if(W<50){W=500;H=500;}
+  var renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(W,H);
+  renderer.setClearColor(0x000000,0);
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure=1.8;
+  var scene=new THREE.Scene();
+  var camera=new THREE.PerspectiveCamera(34,W/H,.01,100);
+  camera.position.set(0,0,5.8);
+  scene.add(new THREE.AmbientLight(0x100A02,4));
+  var key=new THREE.DirectionalLight(0xF5E090,7);key.position.set(3,5,5);scene.add(key);
+  var fill=new THREE.PointLight(0xC8B882,5,22);fill.position.set(-3,1,3);scene.add(fill);
+  scene.add(new THREE.DirectionalLight(0x3A2000,3)).position.set(-2,-4,-3);
+  var gM=new THREE.MeshStandardMaterial({color:0xC8B882,metalness:.95,roughness:.08,side:THREE.DoubleSide});
+  var bev={depth:.32,bevelEnabled:true,bevelThickness:.05,bevelSize:.035,bevelSegments:3};
+  var grp=new THREE.Group();scene.add(grp);
+  function extrude(pts){var s=new THREE.Shape();s.moveTo(pts[0][0],pts[0][1]);for(var i=1;i<pts.length;i++)s.lineTo(pts[i][0],pts[i][1]);s.closePath();return new THREE.Mesh(new THREE.ExtrudeGeometry(s,bev),gM);}
+  (function(){
+    var s=new THREE.Shape();s.moveTo(0,0);s.lineTo(.72,0);s.lineTo(.72,.06);s.lineTo(.42,1.55);s.lineTo(.30,1.55);s.lineTo(0,.06);s.closePath();
+    var h=new THREE.Path();h.moveTo(.15,.14);h.lineTo(.57,.14);h.lineTo(.57,.52);h.closePath();s.holes.push(h);
+    var m=new THREE.Mesh(new THREE.ExtrudeGeometry(s,bev),gM);m.position.set(-1.65,-.78,0);grp.add(m);
+    var cb=extrude([[.10,.58],[.62,.58],[.62,.76],[.10,.76]]);cb.position.set(-1.65,-.78,0);grp.add(cb);
+  })();
+  (function(){
+    var s=new THREE.Shape();var OR=.78,IR=.55,gap=.62,steps=32;
+    for(var i=0;i<=steps;i++){var a=gap+(Math.PI*2-gap*2)*i/steps;if(i===0)s.moveTo(Math.cos(a)*OR,Math.sin(a)*OR);else s.lineTo(Math.cos(a)*OR,Math.sin(a)*OR);}
+    var aE=gap+(Math.PI*2-gap*2);s.lineTo(Math.cos(aE)*IR,Math.sin(aE)*IR);
+    for(var i=steps;i>=0;i--){var a=gap+(Math.PI*2-gap*2)*i/steps;s.lineTo(Math.cos(a)*IR,Math.sin(a)*IR);}
+    s.closePath();var m=new THREE.Mesh(new THREE.ExtrudeGeometry(s,bev),gM);m.position.set(-.15,0,0);grp.add(m);
+  })();
+  var ax=.85;
+  var sh=extrude([[ax-.12,-.78],[ax+.12,-.78],[ax+.12,.30],[ax-.12,.30]]);grp.add(sh);
+  var hd=extrude([[ax-.34,.28],[ax+.34,.28],[ax,.82]]);grp.add(hd);
+  var bb=new THREE.Box3().setFromObject(grp),bc=new THREE.Vector3();bb.getCenter(bc);grp.position.sub(bc);
+  var t=0,drag=false,px=0,rx=0,vx=0,auto=true;
+  canvas.addEventListener('mousedown',function(e){drag=true;px=e.clientX;auto=false;});
+  window.addEventListener('mouseup',function(){drag=false;});
+  window.addEventListener('mousemove',function(e){if(!drag)return;vx=(e.clientX-px)*.013;rx+=vx;px=e.clientX;grp.rotation.y=rx;});
+  canvas.addEventListener('touchstart',function(e){drag=true;px=e.touches[0].clientX;auto=false;},{passive:true});
+  window.addEventListener('touchend',function(){drag=false;});
+  window.addEventListener('touchmove',function(e){if(!drag)return;vx=(e.touches[0].clientX-px)*.013;rx+=vx;px=e.touches[0].clientX;grp.rotation.y=rx;},{passive:true});
+  window.addEventListener('resize',function(){W=wrap.offsetWidth||500;H=wrap.offsetHeight||500;camera.aspect=W/H;camera.updateProjectionMatrix();renderer.setSize(W,H);});
+  (function loop(){requestAnimationFrame(loop);t+=.009;if(!drag){if(Math.abs(vx)>.0008){vx*=.94;rx+=vx;}else{vx=0;auto=true;}}if(auto&&!drag){rx+=.004;}grp.rotation.y=rx;grp.rotation.x=Math.sin(t*.3)*.05;key.intensity=7+Math.sin(t*.5)*.6;fill.intensity=5+Math.sin(t*.7+1)*.4;renderer.render(scene,camera);})();
+},200);
+</script>
+
+<!-- ============== 3D SPINE (HERO SECTION) ============== -->
+<script>
+(function(){
+  function init(){
+    var canvas = document.getElementById('heroSpineC');
+    if(!canvas){ setTimeout(init,300); return; }
+    if(typeof THREE==='undefined'){ setTimeout(init,300); return; }
+    if(canvas._spineReady) return;
+    canvas._spineReady = true;
+
+    var W=480, H=540;
+    canvas.width=W; canvas.height=H;
+
+    var renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:true, alpha:true});
+    renderer.setPixelRatio(window.devicePixelRatio||1);
+    renderer.setSize(W,H);
+    renderer.setClearColor(0x000000,0);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 2.2;
+
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(28, W/H, 0.01, 200);
+    camera.position.set(0, 0, 6.5);
+
+    scene.add(new THREE.AmbientLight(0xC8A050, 6));
+    var L1 = new THREE.DirectionalLight(0xFFD060, 12);
+    L1.position.set(4, 8, 6); scene.add(L1);
+    var L2 = new THREE.PointLight(0xFFBB44, 8, 30);
+    L2.position.set(-3, 3, 4); scene.add(L2);
+    var L3 = new THREE.DirectionalLight(0xE8A020, 5);
+    L3.position.set(-2,-4,-3); scene.add(L3);
+    var L4 = new THREE.PointLight(0xFFE090, 5, 20);
+    L4.position.set(0, 10, 0); scene.add(L4);
+
+    var mGold = new THREE.MeshStandardMaterial({color:0xC4A84A, metalness:0.75, roughness:0.15});
+    var mDark = new THREE.MeshStandardMaterial({color:0x9A7A30, metalness:0.7, roughness:0.25});
+    var mDisc = new THREE.MeshStandardMaterial({color:0xA08030, metalness:0.4, roughness:0.45, transparent:true, opacity:0.85});
+
+    var grp = new THREE.Group();
+    scene.add(grp);
+    function mk(g,m){ return new THREE.Mesh(g, m||mGold); }
+
+    for(var i=0;i<7;i++){
+      var y=3.0-i*0.24, r=0.18+i*0.003;
+      var v=mk(new THREE.CylinderGeometry(r*0.88,r*0.95,0.16,12));
+      v.position.set(0,y,0); v.scale.set(0.9,1,0.7); grp.add(v);
+      var sp=mk(new THREE.CylinderGeometry(0.02,0.045,0.18,6),mDark);
+      sp.rotation.x=Math.PI/2-0.28; sp.position.set(0,y+0.02,-0.22); grp.add(sp);
+      if(i<6){var d=mk(new THREE.CylinderGeometry(r*0.82,r*0.82,0.06,12),mDisc);
+        d.position.set(0,y-0.12,0); d.scale.set(0.9,1,0.7); grp.add(d);}
+    }
+    for(var i=0;i<12;i++){
+      var t2=i/11, y=1.84-i*0.22, r=0.22+t2*0.04, cz=Math.sin(t2*Math.PI)*0.05;
+      var v=mk(new THREE.CylinderGeometry(r*0.88,r*0.95,0.18,12));
+      v.position.set(0,y,cz); v.scale.set(1,1,0.72); grp.add(v);
+      var sp=mk(new THREE.CylinderGeometry(0.022,0.05,0.22,6),mDark);
+      sp.rotation.x=Math.PI/2-0.3; sp.position.set(0,y+0.02,cz-0.3); grp.add(sp);
+      [-1,1].forEach(function(s){
+        var tp=mk(new THREE.CylinderGeometry(0.026,0.04,r*1.1,6),mDark);
+        tp.rotation.z=Math.PI/2+s*0.2; tp.position.set(s*r*1.1,y,cz-0.2); grp.add(tp);
+      });
+      if(i<11){var d=mk(new THREE.CylinderGeometry(r*0.9,r*0.9,0.065,12),mDisc);
+        d.position.set(0,y-0.12,cz); d.scale.set(1,1,0.72); grp.add(d);}
+    }
+    for(var i=0;i<5;i++){
+      var y=-0.42-i*0.32, r=0.30+i*0.015, cz=-Math.sin(i/4*Math.PI)*0.04;
+      var v=mk(new THREE.CylinderGeometry(r*0.88,r*0.95,0.24,12));
+      v.position.set(0,y,cz); v.scale.set(1.12,1,0.76); grp.add(v);
+      var sp=mk(new THREE.CylinderGeometry(0.025,0.055,0.28,6),mDark);
+      sp.rotation.x=Math.PI/2-0.2; sp.position.set(0,y+0.02,cz-0.38); grp.add(sp);
+      [-1,1].forEach(function(s){
+        var tp=mk(new THREE.CylinderGeometry(0.03,0.048,0.24,6),mDark);
+        tp.rotation.z=Math.PI/2; tp.position.set(s*r*1.1,y,cz-0.1); grp.add(tp);
+      });
+      if(i<4){var d=mk(new THREE.CylinderGeometry(r*0.88,r*0.88,0.08,12),mDisc);
+        d.position.set(0,y-0.19,cz); d.scale.set(1.12,1,0.76); grp.add(d);}
+    }
+    var sp2=[];
+    for(var i=0;i<=8;i++) sp2.push(new THREE.Vector2(0.28-i*0.016,-2.04-i*0.12));
+    var sac=mk(new THREE.LatheGeometry(sp2,14),mDark);
+    sac.scale.set(1,1,0.62); grp.add(sac);
+    var coc=mk(new THREE.CylinderGeometry(0.035,0.01,0.26,8),mDark);
+    coc.position.set(0,-3.08,-0.05); coc.rotation.x=0.3; grp.add(coc);
+
+    var bb=new THREE.Box3().setFromObject(grp);
+    var bc=new THREE.Vector3(); bb.getCenter(bc);
+    grp.position.sub(bc);
+
+    var drag=false, px=0, py=0, rx=0, ry=0, vx=0, t=0;
+    canvas.addEventListener('mousedown',function(e){drag=true;px=e.clientX;py=e.clientY;});
+    window.addEventListener('mouseup',function(){drag=false;});
+    window.addEventListener('mousemove',function(e){
+      if(!drag)return;
+      vx=(e.clientX-px)*0.013; rx+=vx;
+      ry+=(e.clientY-py)*0.008; ry=Math.max(-0.55,Math.min(0.55,ry));
+      px=e.clientX; py=e.clientY;
+      grp.rotation.y=rx; grp.rotation.x=ry;
+    });
+    canvas.addEventListener('touchstart',function(e){drag=true;px=e.touches[0].clientX;},{passive:true});
+    window.addEventListener('touchend',function(){drag=false;});
+    window.addEventListener('touchmove',function(e){
+      if(!drag)return;
+      vx=(e.touches[0].clientX-px)*0.013; rx+=vx; px=e.touches[0].clientX; grp.rotation.y=rx;
+    },{passive:true});
+
+    (function loop(){
+      requestAnimationFrame(loop); t+=0.009;
+      if(!drag){
+        if(Math.abs(vx)>0.001){vx*=0.93;rx+=vx;}
+        else{rx+=0.004;vx=0;}
+      }
+      grp.rotation.y=rx; grp.rotation.x=ry;
+      grp.rotation.z=Math.sin(t*0.35)*0.01;
+      L1.intensity=8+Math.sin(t*0.5)*1;
+      L2.intensity=6+Math.sin(t*0.7+1)*0.8;
+      renderer.render(scene,camera);
+    })();
+  }
+  setTimeout(init, 500);
+  setTimeout(init, 1200);
+  window.addEventListener('load', function(){ setTimeout(init, 600); });
+})();
+</script>
+
+</body>
+</html>
