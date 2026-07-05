@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+<script>(function(){try{if(sessionStorage.getItem('ac_pre_shown')==='1'){document.documentElement.classList.add('no-pre');}}catch(e){}})();</script>
+<noscript><style>#pre{display:none!important;}</style></noscript>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Атлетикс Корп — Анализ движения и осанки</title>
@@ -13,6 +15,7 @@
   --bg:#0A0A08;--bg2:#0E0E0C;--bg3:#121210;
   --line:rgba(255,255,255,0.055);--line2:rgba(255,255,255,0.09);
   --gold:#C8B882;--gold2:#E0D09A;
+  --cyan:#3FD6E0;--cyan2:#7BE8EF;
   --cream:#F0EDE6;--cream2:#FAF8F3;
   --dim:#7A7A70;--muted:#4A4A42;
   --serif:'Playfair Display',Georgia,serif;
@@ -25,18 +28,30 @@ html,body,*{cursor:none!important;}
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:80px 80px;}
 #cur{position:fixed;z-index:9999;pointer-events:none;width:28px;height:28px;border-radius:50%;border:1px solid rgba(200,184,130,.5);transform:translate(-50%,-50%);will-change:left,top;transition:width .15s,height .15s,border-color .15s,background .15s;}
 #cur.h{width:44px;height:44px;border-color:rgba(200,184,130,.85);background:rgba(200,184,130,.05);}
-#pre{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2rem;}
-.pr{position:relative;width:100px;height:100px;display:flex;align-items:center;justify-content:center;}
-.prr{position:absolute;border-radius:50%;border:1px solid rgba(200,184,130,.18);animation:rP 2.2s ease-in-out infinite;}
-.prr:nth-child(1){width:100px;height:100px;}
-.prr:nth-child(2){width:70px;height:70px;animation-delay:.4s;border-color:rgba(200,184,130,.35);}
-.prr:nth-child(3){width:40px;height:40px;animation-delay:.8s;border-color:rgba(200,184,130,.6);}
-.prl{position:relative;z-index:2;width:30px;animation:lB 2.2s ease-in-out infinite;}
-.prb{width:70px;height:1px;background:rgba(255,255,255,.05);}
-.prbf{height:100%;width:0;background:var(--gold);animation:bF 1.6s ease-out forwards;}
-@keyframes rP{0%,100%{transform:scale(.9);opacity:.15;}50%{transform:scale(1.08);opacity:.6;}}
-@keyframes lB{0%,100%{opacity:.4;transform:scale(.9);}50%{opacity:1;transform:scale(1);}}
-@keyframes bF{0%{width:0}100%{width:100%}}
+#pre{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;}
+html.no-pre #pre{display:none!important;}
+#pre.pre-out{opacity:0;pointer-events:none;transition:opacity .45s ease;}
+.pre-stage{position:relative;width:140px;height:230px;display:flex;align-items:center;justify-content:center;}
+.pre-spine{position:relative;z-index:1;display:flex;flex-direction:column-reverse;align-items:center;gap:5px;}
+.pre-spine.pulse{animation:spinePulse .3s ease-in-out 1;}
+.pre-spine.pre-exit{opacity:0;transform:scale(.92);transition:opacity .4s ease,transform .4s ease;}
+.vert{position:relative;height:16px;background:linear-gradient(180deg,var(--gold2),var(--gold));clip-path:polygon(30% 0%,70% 0%,70% 30%,100% 20%,100% 80%,70% 70%,70% 100%,30% 100%,30% 70%,0% 80%,0% 20%,30% 30%);opacity:0;transform:translateY(24px) scaleY(.5);animation:vertIn .26s cubic-bezier(.2,.8,.3,1) forwards;}
+.vert::before{content:'';position:absolute;inset:-10px;background:var(--gold);filter:blur(10px);opacity:.45;z-index:-1;border-radius:50%;}
+.pre-logo{position:absolute;z-index:2;width:120px;height:auto;opacity:0;transform:scale(.82);filter:drop-shadow(0 0 0 rgba(200,184,130,0));transition:opacity .4s ease,transform .4s ease,filter .4s ease;}
+.pre-logo.show{opacity:1;transform:scale(1);filter:drop-shadow(0 0 22px rgba(200,184,130,.6));}
+@keyframes vertIn{to{opacity:1;transform:translateY(0) scaleY(1);}}
+@keyframes spinePulse{0%,100%{filter:drop-shadow(0 0 4px rgba(200,184,130,.35));}50%{filter:drop-shadow(0 0 20px rgba(200,184,130,.9));}}
+@media(max-width:640px){
+  .pre-stage{width:110px;height:190px;}
+  .vert::before{filter:blur(6px);opacity:.3;}
+  .pre-logo{width:96px;}
+  .pre-logo.show{filter:drop-shadow(0 0 14px rgba(200,184,130,.5));}
+}
+@media(prefers-reduced-motion:reduce){
+  .vert{animation:none!important;opacity:0!important;}
+  .pre-spine{display:none!important;}
+  .pre-logo{transition:opacity .3s ease!important;}
+}
 @keyframes fU{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:none;}}
 @keyframes fI{from{opacity:0;}to{opacity:1;}}
 nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:1.2rem 3.5rem;background:rgba(10,10,8,.8);backdrop-filter:blur(16px);border-bottom:1px solid var(--line2);}
@@ -44,7 +59,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .nav-l img{height:22px;width:auto;}
 .nav-l span{font-family:var(--mono);font-size:.65rem;font-weight:400;letter-spacing:.18em;text-transform:uppercase;color:var(--cream);}
 .nav-r{font-family:var(--mono);font-size:.6rem;color:var(--dim);letter-spacing:.15em;text-transform:uppercase;}
+.nav-right{display:flex;align-items:center;gap:1.75rem;}
+.nav-lk{font-family:var(--mono);font-size:.58rem;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);text-decoration:none;padding:.55rem 1.15rem;border:1px solid rgba(200,184,130,.35);background:rgba(200,184,130,.03);transition:all .3s;white-space:nowrap;}
+.nav-lk:hover{border-color:var(--gold);background:rgba(200,184,130,.08);color:var(--gold2);}
 #hero{position:relative;min-height:100vh;display:grid;grid-template-rows:1fr auto;z-index:1;}
+#heroParticles,#ctaParticles{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;}
 .hero-body{display:grid;grid-template-columns:1fr 1fr;max-width:1160px;margin:0 auto;width:100%;padding:9rem 3.5rem 3rem;align-items:center;gap:3rem;}
 .hero-text{display:flex;flex-direction:column;}
 .hero-eye{font-family:var(--mono);font-size:.57rem;color:var(--gold);letter-spacing:.24em;text-transform:uppercase;display:flex;align-items:center;gap:.75rem;margin-bottom:2.5rem;opacity:0;animation:fU .9s .2s ease forwards;}
@@ -111,6 +130,33 @@ h2 em{font-style:italic;}
 .scale-text p{font-size:.92rem;color:var(--dim);line-height:1.9;max-width:48ch;}
 .scale-text p+p{margin-top:1rem;}
 .scale-text strong{color:var(--cream);font-weight:400;}
+.community-widget{margin-top:2.5rem;padding-top:2rem;border-top:1px solid var(--line2);}
+.cw-top{display:flex;align-items:center;gap:.6rem;margin-bottom:.9rem;}
+.cw-dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px rgba(63,214,224,.8);animation:cwPulse 1.8s ease-in-out infinite;flex-shrink:0;}
+@keyframes cwPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+.cw-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);}
+.cw-count{font-family:var(--serif);font-size:2.1rem;font-weight:300;color:var(--cyan);line-height:1;display:flex;align-items:baseline;gap:.5rem;}
+.cw-goal{font-family:var(--mono);font-size:.8rem;color:var(--muted);letter-spacing:.03em;}
+.cw-bar{margin-top:1rem;height:3px;background:var(--line2);border-radius:2px;overflow:hidden;}
+.cw-fill{height:100%;width:0%;background:linear-gradient(90deg,rgba(63,214,224,.5),var(--cyan));border-radius:2px;transition:width 1.4s cubic-bezier(.16,1,.3,1);box-shadow:0 0 10px rgba(63,214,224,.5);}
+.social-proof{position:fixed;left:1.25rem;bottom:1.25rem;z-index:500;display:flex;align-items:center;gap:.85rem;padding:.7rem 1.3rem .7rem .7rem;background:rgba(14,14,12,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.08);border-radius:999px;opacity:0;transform:translateY(14px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1);pointer-events:none;}
+.social-proof.show{opacity:1;transform:none;pointer-events:auto;}
+.social-proof.hide{transition:opacity .4s ease,transform .4s ease;opacity:0;transform:translateY(10px);pointer-events:none;}
+.social-proof:hover .sp-close{opacity:1;pointer-events:auto;}
+.sp-close{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;background:#0e0e0c;border:1px solid rgba(255,255,255,.15);color:var(--dim);font-size:.55rem;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .25s,color .25s,border-color .25s;}
+.sp-close:hover{color:var(--gold);border-color:var(--gold);}
+.sp-avatars{display:flex;align-items:center;flex-shrink:0;}
+.sp-avatar{width:28px;height:28px;border-radius:50%;display:block;margin-left:-10px;}
+.sp-avatar:first-child{margin-left:0;}
+.sp-info{display:flex;flex-direction:column;gap:.2rem;}
+.sp-row{display:flex;align-items:center;gap:.5rem;}
+.sp-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 7px rgba(63,214,224,.8);flex-shrink:0;animation:cwPulse 1.8s ease-in-out infinite;}
+.sp-main{font-family:var(--mono);font-size:.64rem;letter-spacing:.03em;color:var(--cream2);white-space:nowrap;}
+.sp-main #spCount{color:var(--cyan);}
+.sp-sub{font-family:var(--mono);font-size:.54rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding-left:1.1rem;}
+@media(max-width:768px){
+  .social-proof{display:none!important;}
+}
 #founder{padding:10rem 0;}
 .founder-grid{display:grid;grid-template-columns:1fr 1.6fr;gap:6rem;align-items:start;margin-top:5rem;}
 .founder-photo-wrap{position:relative;}
@@ -131,6 +177,9 @@ h2 em{font-style:italic;}
 .inp:focus{border-color:rgba(240,237,230,.25);}
 .cbtn{margin-top:2.25rem;padding:.9rem 2.5rem;align-self:flex-start;border:1px solid rgba(240,237,230,.35);color:var(--cream2);background:transparent;font-family:var(--mono);font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;transition:all .3s;cursor:pointer;}
 .cbtn:hover{border-color:var(--gold);color:var(--gold);}
+.cbtn-cyan{margin-top:2.25rem;padding:.95rem 2.75rem;align-self:flex-start;border:1px solid rgba(63,214,224,.55);color:var(--cyan);background:rgba(63,214,224,.045);font-family:var(--mono);font-size:.65rem;font-weight:400;letter-spacing:.2em;text-transform:uppercase;transition:background .35s,color .35s,border-color .35s,box-shadow .35s;cursor:pointer;box-shadow:0 0 14px rgba(63,214,224,.16),inset 0 0 10px rgba(63,214,224,.05);}
+.cbtn-cyan:hover{background:var(--cyan);color:var(--bg);border-color:var(--cyan2);box-shadow:0 0 30px rgba(63,214,224,.55),0 0 60px rgba(63,214,224,.2),inset 0 0 14px rgba(255,255,255,.15);}
+.cbtn-cyan:disabled{opacity:.6;cursor:default;box-shadow:0 0 14px rgba(63,214,224,.16);}
 .cpv{font-family:var(--mono);font-size:.62rem;color:var(--dim);letter-spacing:.1em;margin-top:1.1rem;}
 #disclaimer{padding:3rem 3.5rem;border-top:1px solid var(--line2);position:relative;z-index:1;}
 .disc-text{font-family:var(--mono);font-size:.64rem;color:var(--dim);letter-spacing:.06em;line-height:1.8;max-width:72ch;}
@@ -148,6 +197,10 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
 .lite-cta:hover{border-color:var(--gold);background:rgba(200,184,130,.07);color:var(--gold2);}
 .lite-arrow{font-size:.8rem;transition:transform .25s;}
 .lite-cta:hover .lite-arrow{transform:translateX(4px);}
+.hero-ctas{display:flex;align-items:center;flex-wrap:wrap;gap:1.75rem;margin-top:1.75rem;opacity:0;animation:fU .9s 1s ease forwards;}
+.premium-anchor{display:inline-flex;align-items:baseline;gap:.5rem;color:var(--gold);font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;border-bottom:1px solid rgba(200,184,130,.35);padding-bottom:.2rem;transition:color .3s,border-color .3s;}
+.premium-anchor:hover{color:var(--gold2);border-color:var(--gold2);}
+.premium-anchor-sub{font-family:var(--mono);font-size:.55rem;letter-spacing:.04em;text-transform:none;color:var(--dim);}
 .lite-hint{margin-top:1.75rem;padding:1rem 1.5rem;border:1px solid var(--line2);border-left:1px solid rgba(200,184,130,.22);background:rgba(200,184,130,.02);font-size:.82rem;color:var(--dim);line-height:1.8;}
 .lite-hint-lbl{font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-right:.4rem;}
 .lite-hint-link{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(200,184,130,.28);transition:color .2s,border-color .2s;}
@@ -159,6 +212,7 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
   nav{padding:.8rem 1.2rem!important;}
   .nav-l span{display:none!important;}
   .nav-r{display:none!important;}
+  .nav-lk{padding:.45rem .85rem!important;font-size:.52rem!important;}
   .hero-body{
     grid-template-columns:1fr!important;
     padding:5.5rem 1.2rem 1.5rem!important;
@@ -169,6 +223,7 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
   .hero-co{font-size:.52rem!important;}
   .hero-eye{font-size:.5rem!important;margin-bottom:1.5rem!important;}
   .hero-canvas-col{height:280px!important;}
+  .hero-ctas{gap:1rem!important;}
   .htk{
     grid-template-columns:1fr!important;
     padding:.8rem 1.2rem!important;
@@ -210,6 +265,8 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
   .scale-inner{grid-template-columns:1fr!important;gap:1.2rem!important;}
   .scale-num{font-size:clamp(3.8rem,16vw,6rem)!important;}
   .scale-text p{font-size:.87rem!important;max-width:100%!important;}
+  .cw-count{font-size:1.7rem!important;}
+  .cw-label{font-size:.55rem!important;}
   .founder-grid{grid-template-columns:1fr!important;gap:2rem!important;}
   .founder-img{max-width:260px!important;aspect-ratio:1/1!important;}
   .founder-photo-wrap{max-width:260px!important;}
@@ -220,7 +277,7 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
   .cta-h{font-size:clamp(1.9rem,7vw,2.6rem)!important;}
   .cta-sub{font-size:.87rem!important;max-width:100%!important;}
   .cta-inner,.cta-form{max-width:100%!important;}
-  .cbtn{width:100%!important;text-align:center!important;padding:.85rem 1rem!important;}
+  .cbtn,.cbtn-cyan{width:100%!important;text-align:center!important;padding:.85rem 1rem!important;}
   .inp{font-size:.85rem!important;}
   .cpv{font-size:.58rem!important;}
   footer{padding:1.2rem 1.2rem!important;flex-direction:column!important;align-items:flex-start!important;gap:.8rem!important;}
@@ -282,40 +339,62 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
 .li-email{border:1px solid rgba(200,184,130,.2);background:rgba(200,184,130,.03);padding:.9rem 1.1rem;font-family:var(--mono);font-size:.76rem;color:var(--gold);letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;}
 .li-ecopy{background:none;border:none;font-family:var(--mono);font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:color .2s;}
 .li-ecopy:hover{color:var(--gold);}
+.li-dz{border:1px dashed var(--line2);background:var(--bg2);padding:2.25rem 1.5rem;text-align:center;cursor:pointer;transition:border-color .25s,background .25s;}
+.li-dz.drag{border-color:var(--gold);background:rgba(200,184,130,.05);}
+.li-dz-ico{font-size:1.6rem;margin-bottom:.75rem;}
+.li-dz-txt{font-size:.85rem;color:var(--dim);line-height:1.6;}
+.li-dz-link{color:var(--gold);border-bottom:1px solid rgba(200,184,130,.3);}
+.li-dz-hint{font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:.08em;margin-top:.6rem;text-transform:uppercase;}
+.li-thumbs{display:none;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.75rem;}
+.li-thumbs.has{display:grid;}
+.li-thumb{position:relative;aspect-ratio:3/4;border:1px solid var(--line2);overflow:hidden;background:var(--bg3);}
+.li-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.li-thumb-rm{position:absolute;top:.35rem;right:.35rem;width:22px;height:22px;border-radius:50%;border:none;background:rgba(10,10,8,.75);color:var(--cream2);font-size:.7rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.li-upload-fields{display:flex;flex-direction:column;gap:0;margin-top:1.5rem;}
+.li-upload-status{font-family:var(--mono);font-size:.62rem;color:var(--dim);letter-spacing:.06em;margin-top:1rem;}
 @media(max-width:480px){
   .lm-panel{height:95vh;border-radius:12px 12px 0 0;}
   .li-shots{grid-template-columns:1fr;}
   .li-top,.li-step,.li-send{padding-left:1.2rem;padding-right:1.2rem;}
   .li-sdv{padding:.7rem 1.2rem;}
+  .li-dz{padding:1.75rem 1rem;}
 }
 </style>
 </head>
 <body>
 <div id="cur"></div>
 <div id="pre">
-  <div class="pr">
-    <div class="prr"></div><div class="prr"></div><div class="prr"></div>
-    <img class="prl" data-logo="1" alt=""/>
+  <div class="pre-stage">
+    <div class="pre-spine" id="preSpine"></div>
+    <img class="pre-logo" id="preLogo" data-logo="1" alt="Атлетикс Корп"/>
   </div>
-  <div class="prb"><div class="prbf"></div></div>
 </div>
+<script src="preloader.js"></script>
 
 <nav>
   <a href="#" class="nav-l">
     <img data-logo="1" alt="AC" style="height:22px;"/>
     <span>Атлетикс Корп</span>
   </a>
-  <span class="nav-r">Анализ движения и осанки</span>
+  <div class="nav-right">
+    <span class="nav-r">Анализ движения и осанки</span>
+    <!-- ЛК ещё в разработке, включить обратно когда login.html будет опубликован -->
+    <!-- <a href="login.html" class="nav-lk">Личный кабинет</a> -->
+  </div>
 </nav>
 
 <section id="hero">
+  <canvas id="heroParticles" aria-hidden="true"></canvas>
   <div class="hero-body">
     <div class="hero-text">
       <p class="hero-eye">AC — 001</p>
-      <h1 class="hh">Тело теряет ресурс<br><em>до того как</em><br>начинает болеть</h1>
-      <p class="hero-sub">Не фитнес. Не медицина.<br><strong>Управление тем, как нервная система организует движение</strong> — и что это означает для вашей работоспособности, энергии и долголетия.</p>
+      <h1 class="hh">Чувствуете себя<br><em>как в тумане?</em><br>Снижена энергия?</h1>
+      <p class="hero-sub">Ваше тело годами копит напряжение. Получите объективную картину и <strong>персональную инструкцию по эксплуатации своего тела</strong> всего по двум фотографиям.</p>
       <p class="hero-co">Атлетикс Корп — исследовательско-продуктовая компания</p>
-      <button class="lite-cta" onclick="openLite()">Получить LITE-анализ бесплатно <span class="lite-arrow">→</span></button>
+      <div class="hero-ctas">
+        <button class="lite-cta" style="margin-top:0;opacity:1;animation:none;" onclick="openLite()">Получить LITE-анализ бесплатно <span class="lite-arrow">→</span></button>
+        <a href="#cta" class="premium-anchor">Выездной анализ <span class="premium-anchor-sub">(Москва и МО)</span></a>
+      </div>
     </div>
     <div class="hero-canvas-col" id="heroSpineWrap">
       <canvas id="heroSpineC" width="500" height="560"></canvas>
@@ -386,7 +465,6 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
       <div class="up3">
         <div class="formats">
           <div class="format"><div><p class="format-name">Онлайн</p><p class="format-note">Анализ в видеоформате. Подходит для первичного знакомства с методологией.</p></div><span class="format-price">2 000 ₽</span></div>
-          <div class="format"><div><p class="format-name">Очно</p><p class="format-note">Полноценный анализ при личной встрече. Максимальная точность наблюдения.</p></div><span class="format-price">5 000 ₽</span></div>
           <div class="format"><div><p class="format-name">Выезд</p><p class="format-note">Анализ в вашей локации — офис, дом, корпоративное пространство.</p></div><span class="format-price">15 000 ₽</span></div>
         </div>
         <div class="lite-hint"><span class="lite-hint-lbl">Не уверены?</span> Попробуйте <a href="#" class="lite-hint-link" onclick="openLite();return false;">бесплатный LITE-анализ</a> — пришлите два фото, получите первичный разбор осанки.</div>
@@ -405,6 +483,11 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
         <p><strong>Анализов движения и осанки — с 2023 года.</strong></p>
         <p>Клиент определяется не по профессии или доходу. По типу мышления — замечает тонкие сигналы тела, инвестирует в себя осознанно, хочет понять механизм.</p>
         <p>Возраст 30–50. Как правило высокая интеллектуальная или физическая нагрузка.</p>
+        <div class="community-widget" id="communityWidget">
+          <div class="cw-top"><span class="cw-dot"></span><span class="cw-label">Комьюнити — снимков осанки собрано</span></div>
+          <div class="cw-count"><span id="cwNum">2 400</span><span class="cw-goal">/ 3 000</span></div>
+          <div class="cw-bar"><div class="cw-fill" id="cwFill" style="width:80.0%;"></div></div>
+        </div>
       </div>
     </div>
   </div>
@@ -434,6 +517,7 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
 </section>
 
 <section id="cta">
+  <canvas id="ctaParticles" aria-hidden="true"></canvas>
   <div class="w">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;">
     <div class="cta-inner">
@@ -444,7 +528,7 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
         <input class="inp" id="fEmail" type="email" placeholder="Email" required/>
         <input class="inp" id="fPhone" type="tel" placeholder="Телефон (необязательно)"/>
         <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:2.25rem;">
-          <button class="cbtn" style="margin-top:0;" onclick="submitForm(event)">Записаться на анализ</button>
+          <button class="cbtn-cyan" style="margin-top:0;" onclick="submitForm(event)">Записаться на интерпретацию</button>
           <button class="lite-cta" style="margin-top:0;opacity:1;animation:none;" onclick="openLite()">LITE — бесплатно <span class="lite-arrow">→</span></button>
         </div>
         <p class="cpv" id="fStatus">Никаких рассылок. Только прямой контакт.</p>
@@ -486,22 +570,12 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
 </script>
 
 <script>
-window.addEventListener('load',function(){
-  var pre=document.getElementById('pre');
-  setTimeout(function(){pre.style.transition='opacity .7s ease';pre.style.opacity='0';setTimeout(function(){pre.style.display='none';},720);},1400);
-});
 var cur=document.getElementById('cur');
 document.addEventListener('mousemove',function(e){cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});
 document.querySelectorAll('a,button,input,.format,.diff-row').forEach(function(el){
   el.addEventListener('mouseenter',function(){cur.classList.add('h');});
   el.addEventListener('mouseleave',function(){cur.classList.remove('h');});
 });
-var io=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('go');io.unobserve(x.target);}});},{threshold:.07});
-document.querySelectorAll('.up,.up2,.up3,.fd').forEach(function(el){io.observe(el);});
-var pls=document.querySelectorAll('#pb .pl,#pb .pk');
-var pio=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){pls.forEach(function(l,i){setTimeout(function(){l.classList.add('v');},i*220);});pio.unobserve(x.target);}});},{threshold:.1});
-var pb=document.getElementById('pb');if(pb)pio.observe(pb);
-
 function submitForm(e){
   e.preventDefault();
   var name=document.getElementById('fName').value.trim();
@@ -517,10 +591,21 @@ function submitForm(e){
     body:JSON.stringify({name:name,email:email,phone:phone||'—',_subject:'Запись на анализ — Атлетикс Корп',_replyto:email})
   }).then(function(r){return r.json();}).then(function(d){
     if(d.ok||d.next){
-      document.getElementById('ctaForm').innerHTML='<p style="font-family:var(--serif);font-size:1.2rem;font-weight:300;color:var(--cream2);line-height:1.8;">Спасибо, '+name+'.<br>Мы свяжемся с вами в ближайшее время.</p>';
+      var ctaForm=document.getElementById('ctaForm');
+      ctaForm.innerHTML='';
+      var ok=document.createElement('p');
+      ok.style.cssText='font-family:var(--serif);font-size:1.2rem;font-weight:300;color:var(--cream2);line-height:1.8;';
+      var check=document.createElement('span');
+      check.style.cssText='color:var(--cyan);font-family:var(--mono);margin-right:.4rem;';
+      check.textContent='✓';
+      ok.appendChild(check);
+      ok.appendChild(document.createTextNode('Спасибо, '+name+'.'));
+      ok.appendChild(document.createElement('br'));
+      ok.appendChild(document.createTextNode('Мы свяжемся с вами в ближайшее время.'));
+      ctaForm.appendChild(ok);
     }else{throw 0;}
   }).catch(function(){
-    btn.textContent='Записаться на анализ';btn.disabled=false;btn.style.opacity='1';
+    btn.textContent='Записаться на интерпретацию';btn.disabled=false;btn.style.opacity='1';
     status.textContent='Ошибка. Напишите напрямую: ac@athleticscorp.ru';status.style.color='var(--gold)';
   });
 }
@@ -584,16 +669,23 @@ function submitForm(e){
           <div style="font-size:.78rem;color:var(--muted);line-height:1.65;">Маркеры на теле клеить не надо&nbsp;— это примеры с разметкой из профессиональной съёмки.</div>
         </div>
       </div>
-      <div class="li-send">
-        <div class="li-slbl">— Как отправить</div>
-        <div class="li-srows">
-          <div class="li-srow2"><div class="li-sn2">1.</div><div class="li-st2">Сделайте два фото по инструкции выше</div></div>
-          <div class="li-srow2"><div class="li-sn2">2.</div><div class="li-st2">Напишите на почту с темой <strong>«LITE»</strong></div></div>
-          <div class="li-srow2"><div class="li-sn2">3.</div><div class="li-st2">Приложите оба фото к письму</div></div>
-          <div class="li-srow2"><div class="li-sn2">4.</div><div class="li-st2">Через <strong>2–3 рабочих дня</strong> пришлём первичный анализ</div></div>
+      <div class="li-send" id="liteUpload">
+        <div class="li-slbl">— Загрузите фото</div>
+        <input type="file" id="liteFileInput" accept="image/*" multiple hidden>
+        <div class="li-dz" id="liteDz">
+          <div class="li-dz-ico">📷</div>
+          <p class="li-dz-txt">Перетащите два фото сюда<br>или <span class="li-dz-link">выберите файлы</span></p>
+          <p class="li-dz-hint">JPG, PNG — до 15 МБ каждое</p>
         </div>
-        <div class="li-email">
-          <span>ac@athleticscorp.ru</span>
+        <div class="li-thumbs" id="liteThumbs"></div>
+        <div class="li-upload-fields">
+          <input class="inp" id="liteName" type="text" placeholder="Имя" required>
+          <input class="inp" id="liteContact" type="text" placeholder="Телефон или Telegram" required>
+        </div>
+        <button class="cbtn" id="liteSubmitBtn" style="margin-top:1.75rem;" onclick="submitLite(event)">Отправить фото на анализ</button>
+        <p class="li-upload-status" id="liteStatus">Фото передаются напрямую специалисту. Без рассылок.</p>
+        <div class="li-email" style="margin-top:1.5rem;">
+          <span>Или на почту: ac@athleticscorp.ru</span>
           <button class="li-ecopy" onclick="navigator.clipboard.writeText('ac@athleticscorp.ru');this.textContent='Скопировано ✓'">Копировать</button>
         </div>
       </div>
@@ -604,6 +696,144 @@ function submitForm(e){
 function openLite(){var m=document.getElementById('liteModal');m.classList.add('open');document.body.style.overflow='hidden';var p=document.getElementById('lmPanel');if(p)p.scrollTop=0;}
 function closeLite(){document.getElementById('liteModal').classList.remove('open');document.body.style.overflow='';}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLite();});
+</script>
+
+<!-- ============== SUPABASE CLIENT ============== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+(function(){
+  var SUPABASE_URL='https://ttiumewnkdwzfleyobqe.supabase.co';
+  // Settings → API → "Publishable key" (формат sb_publishable_...). Вставьте свой ключ ниже.
+  var SUPABASE_PUBLISHABLE_KEY='sb_publishable_hB8eRMx1a6z-soXKM4CgTw_SEpSiz2Q';
+  if(window.supabase && SUPABASE_PUBLISHABLE_KEY.indexOf('ВСТАВЬТЕ_СЮДА')===-1){
+    window.supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+  }
+})();
+</script>
+
+<!-- ============== LITE UPLOAD (drag&drop) ============== -->
+<script>
+(function(){
+  var liteFiles=[];
+  var dz=document.getElementById('liteDz');
+  var fileInput=document.getElementById('liteFileInput');
+  var thumbs=document.getElementById('liteThumbs');
+  if(!dz||!fileInput||!thumbs)return;
+
+  dz.addEventListener('click',function(){fileInput.click();});
+  fileInput.addEventListener('change',function(e){handleFiles(e.target.files);fileInput.value='';});
+  ['dragover','dragenter'].forEach(function(ev){dz.addEventListener(ev,function(e){e.preventDefault();dz.classList.add('drag');});});
+  ['dragleave','dragend'].forEach(function(ev){dz.addEventListener(ev,function(e){dz.classList.remove('drag');});});
+  dz.addEventListener('drop',function(e){
+    e.preventDefault();dz.classList.remove('drag');
+    if(e.dataTransfer&&e.dataTransfer.files)handleFiles(e.dataTransfer.files);
+  });
+
+  function handleFiles(fileList){
+    var status=document.getElementById('liteStatus');
+    for(var i=0;i<fileList.length;i++){
+      var f=fileList[i];
+      if(liteFiles.length>=2){if(status)status.textContent='Достаточно двух фото — лишние не добавлены.';break;}
+      if(f.type.indexOf('image/')!==0)continue;
+      liteFiles.push(f);
+    }
+    renderThumbs();
+  }
+
+  function renderThumbs(){
+    thumbs.innerHTML='';
+    liteFiles.forEach(function(f,idx){
+      var url=URL.createObjectURL(f);
+      var el=document.createElement('div');
+      el.className='li-thumb';
+      el.innerHTML='<img src="'+url+'" alt="Фото '+(idx+1)+'"><button type="button" class="li-thumb-rm" aria-label="Удалить">✕</button>';
+      el.querySelector('.li-thumb-rm').addEventListener('click',function(e){
+        e.stopPropagation();
+        URL.revokeObjectURL(url);
+        liteFiles.splice(idx,1);
+        renderThumbs();
+      });
+      thumbs.appendChild(el);
+    });
+    thumbs.classList.toggle('has',liteFiles.length>0);
+  }
+
+  function compressImage(file,maxBytes,maxDim){
+    return new Promise(function(resolve,reject){
+      var url=URL.createObjectURL(file);
+      var img=new Image();
+      img.onload=function(){
+        URL.revokeObjectURL(url);
+        var w=img.naturalWidth,h=img.naturalHeight;
+        if(w>maxDim||h>maxDim){
+          var scale=maxDim/Math.max(w,h);
+          w=Math.round(w*scale);h=Math.round(h*scale);
+        }
+        var canvas=document.createElement('canvas');
+        canvas.width=w;canvas.height=h;
+        var ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,w,h);
+        var quality=0.86;
+        (function tryEncode(){
+          canvas.toBlob(function(blob){
+            if(!blob){reject(new Error('Не удалось обработать изображение'));return;}
+            if(blob.size<=maxBytes||quality<=0.35){resolve(blob);}
+            else{quality-=0.12;tryEncode();}
+          },'image/jpeg',quality);
+        })();
+      };
+      img.onerror=function(){URL.revokeObjectURL(url);reject(new Error('Не удалось загрузить изображение'));};
+      img.src=url;
+    });
+  }
+
+  window.submitLite=async function(e){
+    e.preventDefault();
+    var name=document.getElementById('liteName').value.trim();
+    var contact=document.getElementById('liteContact').value.trim();
+    var status=document.getElementById('liteStatus');
+    var btn=document.getElementById('liteSubmitBtn');
+    if(!name||!contact){status.textContent='Заполните имя и телефон/telegram.';status.style.color='var(--gold)';return;}
+    if(liteFiles.length<2){status.textContent='Прикрепите оба фото — спереди/сзади и сбоку.';status.style.color='var(--gold)';return;}
+    if(!window.supabaseClient){
+      status.textContent='Загрузка временно недоступна. Напишите на ac@athleticscorp.ru.';status.style.color='var(--gold)';return;
+    }
+
+    btn.textContent='Отправляем...';btn.disabled=true;btn.style.opacity='.6';
+    status.style.color='var(--dim)';status.textContent='Сжимаем и загружаем фото…';
+
+    try{
+      var paths=[];
+      for(var i=0;i<liteFiles.length;i++){
+        var compressed=await compressImage(liteFiles[i],2*1024*1024,1800);
+        var path='lite/'+Date.now()+'-'+Math.random().toString(36).slice(2,9)+'-'+(i+1)+'.jpg';
+        var up=await window.supabaseClient.storage.from('photos').upload(path,compressed,{contentType:'image/jpeg',upsert:false});
+        if(up.error)throw up.error;
+        paths.push(path);
+      }
+
+      var ins=await window.supabaseClient.from('submissions').insert({name:name,contact:contact,photo_urls:paths});
+      if(ins.error)throw ins.error;
+
+      var upload=document.getElementById('liteUpload');
+      upload.innerHTML='';
+      var p=document.createElement('p');
+      p.style.cssText='font-family:var(--serif);font-size:1.1rem;font-weight:300;color:var(--cream2);line-height:1.8;';
+      var check=document.createElement('span');
+      check.style.cssText='color:var(--cyan);font-family:var(--mono);margin-right:.4rem;';
+      check.textContent='✓';
+      p.appendChild(check);
+      p.appendChild(document.createTextNode('Спасибо, '+name+'.'));
+      p.appendChild(document.createElement('br'));
+      p.appendChild(document.createTextNode('Фото получены — первичный анализ пришлём в течение 2–3 рабочих дней на '+contact+'.'));
+      upload.appendChild(p);
+    }catch(err){
+      console.error('LITE submit error:',err);
+      btn.textContent='Отправить фото на анализ';btn.disabled=false;btn.style.opacity='1';
+      status.textContent='Не получилось отправить. Попробуйте ещё раз или напишите на ac@athleticscorp.ru';status.style.color='var(--gold)';
+    }
+  };
+})();
 </script>
 
 <!-- ============== THREE.JS LIBRARY ============== -->
@@ -786,6 +1016,24 @@ setTimeout(function(){
   window.addEventListener('load', function(){ setTimeout(init, 600); });
 })();
 </script>
+
+<!-- ============== SOCIAL PROOF BADGE ============== -->
+<div class="social-proof" id="socialProof">
+  <button class="sp-close" id="spClose" type="button" aria-label="Закрыть">✕</button>
+  <div class="sp-avatars" aria-hidden="true">
+    <svg class="sp-avatar" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#0e0e0c" stroke="rgba(200,184,130,.5)" stroke-width="1"/><circle cx="20" cy="16" r="6" fill="none" stroke="rgba(224,208,154,.8)" stroke-width="1.3"/><path d="M7 33c0-7.5 6-12 13-12s13 4.5 13 12" fill="none" stroke="rgba(224,208,154,.8)" stroke-width="1.3" stroke-linecap="round"/></svg>
+    <svg class="sp-avatar" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#0e0e0c" stroke="rgba(200,184,130,.5)" stroke-width="1"/><circle cx="20" cy="15" r="6.8" fill="none" stroke="rgba(224,208,154,.7)" stroke-width="1.3"/><path d="M6 34c0-8 6.5-13 14-13s14 5 14 13" fill="none" stroke="rgba(224,208,154,.7)" stroke-width="1.3" stroke-linecap="round"/></svg>
+    <svg class="sp-avatar" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#0e0e0c" stroke="rgba(200,184,130,.5)" stroke-width="1"/><circle cx="20" cy="17" r="5.6" fill="none" stroke="rgba(224,208,154,.85)" stroke-width="1.3"/><path d="M8 33c0-7 5.5-11.5 12-11.5s12 4.5 12 11.5" fill="none" stroke="rgba(224,208,154,.85)" stroke-width="1.3" stroke-linecap="round"/></svg>
+    <svg class="sp-avatar" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#0e0e0c" stroke="rgba(200,184,130,.5)" stroke-width="1"/><circle cx="20" cy="16.5" r="6.3" fill="none" stroke="rgba(224,208,154,.75)" stroke-width="1.3"/><path d="M7 34c0-7.8 6-12.5 13-12.5s13 4.7 13 12.5" fill="none" stroke="rgba(224,208,154,.75)" stroke-width="1.3" stroke-linecap="round"/></svg>
+  </div>
+  <div class="sp-info">
+    <div class="sp-row"><span class="sp-dot"></span><span class="sp-main"><span id="spCount">0</span> снимков собрано</span></div>
+    <div class="sp-sub">цель — 3 000</div>
+  </div>
+</div>
+
+<!-- ============== IMMERSIVE LAYER ============== -->
+<script src="immersive.js" defer onerror="document.querySelectorAll('.up,.up2,.up3,.fd').forEach(function(el){el.classList.add('go');});document.querySelectorAll('#pb .pl,#pb .pk').forEach(function(el){el.classList.add('v');});"></script>
 
 </body>
 </html>
