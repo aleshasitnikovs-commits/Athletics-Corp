@@ -207,6 +207,15 @@
     io.observe(widget);
   }
 
+  /* ---------- Static "1000+" style displays, kept in sync with the same count ---------- */
+  function initStaticCommunityNumbers(){
+    var count=computeCommunityCount().toLocaleString('ru-RU')+'+';
+    var heroEl=document.getElementById('heroAnalysesNum');
+    var scaleEl=document.getElementById('scaleNum');
+    if(heroEl)heroEl.textContent=count;
+    if(scaleEl)scaleEl.textContent=count;
+  }
+
   /* ---------- Floating social-proof badge ---------- */
   function initSocialProof(){
     var badge=document.getElementById('socialProof');
@@ -236,6 +245,7 @@
     attachParticleNetwork('heroParticles','hero');
     attachParticleNetwork('ctaParticles','cta');
     initScrollReveal();
+    initStaticCommunityNumbers();
     initCommunityWidget();
     initSocialProof();
   }

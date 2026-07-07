@@ -8,7 +8,7 @@
 <title>Атлетикс Корп — Анализ движения и осанки</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -18,9 +18,9 @@
   --cyan:#3FD6E0;--cyan2:#7BE8EF;
   --cream:#F0EDE6;--cream2:#FAF8F3;
   --dim:#7A7A70;--muted:#4A4A42;
-  --serif:'Playfair Display',Georgia,serif;
-  --mono:'IBM Plex Mono',monospace;
-  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --serif:'Unbounded',Georgia,serif;
+  --mono:'Unbounded',monospace;
+  --sans:'Unbounded',system-ui,sans-serif;
 }
 html{scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--cream);font-family:var(--sans);font-weight:300;line-height:1.75;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
@@ -403,7 +403,7 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
   </div>
   <div class="htk">
     <div class="htk-left">
-      <div class="ti"><span class="tn">1000+</span><span class="tl">Анализов с 2023</span></div>
+      <div class="ti"><span class="tn" id="heroAnalysesNum">1000+</span><span class="tl">Анализов с 2023</span></div>
       <div class="ts"></div>
       <div class="ti"><span class="tn">7+</span><span class="tl">Лет практики</span></div>
       <div class="ts"></div>
@@ -478,7 +478,7 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
 <section id="scale">
   <div class="w">
     <div class="scale-inner fd">
-      <div class="scale-num">1000+</div>
+      <div class="scale-num" id="scaleNum">1000+</div>
       <div class="scale-text">
         <p><strong>Анализов движения и осанки — с 2023 года.</strong></p>
         <p>Клиент определяется не по профессии или доходу. По типу мышления — замечает тонкие сигналы тела, инвестирует в себя осознанно, хочет понять механизм.</p>
