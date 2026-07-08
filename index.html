@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=110365930', 'ym');
+    ym(110365930, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/110365930" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
 <script>(function(){try{if(sessionStorage.getItem('ac_pre_shown')==='1'){document.documentElement.classList.add('no-pre');}}catch(e){}})();</script>
 <noscript><style>#pre{display:none!important;}</style></noscript>
 <meta charset="UTF-8">
@@ -558,6 +570,11 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
   <div class="fm">
     <span>© 2026</span>
     <a href="mailto:ac@athleticscorp.ru">Контакт</a>
+    <a href="privacy-policy.html">Конфиденциальность</a>
+    <a href="personal-data-policy.html">Обработка ПДн</a>
+    <a href="oferta.html">Оферта</a>
+    <a href="consent-photo.html">Согласие на фото</a>
+    <a href="cookies.html">Cookie</a>
   </div>
 </footer>
 
@@ -682,6 +699,10 @@ function submitForm(e){
           <input class="inp" id="liteName" type="text" placeholder="Имя" required>
           <input class="inp" id="liteContact" type="text" placeholder="Телефон или Telegram" required>
         </div>
+        <label style="display:flex;align-items:flex-start;gap:.6rem;margin-top:1.5rem;font-size:.76rem;color:var(--dim);line-height:1.6;cursor:pointer;">
+          <input type="checkbox" id="liteConsent" required style="margin-top:.2rem;flex-shrink:0;accent-color:var(--gold);width:15px;height:15px;cursor:pointer;">
+          <span>Я согласен(на) на обработку фотографий тела в соответствии с <a href="consent-photo.html" target="_blank" rel="noopener" style="color:var(--gold);border-bottom:1px solid rgba(200,184,130,.35);text-decoration:none;">Согласием на обработку данных о теле</a></span>
+        </label>
         <button class="cbtn" id="liteSubmitBtn" style="margin-top:1.75rem;" onclick="submitLite(event)">Отправить фото на анализ</button>
         <p class="li-upload-status" id="liteStatus">Фото передаются напрямую специалисту. Без рассылок.</p>
         <div class="li-email" style="margin-top:1.5rem;">
@@ -791,10 +812,12 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLite();
     e.preventDefault();
     var name=document.getElementById('liteName').value.trim();
     var contact=document.getElementById('liteContact').value.trim();
+    var consent=document.getElementById('liteConsent');
     var status=document.getElementById('liteStatus');
     var btn=document.getElementById('liteSubmitBtn');
     if(!name||!contact){status.textContent='Заполните имя и телефон/telegram.';status.style.color='var(--gold)';return;}
     if(liteFiles.length<2){status.textContent='Прикрепите оба фото — спереди/сзади и сбоку.';status.style.color='var(--gold)';return;}
+    if(consent&&!consent.checked){status.textContent='Подтвердите согласие на обработку фотографий тела.';status.style.color='var(--gold)';return;}
     if(!window.supabaseClient){
       status.textContent='Загрузка временно недоступна. Напишите на ac@athleticscorp.ru.';status.style.color='var(--gold)';return;
     }
@@ -1034,6 +1057,9 @@ setTimeout(function(){
 
 <!-- ============== IMMERSIVE LAYER ============== -->
 <script src="immersive.js" defer onerror="document.querySelectorAll('.up,.up2,.up3,.fd').forEach(function(el){el.classList.add('go');});document.querySelectorAll('#pb .pl,#pb .pk').forEach(function(el){el.classList.add('v');});"></script>
+
+<!-- ============== COOKIE NOTICE ============== -->
+<script src="cookie-consent.js" defer></script>
 
 </body>
 </html>
