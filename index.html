@@ -667,6 +667,14 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
         <input class="inp" id="fName" type="text" placeholder="Имя" required/>
         <input class="inp" id="fEmail" type="email" placeholder="Email" required/>
         <input class="inp" id="fPhone" type="tel" placeholder="Телефон (необязательно)"/>
+        <label style="display:flex;align-items:flex-start;gap:.6rem;margin-top:1.75rem;font-size:.76rem;color:var(--dim);line-height:1.6;cursor:pointer;">
+          <input type="checkbox" id="fConsentData" required style="margin-top:.2rem;flex-shrink:0;accent-color:var(--gold);width:15px;height:15px;cursor:pointer;">
+          <span>Я согласен(на) с <a href="/privacy-policy" target="_blank" rel="noopener" style="color:var(--gold);border-bottom:1px solid rgba(200,184,130,.35);text-decoration:none;">Политикой конфиденциальности</a> и даю <a href="/personal-data-policy" target="_blank" rel="noopener" style="color:var(--gold);border-bottom:1px solid rgba(200,184,130,.35);text-decoration:none;">согласие на обработку персональных данных</a></span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:.6rem;margin-top:.9rem;font-size:.76rem;color:var(--dim);line-height:1.6;cursor:pointer;">
+          <input type="checkbox" id="fConsentAds" style="margin-top:.2rem;flex-shrink:0;accent-color:var(--gold);width:15px;height:15px;cursor:pointer;">
+          <span>Хочу получать информацию об услугах и акциях (<a href="/advertising-consent" target="_blank" rel="noopener" style="color:var(--gold);border-bottom:1px solid rgba(200,184,130,.35);text-decoration:none;">Согласие на получение рекламной информации</a>)</span>
+        </label>
         <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:2.25rem;">
           <button class="cbtn-cyan" style="margin-top:0;" onclick="submitForm(event)">Записаться на интерпретацию</button>
           <button class="lite-cta" style="margin-top:0;opacity:1;animation:none;" onclick="openLite()">LITE — бесплатно <span class="lite-arrow">→</span></button>
@@ -701,7 +709,9 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
     <a href="/privacy-policy">Конфиденциальность</a>
     <a href="/personal-data-policy">Обработка ПДн</a>
     <a href="/oferta">Оферта</a>
+    <a href="/disclaimer">Дисклеймер</a>
     <a href="/consent-photo">Согласие на фото</a>
+    <a href="/advertising-consent">Согласие на рекламу</a>
     <a href="/cookies">Cookie</a>
   </div>
 </footer>
@@ -726,14 +736,17 @@ function submitForm(e){
   var name=document.getElementById('fName').value.trim();
   var email=document.getElementById('fEmail').value.trim();
   var phone=document.getElementById('fPhone').value.trim();
+  var consentData=document.getElementById('fConsentData').checked;
+  var consentAds=document.getElementById('fConsentAds').checked;
   var btn=e.target;
   var status=document.getElementById('fStatus');
   if(!name||!email){status.textContent='Заполните имя и email.';status.style.color='var(--gold)';return;}
+  if(!consentData){status.textContent='Подтвердите согласие на обработку персональных данных.';status.style.color='var(--gold)';return;}
   btn.textContent='Отправляем...';btn.disabled=true;btn.style.opacity='.6';
   fetch('https://formspree.io/f/mlgvapod',{
     method:'POST',
     headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body:JSON.stringify({name:name,email:email,phone:phone||'—',_subject:'Запись на анализ — Атлетикс Корп',_replyto:email})
+    body:JSON.stringify({name:name,email:email,phone:phone||'—',consent_ads:consentAds?'да':'нет',_subject:'Запись на анализ — Атлетикс Корп',_replyto:email})
   }).then(function(r){return r.json();}).then(function(d){
     if(d.ok||d.next){
       var ctaForm=document.getElementById('ctaForm');
@@ -829,7 +842,7 @@ function submitForm(e){
         </div>
         <label style="display:flex;align-items:flex-start;gap:.6rem;margin-top:1.5rem;font-size:.76rem;color:var(--dim);line-height:1.6;cursor:pointer;">
           <input type="checkbox" id="liteConsent" required style="margin-top:.2rem;flex-shrink:0;accent-color:var(--gold);width:15px;height:15px;cursor:pointer;">
-          <span>Я согласен(на) на обработку фотографий тела в соответствии с <a href="/consent-photo" target="_blank" rel="noopener" style="color:var(--gold);border-bottom:1px solid rgba(200,184,130,.35);text-decoration:none;">Согласием на обработку данных о теле</a></span>
+          <span>Я согласен(на) на обработку фотографий в соответствии с <a href="/consent-photo" target="_blank" rel="noopener" style="color:var(--gold);border-bottom:1px solid rgba(200,184,130,.35);text-decoration:none;">Согласием на обработку фотографий для скрининга осанки</a></span>
         </label>
         <button class="cbtn" id="liteSubmitBtn" style="margin-top:1.75rem;" onclick="submitLite(event)">Отправить фото на анализ</button>
         <p class="li-upload-status" id="liteStatus">Фото передаются напрямую специалисту. Без рассылок.</p>
@@ -945,7 +958,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLite();
     var btn=document.getElementById('liteSubmitBtn');
     if(!name||!contact){status.textContent='Заполните имя и телефон/telegram.';status.style.color='var(--gold)';return;}
     if(liteFiles.length<2){status.textContent='Прикрепите оба фото — спереди/сзади и сбоку.';status.style.color='var(--gold)';return;}
-    if(consent&&!consent.checked){status.textContent='Подтвердите согласие на обработку фотографий тела.';status.style.color='var(--gold)';return;}
+    if(consent&&!consent.checked){status.textContent='Подтвердите согласие на обработку фотографий для скрининга осанки.';status.style.color='var(--gold)';return;}
     if(!window.supabaseClient){
       status.textContent='Загрузка временно недоступна. Напишите на ac@athleticscorp.ru.';status.style.color='var(--gold)';return;
     }
