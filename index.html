@@ -1379,13 +1379,22 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
       // Отцентровать и масштабировать под тот же силуэт, что у прежней
       // процедурной модели — реальные анатомические юниты модели не
       // совпадают с юнитами сцены, поэтому подгоняем по высоте (Box3).
+      //
+      // Важно: центрируем сдвигом ПОЗИЦИИ САМОЙ МОДЕЛИ (gltf.scene — ребёнка
+      // grp), а не позиции grp. grp.rotation.y в цикле анимации крутит вокруг
+      // ЛОКАЛЬНОГО нуля группы — если сдвигать вместо этого grp.position (как
+      // было раньше), точка вращения остаётся в произвольной точке исходных
+      // координат модели (её экспортировали не из геометрического центра), и
+      // модель не крутится на месте, а обходит по дуге вокруг этой точки —
+      // ровно баг "уезжает/крутится как будто по орбите". Это та же ошибка,
+      // что уже ловили и чинили на 3D-логотипе в блоке #cta — см. комментарий
+      // там же. Центрируем ДО масштабирования, тем же порядком, что и там.
       var box = new THREE.Box3().setFromObject(grp);
-      var size = new THREE.Vector3(); box.getSize(size);
-      var scale = TARGET_HEIGHT / size.y;
-      grp.scale.setScalar(scale);
-      box.setFromObject(grp);
       var center = new THREE.Vector3(); box.getCenter(center);
-      grp.position.sub(center);
+      gltf.scene.position.sub(center);
+      var size = new THREE.Vector3(); box.getSize(size);
+      var scale = TARGET_HEIGHT / (size.y || 1);
+      grp.scale.setScalar(scale);
 
       modelReady = true;
       canvas.style.opacity = '1';
