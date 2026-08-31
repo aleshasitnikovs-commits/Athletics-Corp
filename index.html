@@ -17,6 +17,15 @@
 <noscript><style>#pre{display:none!important;}</style></noscript>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- three@0.185.1 — единая версия ES-модулей для 3D-логотипа (#cta) и 3D-позвоночника (hero). importmap должен идти до любого <script type="module">. -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/"
+  }
+}
+</script>
 <title>Атлетикс Корп — Анализ движения и осанки</title>
 <link rel="canonical" href="https://athleticscorp.ru/">
 <meta name="description" content="Анализ движения и осанки в Москве и МО — точная научно обоснованная диагностика двигательных паттернов по фото. Бесплатный LITE-анализ, онлайн от 2 000 ₽, выезд от 15 000 ₽.">
@@ -1001,11 +1010,9 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLite();
 </script>
 
 <!-- ============== THREE.JS LIBRARY ============== -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<!-- SVGLoader (three.js r128 non-module build) — нужен только для 3D-логотипа
-     ниже, чтобы экструдировать ТОЧНЫЙ контур из logo-athletics-corp.svg
-     вместо ручной реконструкции формы. -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/SVGLoader.js"></script>
+<!-- three@0.185.1 подключается как ES-модуль через importmap в <head> (see выше).
+     SVGLoader и RoomEnvironment импортируются из three/addons/ напрямую в модульных
+     скриптах ниже — отдельный classic-скрипт для них больше не нужен. -->
 <!-- polygon-clipping — робастные булевы операции над 2D-полигонами.
      Нужна, чтобы вычесть залитые контуры трассировки (фон + перемычки)
      из прямоугольника и получить именно буквы "AC↑" как отдельную
@@ -1014,7 +1021,9 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLite();
 <script src="https://cdn.jsdelivr.net/npm/polygon-clipping@0.15.7/dist/polygon-clipping.umd.js"></script>
 
 <!-- ============== 3D LOGO (CTA SECTION) ============== -->
-<script>
+<script type="module">
+import * as THREE from 'three';
+import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 /*
   3D-логотип "AC" в секции "Записаться на анализ".
 
@@ -1100,7 +1109,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLite();
   var isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
   var wrap = document.getElementById('logoWrap3d');
   var canvas = document.getElementById('logoCanvas3d');
-  if(!wrap || !canvas || typeof THREE === 'undefined' || typeof THREE.SVGLoader === 'undefined' || typeof polygonClipping === 'undefined') return;
+  if(!wrap || !canvas || typeof polygonClipping === 'undefined') return;
 
   var ROTATION_SPEED = 0.0042; // ~1 оборот / 25с при допущении ~60fps
   var TARGET_WORLD_HEIGHT = 1.5; // см. комментарий "Масштаб" выше — крупный акцент на всю правую половину секции
@@ -1161,7 +1170,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLite();
       return ring;
     }
 
-    var svgData = new THREE.SVGLoader().parse(LOGO_SVG);
+    var svgData = new SVGLoader().parse(LOGO_SVG);
     var allRings = [];
     svgData.paths.forEach(function(path){
       path.subPaths.forEach(function(subPath){
@@ -1261,20 +1270,57 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLite();
 </script>
 
 <!-- ============== 3D SPINE (HERO SECTION) ============== -->
-<script>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 (function(){
+  function showStaticFallback(wrap, canvas){
+    if(!wrap) return;
+    if(canvas) canvas.style.display='none';
+    var hint = wrap.querySelector('.spine-hint');
+    if(hint) hint.style.display='none';
+    var fb = document.createElement('div');
+    fb.setAttribute('aria-hidden','true');
+    fb.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;';
+    var rows='';
+    for(var i=0;i<22;i++){
+      var y=10+i*18, w=14+Math.sin(i/21*Math.PI)*14, op=(0.35+0.5*Math.sin(i/21*Math.PI)).toFixed(2);
+      rows+='<ellipse cx="45" cy="'+y+'" rx="'+w+'" ry="7" fill="url(#sfg)" opacity="'+op+'"/>';
+    }
+    fb.innerHTML='<svg width="90" height="410" viewBox="0 0 90 410"><defs><linearGradient id="sfg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E0D09A"/><stop offset="1" stop-color="#8A6E3E"/></linearGradient></defs>'+rows+'</svg>';
+    wrap.appendChild(fb);
+  }
+
   function init(){
+    var wrap = document.getElementById('heroSpineWrap');
     var canvas = document.getElementById('heroSpineC');
-    if(!canvas){ setTimeout(init,300); return; }
-    if(typeof THREE==='undefined'){ setTimeout(init,300); return; }
-    if(canvas._spineReady) return;
+    if(!canvas || canvas._spineReady) return;
     canvas._spineReady = true;
+
+    var hasWebGL = (function(){
+      try{
+        var t = document.createElement('canvas');
+        return !!(window.WebGLRenderingContext && (t.getContext('webgl2')||t.getContext('webgl')));
+      }catch(e){ return false; }
+    })();
+    if(!hasWebGL){ showStaticFallback(wrap, canvas); return; }
+
+    var isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+    var lowPower = isMobile || (navigator.hardwareConcurrency && navigator.hardwareConcurrency<=4);
+    var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     var W=480, H=540;
     canvas.width=W; canvas.height=H;
 
-    var renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:true, alpha:true});
-    renderer.setPixelRatio(window.devicePixelRatio||1);
+    var renderer;
+    try{
+      renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:true, alpha:true});
+    }catch(e){ showStaticFallback(wrap, canvas); return; }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, lowPower?1.5:2));
     renderer.setSize(W,H);
     renderer.setClearColor(0x000000,0);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -1283,6 +1329,13 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLite();
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera(28, W/H, 0.01, 200);
     camera.position.set(0, 0, 6.5);
+
+    // Студийное окружение для отражений на золотом металле — процедурное,
+    // без внешнего HDRI (ноль лишнего веса). Генератор одноразовый:
+    // среда статична, поэтому диспозим сразу после генерации текстуры.
+    var pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    pmrem.dispose();
 
     scene.add(new THREE.AmbientLight(0xC8A050, 6));
     var L1 = new THREE.DirectionalLight(0xFFD060, 12);
@@ -1302,51 +1355,72 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLite();
     scene.add(grp);
     function mk(g,m){ return new THREE.Mesh(g, m||mGold); }
 
+    // Сегменты геометрии — выше на десктопе (гладкие, без огранки),
+    // ниже на слабых/мобильных устройствах (тот же силуэт, дешевле для GPU).
+    var SEG = lowPower?16:28;
+    var SEG_SM = lowPower?8:12;
+    var SEG_END = lowPower?10:20;
+
     for(var i=0;i<7;i++){
       var y=3.0-i*0.24, r=0.18+i*0.003;
-      var v=mk(new THREE.CylinderGeometry(r*0.88,r*0.95,0.16,12));
+      var v=mk(new THREE.CylinderGeometry(r*0.88,r*0.95,0.16,SEG));
       v.position.set(0,y,0); v.scale.set(0.9,1,0.7); grp.add(v);
-      var sp=mk(new THREE.CylinderGeometry(0.02,0.045,0.18,6),mDark);
+      var sp=mk(new THREE.CylinderGeometry(0.02,0.045,0.18,SEG_SM),mDark);
       sp.rotation.x=Math.PI/2-0.28; sp.position.set(0,y+0.02,-0.22); grp.add(sp);
-      if(i<6){var d=mk(new THREE.CylinderGeometry(r*0.82,r*0.82,0.06,12),mDisc);
+      if(i<6){var d=mk(new THREE.CylinderGeometry(r*0.82,r*0.82,0.06,SEG),mDisc);
         d.position.set(0,y-0.12,0); d.scale.set(0.9,1,0.7); grp.add(d);}
     }
     for(var i=0;i<12;i++){
       var t2=i/11, y=1.84-i*0.22, r=0.22+t2*0.04, cz=Math.sin(t2*Math.PI)*0.05;
-      var v=mk(new THREE.CylinderGeometry(r*0.88,r*0.95,0.18,12));
+      var v=mk(new THREE.CylinderGeometry(r*0.88,r*0.95,0.18,SEG));
       v.position.set(0,y,cz); v.scale.set(1,1,0.72); grp.add(v);
-      var sp=mk(new THREE.CylinderGeometry(0.022,0.05,0.22,6),mDark);
+      var sp=mk(new THREE.CylinderGeometry(0.022,0.05,0.22,SEG_SM),mDark);
       sp.rotation.x=Math.PI/2-0.3; sp.position.set(0,y+0.02,cz-0.3); grp.add(sp);
       [-1,1].forEach(function(s){
-        var tp=mk(new THREE.CylinderGeometry(0.026,0.04,r*1.1,6),mDark);
+        var tp=mk(new THREE.CylinderGeometry(0.026,0.04,r*1.1,SEG_SM),mDark);
         tp.rotation.z=Math.PI/2+s*0.2; tp.position.set(s*r*1.1,y,cz-0.2); grp.add(tp);
       });
-      if(i<11){var d=mk(new THREE.CylinderGeometry(r*0.9,r*0.9,0.065,12),mDisc);
+      if(i<11){var d=mk(new THREE.CylinderGeometry(r*0.9,r*0.9,0.065,SEG),mDisc);
         d.position.set(0,y-0.12,cz); d.scale.set(1,1,0.72); grp.add(d);}
     }
     for(var i=0;i<5;i++){
       var y=-0.42-i*0.32, r=0.30+i*0.015, cz=-Math.sin(i/4*Math.PI)*0.04;
-      var v=mk(new THREE.CylinderGeometry(r*0.88,r*0.95,0.24,12));
+      var v=mk(new THREE.CylinderGeometry(r*0.88,r*0.95,0.24,SEG));
       v.position.set(0,y,cz); v.scale.set(1.12,1,0.76); grp.add(v);
-      var sp=mk(new THREE.CylinderGeometry(0.025,0.055,0.28,6),mDark);
+      var sp=mk(new THREE.CylinderGeometry(0.025,0.055,0.28,SEG_SM),mDark);
       sp.rotation.x=Math.PI/2-0.2; sp.position.set(0,y+0.02,cz-0.38); grp.add(sp);
       [-1,1].forEach(function(s){
-        var tp=mk(new THREE.CylinderGeometry(0.03,0.048,0.24,6),mDark);
+        var tp=mk(new THREE.CylinderGeometry(0.03,0.048,0.24,SEG_SM),mDark);
         tp.rotation.z=Math.PI/2; tp.position.set(s*r*1.1,y,cz-0.1); grp.add(tp);
       });
-      if(i<4){var d=mk(new THREE.CylinderGeometry(r*0.88,r*0.88,0.08,12),mDisc);
+      if(i<4){var d=mk(new THREE.CylinderGeometry(r*0.88,r*0.88,0.08,SEG),mDisc);
         d.position.set(0,y-0.19,cz); d.scale.set(1.12,1,0.76); grp.add(d);}
     }
     var sp2=[];
     for(var i=0;i<=8;i++) sp2.push(new THREE.Vector2(0.28-i*0.016,-2.04-i*0.12));
-    var sac=mk(new THREE.LatheGeometry(sp2,14),mDark);
+    var sac=mk(new THREE.LatheGeometry(sp2,SEG_END),mDark);
     sac.scale.set(1,1,0.62); grp.add(sac);
-    var coc=mk(new THREE.CylinderGeometry(0.035,0.01,0.26,8),mDark);
+    var coc=mk(new THREE.CylinderGeometry(0.035,0.01,0.26,SEG_SM),mDark);
     coc.position.set(0,-3.08,-0.05); coc.rotation.x=0.3; grp.add(coc);
 
     var bb=new THREE.Box3().setFromObject(grp);
     var bc=new THREE.Vector3(); bb.getCenter(bc);
     grp.position.sub(bc);
+
+    // Bloom — только на некомпактных устройствах и очень сдержанно: лёгкое
+    // премиальное свечение на самых ярких бликах металла, а не заливка светом.
+    // Порог высокий намеренно, чтобы в статике эффект был почти незаметен.
+    var composer=null;
+    if(!lowPower){
+      composer = new EffectComposer(renderer);
+      composer.setSize(W,H);
+      composer.addPass(new RenderPass(scene,camera));
+      composer.addPass(new UnrealBloomPass(new THREE.Vector2(W,H), 0.28, 0.25, 0.92));
+      composer.addPass(new OutputPass());
+    }
+    function renderFrame(){
+      if(composer) composer.render(); else renderer.render(scene,camera);
+    }
 
     var drag=false, px=0, py=0, rx=0, ry=0, vx=0, t=0;
     canvas.addEventListener('mousedown',function(e){drag=true;px=e.clientX;py=e.clientY;});
@@ -1357,16 +1431,29 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLite();
       ry+=(e.clientY-py)*0.008; ry=Math.max(-0.55,Math.min(0.55,ry));
       px=e.clientX; py=e.clientY;
       grp.rotation.y=rx; grp.rotation.x=ry;
+      if(reducedMotion) renderFrame();
     });
     canvas.addEventListener('touchstart',function(e){drag=true;px=e.touches[0].clientX;},{passive:true});
     window.addEventListener('touchend',function(){drag=false;});
     window.addEventListener('touchmove',function(e){
       if(!drag)return;
       vx=(e.touches[0].clientX-px)*0.013; rx+=vx; px=e.touches[0].clientX; grp.rotation.y=rx;
+      if(reducedMotion) renderFrame();
     },{passive:true});
 
-    (function loop(){
-      requestAnimationFrame(loop); t+=0.009;
+    renderFrame(); // первый кадр всегда рисуем сразу, независимо от режима
+
+    if(reducedMotion){
+      // Без авто-вращения и без непрерывного цикла — статичный кадр,
+      // перерисовка только по прямому действию пользователя (drag выше).
+      return;
+    }
+
+    var running=false;
+    function loop(){
+      if(!running) return;
+      requestAnimationFrame(loop);
+      t+=0.009;
       if(!drag){
         if(Math.abs(vx)>0.001){vx*=0.93;rx+=vx;}
         else{rx+=0.004;vx=0;}
@@ -1375,12 +1462,25 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLite();
       grp.rotation.z=Math.sin(t*0.35)*0.01;
       L1.intensity=8+Math.sin(t*0.5)*1;
       L2.intensity=6+Math.sin(t*0.7+1)*0.8;
-      renderer.render(scene,camera);
-    })();
+      renderFrame();
+    }
+    function startLoop(){ if(running) return; running=true; requestAnimationFrame(loop); }
+    function stopLoop(){ running=false; }
+
+    // Рендер-цикл на паузе, пока hero не виден на экране — экономит
+    // батарею/GPU на мобильных, когда пользователь проскроллил дальше.
+    if('IntersectionObserver' in window){
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if(entry.isIntersecting) startLoop(); else stopLoop();
+        });
+      },{threshold:0.05});
+      io.observe(canvas);
+    }else{
+      startLoop();
+    }
   }
-  setTimeout(init, 500);
-  setTimeout(init, 1200);
-  window.addEventListener('load', function(){ setTimeout(init, 600); });
+  init();
 })();
 </script>
 
