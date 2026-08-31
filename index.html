@@ -707,7 +707,7 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
   </div>
 </section>
 
-<footer>
+<footer style="flex-wrap:wrap;row-gap:.75rem;">
   <div style="display:flex;align-items:center;gap:.7rem;">
     <img data-logo="1" alt="AC" style="height:18px;opacity:.4;"/>
     <span style="font-family:var(--mono);font-size:.52rem;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;">Атлетикс Корп</span>
@@ -723,6 +723,7 @@ footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-
     <a href="/advertising-consent">Согласие на рекламу</a>
     <a href="/cookies">Cookie</a>
   </div>
+  <p style="flex-basis:100%;margin:0;font-family:var(--mono);font-size:.5rem;color:var(--muted);letter-spacing:.04em;line-height:1.6;">3D-модель позвоночника — <a href="https://sketchfab.com/3d-models/the-human-spinal-column-bcd9eee09ce044ef98a69c315aa792e2" target="_blank" rel="noopener" style="color:var(--muted);border-bottom:1px solid rgba(122,122,112,.35);text-decoration:none;">The human spinal column</a> от 3D (@scratchi), лицензия <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" style="color:var(--muted);border-bottom:1px solid rgba(122,122,112,.35);text-decoration:none;">CC BY 4.0</a></p>
 </footer>
 
 <script>
@@ -1277,6 +1278,8 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 (function(){
   function showStaticFallback(wrap, canvas){
     if(!wrap) return;
@@ -1348,64 +1351,50 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
     L4.position.set(0, 10, 0); scene.add(L4);
 
     var mGold = new THREE.MeshStandardMaterial({color:0xC4A84A, metalness:0.75, roughness:0.15});
-    var mDark = new THREE.MeshStandardMaterial({color:0x9A7A30, metalness:0.7, roughness:0.25});
-    var mDisc = new THREE.MeshStandardMaterial({color:0xA08030, metalness:0.4, roughness:0.45, transparent:true, opacity:0.85});
 
+    // grp остаётся пустой обёрткой до загрузки модели — весь код ниже
+    // (drag-to-rotate, автовращение, composer) уже целится в неё, поэтому
+    // достаточно добавить загруженную сцену как ребёнка после загрузки,
+    // не переписывая остальную логику.
     var grp = new THREE.Group();
     scene.add(grp);
-    function mk(g,m){ return new THREE.Mesh(g, m||mGold); }
+    var modelReady = false;
+    var isVisible = true; // предположение до первого срабатывания IntersectionObserver ниже
 
-    // Сегменты геометрии — выше на десктопе (гладкие, без огранки),
-    // ниже на слабых/мобильных устройствах (тот же силуэт, дешевле для GPU).
-    var SEG = lowPower?16:28;
-    var SEG_SM = lowPower?8:12;
-    var SEG_END = lowPower?10:20;
+    canvas.style.opacity = '0';
+    canvas.style.transition = 'opacity .5s ease';
 
-    for(var i=0;i<7;i++){
-      var y=3.0-i*0.24, r=0.18+i*0.003;
-      var v=mk(new THREE.CylinderGeometry(r*0.88,r*0.95,0.16,SEG));
-      v.position.set(0,y,0); v.scale.set(0.9,1,0.7); grp.add(v);
-      var sp=mk(new THREE.CylinderGeometry(0.02,0.045,0.18,SEG_SM),mDark);
-      sp.rotation.x=Math.PI/2-0.28; sp.position.set(0,y+0.02,-0.22); grp.add(sp);
-      if(i<6){var d=mk(new THREE.CylinderGeometry(r*0.82,r*0.82,0.06,SEG),mDisc);
-        d.position.set(0,y-0.12,0); d.scale.set(0.9,1,0.7); grp.add(d);}
-    }
-    for(var i=0;i<12;i++){
-      var t2=i/11, y=1.84-i*0.22, r=0.22+t2*0.04, cz=Math.sin(t2*Math.PI)*0.05;
-      var v=mk(new THREE.CylinderGeometry(r*0.88,r*0.95,0.18,SEG));
-      v.position.set(0,y,cz); v.scale.set(1,1,0.72); grp.add(v);
-      var sp=mk(new THREE.CylinderGeometry(0.022,0.05,0.22,SEG_SM),mDark);
-      sp.rotation.x=Math.PI/2-0.3; sp.position.set(0,y+0.02,cz-0.3); grp.add(sp);
-      [-1,1].forEach(function(s){
-        var tp=mk(new THREE.CylinderGeometry(0.026,0.04,r*1.1,SEG_SM),mDark);
-        tp.rotation.z=Math.PI/2+s*0.2; tp.position.set(s*r*1.1,y,cz-0.2); grp.add(tp);
+    var TARGET_HEIGHT = 6.3; // высота прежней процедурной модели в юнитах сцены — держим тот же силуэт в кадре камеры/канваса
+
+    var dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/libs/draco/');
+    var gltfLoader = new GLTFLoader();
+    gltfLoader.setDRACOLoader(dracoLoader);
+    gltfLoader.load('assets/spine-model.glb', function(gltf){
+      gltf.scene.traverse(function(node){
+        if(node.isMesh){ node.material = mGold; }
       });
-      if(i<11){var d=mk(new THREE.CylinderGeometry(r*0.9,r*0.9,0.065,SEG),mDisc);
-        d.position.set(0,y-0.12,cz); d.scale.set(1,1,0.72); grp.add(d);}
-    }
-    for(var i=0;i<5;i++){
-      var y=-0.42-i*0.32, r=0.30+i*0.015, cz=-Math.sin(i/4*Math.PI)*0.04;
-      var v=mk(new THREE.CylinderGeometry(r*0.88,r*0.95,0.24,SEG));
-      v.position.set(0,y,cz); v.scale.set(1.12,1,0.76); grp.add(v);
-      var sp=mk(new THREE.CylinderGeometry(0.025,0.055,0.28,SEG_SM),mDark);
-      sp.rotation.x=Math.PI/2-0.2; sp.position.set(0,y+0.02,cz-0.38); grp.add(sp);
-      [-1,1].forEach(function(s){
-        var tp=mk(new THREE.CylinderGeometry(0.03,0.048,0.24,SEG_SM),mDark);
-        tp.rotation.z=Math.PI/2; tp.position.set(s*r*1.1,y,cz-0.1); grp.add(tp);
-      });
-      if(i<4){var d=mk(new THREE.CylinderGeometry(r*0.88,r*0.88,0.08,SEG),mDisc);
-        d.position.set(0,y-0.19,cz); d.scale.set(1.12,1,0.76); grp.add(d);}
-    }
-    var sp2=[];
-    for(var i=0;i<=8;i++) sp2.push(new THREE.Vector2(0.28-i*0.016,-2.04-i*0.12));
-    var sac=mk(new THREE.LatheGeometry(sp2,SEG_END),mDark);
-    sac.scale.set(1,1,0.62); grp.add(sac);
-    var coc=mk(new THREE.CylinderGeometry(0.035,0.01,0.26,SEG_SM),mDark);
-    coc.position.set(0,-3.08,-0.05); coc.rotation.x=0.3; grp.add(coc);
+      grp.add(gltf.scene);
 
-    var bb=new THREE.Box3().setFromObject(grp);
-    var bc=new THREE.Vector3(); bb.getCenter(bc);
-    grp.position.sub(bc);
+      // Отцентровать и масштабировать под тот же силуэт, что у прежней
+      // процедурной модели — реальные анатомические юниты модели не
+      // совпадают с юнитами сцены, поэтому подгоняем по высоте (Box3).
+      var box = new THREE.Box3().setFromObject(grp);
+      var size = new THREE.Vector3(); box.getSize(size);
+      var scale = TARGET_HEIGHT / size.y;
+      grp.scale.setScalar(scale);
+      box.setFromObject(grp);
+      var center = new THREE.Vector3(); box.getCenter(center);
+      grp.position.sub(center);
+
+      modelReady = true;
+      canvas.style.opacity = '1';
+      renderFrame();
+      if(!reducedMotion && isVisible) startLoop();
+    }, undefined, function(err){
+      console.error('spine-model.glb load failed', err);
+      showStaticFallback(wrap, canvas);
+    });
 
     // Bloom — только на некомпактных устройствах и очень сдержанно: лёгкое
     // премиальное свечение на самых ярких бликах металла, а не заливка светом.
@@ -1433,21 +1422,43 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
       grp.rotation.y=rx; grp.rotation.x=ry;
       if(reducedMotion) renderFrame();
     });
-    canvas.addEventListener('touchstart',function(e){drag=true;px=e.touches[0].clientX;},{passive:true});
-    window.addEventListener('touchend',function(){drag=false;});
+    // touchIntent решает, чем является жест: 'rotate' (вращать модель) или
+    // 'scroll' (обычный скролл страницы). Раньше touchstart сразу ставил
+    // drag=true, и touchmove крутил модель по X-компоненте пальца ДАЖЕ
+    // когда человек просто скроллил страницу пальцем, начавшим движение с
+    // канваса (а канвас растянут на весь hero, так что это почти любой
+    // скролл с герой-секции) — визуально модель "уезжала"/крутилась при
+    // скролле. Плюс touchend не ловил touchcancel (когда браузер сам
+    // забирает жест под скролл и обрывает touch-последовательность), из-за
+    // чего drag мог зависать в true и следующий тач давал резкий скачок
+    // поворота. Фикс: ждём первого заметного сдвига, определяем по нему
+    // намерение (dx>dy — вращение, иначе — скролл, руки прочь от rotation),
+    // и сбрасываем drag также по touchcancel.
+    var touchIntent = null, touchStartY = 0;
+    canvas.addEventListener('touchstart',function(e){
+      drag=true; touchIntent=null;
+      px=e.touches[0].clientX; touchStartY=e.touches[0].clientY;
+    },{passive:true});
+    function touchRelease(){ drag=false; touchIntent=null; }
+    window.addEventListener('touchend', touchRelease);
+    window.addEventListener('touchcancel', touchRelease);
     window.addEventListener('touchmove',function(e){
       if(!drag)return;
-      vx=(e.touches[0].clientX-px)*0.013; rx+=vx; px=e.touches[0].clientX; grp.rotation.y=rx;
+      var cx=e.touches[0].clientX, cy=e.touches[0].clientY;
+      if(touchIntent===null){
+        var dx=cx-px, dy=cy-touchStartY;
+        if(Math.abs(dx)<4 && Math.abs(dy)<4) return; // жест ещё не определился, ждём
+        touchIntent = Math.abs(dx)>Math.abs(dy) ? 'rotate' : 'scroll';
+        if(touchIntent==='scroll'){ drag=false; return; } // отдаём жест странице как есть
+      }
+      if(touchIntent!=='rotate') return;
+      vx=(cx-px)*0.013; rx+=vx; px=cx; grp.rotation.y=rx;
       if(reducedMotion) renderFrame();
     },{passive:true});
 
-    renderFrame(); // первый кадр всегда рисуем сразу, независимо от режима
-
-    if(reducedMotion){
-      // Без авто-вращения и без непрерывного цикла — статичный кадр,
-      // перерисовка только по прямому действию пользователя (drag выше).
-      return;
-    }
+    // renderFrame() и (для не-reducedMotion) startLoop() вызываются из
+    // колбэка gltfLoader.load выше — до загрузки модели рисовать нечего,
+    // канвас скрыт через opacity:0 и проявляется после первого кадра.
 
     var running=false;
     function loop(){
@@ -1464,15 +1475,22 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
       L2.intensity=6+Math.sin(t*0.7+1)*0.8;
       renderFrame();
     }
-    function startLoop(){ if(running) return; running=true; requestAnimationFrame(loop); }
+    function startLoop(){ if(running || !modelReady) return; running=true; requestAnimationFrame(loop); }
     function stopLoop(){ running=false; }
+
+    if(reducedMotion){
+      // Без авто-вращения и без непрерывного цикла — статичный кадр (см.
+      // колбэк загрузки выше), перерисовка только по drag-действию.
+      return;
+    }
 
     // Рендер-цикл на паузе, пока hero не виден на экране — экономит
     // батарею/GPU на мобильных, когда пользователь проскроллил дальше.
     if('IntersectionObserver' in window){
       var io = new IntersectionObserver(function(entries){
         entries.forEach(function(entry){
-          if(entry.isIntersecting) startLoop(); else stopLoop();
+          isVisible = entry.isIntersecting;
+          if(isVisible) startLoop(); else stopLoop();
         });
       },{threshold:0.05});
       io.observe(canvas);
