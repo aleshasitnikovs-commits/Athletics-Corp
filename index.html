@@ -27,6 +27,13 @@
 }
 </script>
 <title>Атлетикс Корп — Анализ движения и осанки</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#0A0A08">
 <link rel="canonical" href="https://athleticscorp.ru/">
 <meta name="description" content="Анализ движения и осанки в Москве и МО — точная научно обоснованная диагностика двигательных паттернов по фото. Бесплатный LITE-анализ, онлайн от 2 000 ₽, выезд от 15 000 ₽.">
 <meta property="og:type" content="website">
@@ -99,6 +106,19 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 #hero{position:relative;min-height:100vh;display:grid;grid-template-rows:1fr auto;z-index:1;}
 #heroParticles,#ctaParticles{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;}
 .hero-body{display:grid;grid-template-columns:1fr 1fr;max-width:1160px;margin:0 auto;width:100%;padding:9rem 3.5rem 3rem;align-items:center;gap:3rem;}
+/* h1.hh растёт по clamp(...,6vw,...) быстрее, чем 1160px-контейнер может отдать
+   правой колонке места — на широких экранах канвас-колонка сжимается вплоть
+   до ~218px при 1920 (текст берёт ровно свой min-content, весь остаток уходит
+   канвасу), а .hero-canvas-col{overflow:hidden} обрезает 3D-модель по этой
+   границе. minmax(360px,500px) — страховочный пол колонки, безопасно ниже
+   372px, худшего случая на 1499px (иначе текст полез бы за границы);
+   расширение контейнера с 1500px даёт канвасу расти к полным 500px. */
+@media(min-width:1200px){
+  .hero-body{grid-template-columns:minmax(0,1fr) minmax(360px,500px);}
+}
+@media(min-width:1500px){
+  .hero-body{max-width:1460px;}
+}
 .hero-text{display:flex;flex-direction:column;}
 .hero-eye{font-family:var(--mono);font-size:.57rem;color:var(--gold);letter-spacing:.24em;text-transform:uppercase;display:flex;align-items:center;gap:.75rem;margin-bottom:2.5rem;opacity:0;animation:fU .9s .05s ease forwards;}
 .hero-eye::before{content:'';width:1.1rem;height:1px;background:var(--gold);display:block;}
@@ -1316,7 +1336,15 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
     var lowPower = isMobile || (navigator.hardwareConcurrency && navigator.hardwareConcurrency<=4);
     var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    var W=480, H=540;
+    // Размер берём из реального бокса контейнера, а не хардкодим — иначе на
+    // широких экранах, где .hero-canvas-col уже колонки грид-шаблона (грид
+    // отдаёт тексту его min-content, канвасу — остаток), overflow:hidden
+    // родителя обрезает модель по границе вместо того, чтобы она уменьшилась
+    // и осталась целиком в кадре. ResizeObserver ниже держит это в согласии
+    // при ресайзе окна/смене раскладки (в т.ч. после late-load шрифта).
+    var wrapBox = wrap.getBoundingClientRect();
+    var W = Math.max(1, Math.round(wrapBox.width)) || 480;
+    var H = Math.max(1, Math.round(wrapBox.height)) || 540;
     canvas.width=W; canvas.height=H;
 
     var renderer;
@@ -1418,6 +1446,27 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
     }
     function renderFrame(){
       if(composer) composer.render(); else renderer.render(scene,camera);
+    }
+
+    // Держим буфер рендера синхронным с реальным размером .hero-canvas-col —
+    // тот меняется на пересечении медиа-запросов грид-колонок, при late-load
+    // шрифта (сдвигает min-content h1) и при ресайзе окна. Без этого канвас
+    // остаётся в исходном размере и либо обрезается overflow:hidden родителя,
+    // либо мылится, если контейнер вырос.
+    if('ResizeObserver' in window){
+      var spineRO = new ResizeObserver(function(entries){
+        var box = entries[entries.length-1].contentRect;
+        var w = Math.max(1, Math.round(box.width));
+        var h = Math.max(1, Math.round(box.height));
+        if(w===W && h===H) return;
+        W=w; H=h;
+        renderer.setSize(W,H);
+        camera.aspect = W/H;
+        camera.updateProjectionMatrix();
+        if(composer) composer.setSize(W,H);
+        renderFrame();
+      });
+      spineRO.observe(wrap);
     }
 
     var drag=false, px=0, py=0, rx=0, ry=0, vx=0, t=0;
