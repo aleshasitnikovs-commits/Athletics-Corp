@@ -72,7 +72,7 @@
   .brand {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
     text-decoration: none;
     color: var(--ink);
     font-family: "Unbounded", sans-serif;
@@ -80,7 +80,7 @@
     font-size: 13px;
     letter-spacing: 0.02em;
   }
-  .brand img { width: 26px; height: 26px; display: block; }
+  .brand img { width: 34px; height: 34px; display: block; filter: brightness(0); margin-left: -3px; }
   .ver {
     font-family: "JetBrains Mono", monospace;
     font-size: 11px;
@@ -147,6 +147,9 @@
     font-size: 12px;
     color: var(--muted);
   }
+  .door h2.with-logo { display: flex; align-items: center; gap: 12px; }
+  .door h2.with-logo { gap: 8px; }
+  .door h2.with-logo img { width: 44px; height: 44px; flex: none; display: block; margin-left: -4px; }
   .door.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
   .door.primary p, .door.primary .go span:last-child { color: #A9A69E; }
   .door.primary .tag { color: var(--brass-soft); }
@@ -191,7 +194,7 @@
 
   <div class="top">
     <a class="brand" href="/" data-goal="go_site">
-      <img src="/logo-athletics-corp.svg" alt="">
+      <img src="/go/logo-mark-white.svg" alt="">
       Атлетикс Корп
     </a>
     <span class="ver">МАТЕРИАЛЫ V0.4</span>
@@ -203,16 +206,16 @@
   </header>
 
   <section class="doors">
-    <a class="door primary" href="/go/stat.pdf" data-goal="go_stat_pdf">
+    <a class="door" href="/go/stat.pdf" data-goal="go_stat_pdf">
       <div class="tag">Предзаказ · 100 мест</div>
       <h2>СТАТЬ</h2>
       <p>Лонгслив с датчиками движения и мягкой виброобратной связью, плюс приложение. Релиз 10.12.2026.</p>
       <div class="go"><span>Открыть оффер</span><span>PDF</span></div>
     </a>
 
-    <a class="door" href="/go/investor.pdf" data-goal="go_investor_pdf">
+    <a class="door primary" href="/go/investor.pdf" data-goal="go_investor_pdf">
       <div class="tag">Для инвесторов</div>
-      <h2>Атлетикс Корп</h2>
+      <h2 class="with-logo"><img src="/go/logo-mark-white.svg" alt="">Атлетикс Корп</h2>
       <p>Компания, продукты, данные и план развития.</p>
       <div class="go"><span>Открыть документ</span><span>PDF</span></div>
     </a>
