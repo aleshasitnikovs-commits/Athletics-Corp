@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Атлетикс Корп · Материалы</title>
+<meta name="description" content="Материалы Атлетикс Корп: предзаказ СТАТЬ и документ для инвесторов.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F2F0EB">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+  (function(m,e,t,r,i,k,a){
+    m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+    m[i].l=1*new Date();
+    for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+    k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+  })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=110365930', 'ym');
+  (function(){
+    var src = 'direct';
+    try { src = new URLSearchParams(location.search).get('src') || 'direct'; } catch(e) {}
+    window.__goSrc = src;
+    ym(110365930, 'init', {clickmap:true, webvisor:true, referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true, params: {go_src: src}});
+  })();
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/110365930" style="position:absolute; left:-9999px;" alt=""></div></noscript>
+<!-- /Yandex.Metrika counter -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Golos+Text:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #F2F0EB;
+    --surface: #FBFAF7;
+    --ink: #0A0A08;
+    --muted: #6E6E69;
+    --line: #DAD6CC;
+    --brass: #B8873A;
+    --brass-soft: #DDA74F;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Golos Text", Inter, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 480px;
+    padding: max(28px, env(safe-area-inset-top)) 20px max(28px, env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--ink);
+    font-family: "Unbounded", sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+  }
+  .brand img { width: 26px; height: 26px; display: block; }
+  .ver {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  h1 {
+    font-family: "Unbounded", sans-serif;
+    font-weight: 600;
+    font-size: clamp(26px, 7.4vw, 34px);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+  .lead {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 15px;
+  }
+  .doors { display: flex; flex-direction: column; gap: 12px; }
+  .door {
+    display: block;
+    text-decoration: none;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px 20px 18px;
+    transition: border-color .2s, transform .2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .door:active { transform: scale(0.99); }
+  .door:hover { border-color: var(--brass-soft); }
+  .door .tag {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--brass);
+  }
+  .door h2 {
+    margin-top: 8px;
+    font-family: "Unbounded", sans-serif;
+    font-weight: 600;
+    font-size: 21px;
+    line-height: 1.2;
+  }
+  .door p {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+  .door .go {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 500;
+    font-size: 15px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  .door .go span:last-child {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .door.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .door.primary p, .door.primary .go span:last-child { color: #A9A69E; }
+  .door.primary .tag { color: var(--brass-soft); }
+  .door.primary .go { border-top-color: #2A2A26; }
+
+  .contact {
+    border-top: 1px solid var(--line);
+    padding-top: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .contact p { font-size: 14.5px; color: var(--muted); }
+  .contact p b { color: var(--ink); font-weight: 500; }
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    border-radius: 12px;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+  }
+  .btn:hover { background: var(--ink); color: var(--bg); }
+  footer {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  footer a { color: var(--muted); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <div class="top">
+    <a class="brand" href="/" data-goal="go_site">
+      <img src="/logo-athletics-corp.svg" alt="">
+      Атлетикс Корп
+    </a>
+    <span class="ver">МАТЕРИАЛЫ V0.4</span>
+  </div>
+
+  <header>
+    <h1>Понимать человека. Через движение.</h1>
+    <p class="lead">Мы научно-продуктовая HealthTech-компания. Здесь два документа, выберите свой.</p>
+  </header>
+
+  <section class="doors">
+    <a class="door primary" href="/go/stat.pdf" data-goal="go_stat_pdf">
+      <div class="tag">Предзаказ · 100 мест</div>
+      <h2>СТАТЬ</h2>
+      <p>Лонгслив с датчиками движения и мягкой виброобратной связью, плюс приложение. Релиз 10.12.2026.</p>
+      <div class="go"><span>Открыть оффер</span><span>PDF</span></div>
+    </a>
+
+    <a class="door" href="/go/investor.pdf" data-goal="go_investor_pdf">
+      <div class="tag">Для инвесторов</div>
+      <h2>Атлетикс Корп</h2>
+      <p>Компания, продукты, данные и план развития.</p>
+      <div class="go"><span>Открыть документ</span><span>PDF</span></div>
+    </a>
+  </section>
+
+  <section class="contact" id="contact">
+    <p>Остались вопросы? Напишите напрямую: <b>Всеволод Шмидт</b>, CEO.</p>
+    <a class="btn" id="contactBtn" href="#" data-goal="go_contact">Написать в Telegram</a>
+  </section>
+
+  <footer>
+    <a href="/">athleticscorp.ru</a>
+    <span>ООО «АТЛЕТИКС КОРП»</span>
+  </footer>
+
+</main>
+
+<script>
+  // Контакт для кнопки. Поставьте username без @, например "vsevolod_shmidt".
+  // Если оставить пустым, блок контакта скрывается.
+  var TG_CONTACT = "";
+
+  (function () {
+    var btn = document.getElementById('contactBtn');
+    if (TG_CONTACT) {
+      btn.href = 'https://t.me/' + TG_CONTACT;
+    } else {
+      document.getElementById('contact').hidden = true;
+    }
+
+    var src = window.__goSrc || 'direct';
+    // Метка источника переносится в ссылки на PDF, чтобы клики были видны в отчётах по ссылкам.
+    document.querySelectorAll('a.door').forEach(function (a) {
+      a.href = a.getAttribute('href') + '?src=' + encodeURIComponent(src);
+    });
+
+    document.querySelectorAll('[data-goal]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        try { ym(110365930, 'reachGoal', el.getAttribute('data-goal'), {go_src: src}); } catch (e) {}
+      });
+    });
+  })();
+</script>
+</body>
+</html>
