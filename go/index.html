@@ -155,6 +155,7 @@
   .door.primary .tag { color: var(--brass-soft); }
   .door.primary .go { border-top-color: #2A2A26; }
 
+  .en { align-self: flex-end; font-size: 13px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; padding: 2px 4px; }
   .contact {
     border-top: 1px solid var(--line);
     padding-top: 22px;
@@ -216,9 +217,10 @@
     <a class="door primary" href="/go/investor.pdf" data-goal="go_investor_pdf">
       <div class="tag">Для инвесторов</div>
       <h2 class="with-logo"><img src="/go/logo-mark-white.svg" alt="">Атлетикс Корп</h2>
-      <p>Компания, продукты, данные и план развития.</p>
+      <p>Инвестиционное предложение по СТАТЬ на одной странице. Презентацию и условия раунда пришлём лично.</p>
       <div class="go"><span>Открыть документ</span><span>PDF</span></div>
     </a>
+    <a class="en" href="/go/investor-en.pdf" data-goal="go_investor_en_pdf">English version (PDF)</a>
   </section>
 
   <section class="contact" id="contact">
@@ -236,7 +238,7 @@
 <script>
   // Контакт для кнопки. Поставьте username без @, например "vsevolod_shmidt".
   // Если оставить пустым, блок контакта скрывается.
-  var TG_CONTACT = "";
+  var TG_CONTACT = "Vsevolod_Shmidt";
 
   (function () {
     var btn = document.getElementById('contactBtn');
@@ -248,7 +250,7 @@
 
     var src = window.__goSrc || 'direct';
     // Метка источника переносится в ссылки на PDF, чтобы клики были видны в отчётах по ссылкам.
-    document.querySelectorAll('a.door').forEach(function (a) {
+    document.querySelectorAll('a.door, a.en').forEach(function (a) {
       a.href = a.getAttribute('href') + '?src=' + encodeURIComponent(src);
     });
 
