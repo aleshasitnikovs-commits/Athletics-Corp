@@ -255,8 +255,20 @@
     });
 
     document.querySelectorAll('[data-goal]').forEach(function (el) {
-      el.addEventListener('click', function () {
-        try { ym(110365930, 'reachGoal', el.getAttribute('data-goal'), {go_src: src}); } catch (e) {}
+      el.addEventListener('click', function (ev) {
+        var goal = el.getAttribute('data-goal');
+        var href = el.getAttribute('href');
+        var isPdf = href && /\.pdf/.test(href);
+        // PDF opens in the same tab: wait for Metrika to send the goal, max 600 ms
+        if (isPdf && !(ev.ctrlKey || ev.metaKey || ev.shiftKey)) {
+          ev.preventDefault();
+          var done = false;
+          var go = function () { if (!done) { done = true; location.href = el.href; } };
+          try { ym(110365930, 'reachGoal', goal, {go_src: src}, go); } catch (e) {}
+          setTimeout(go, 600);
+        } else {
+          try { ym(110365930, 'reachGoal', goal, {go_src: src}); } catch (e) {}
+        }
       });
     });
   })();
