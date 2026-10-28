@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Продукты: пять продуктов, одна система | Атлетикс Корп</title>
+<meta name="description" content="Анализ осанки и движения, работа со специалистами, мастер-класс для специалистов, СТАТЬ и SportTech: что работает уже сегодня, а что мы только готовим.">
+<link rel="canonical" href="https://athleticscorp.ru/produkty/">
+<link rel="icon" type="image/png" href="../_assets/img/favicon-ac-64.png">
+<link rel="stylesheet" href="../_assets/tokens.css">
+<link rel="stylesheet" href="../_assets/header.css">
+<script src="../_assets/header.js"></script>
+<script src="../_assets/site.js"></script>
+<!-- Тексты страницы - ГИПОТЕЗА до согласования с Арсением. Источники: карта смыслов §8 (продуктовый
+     ландшафт), каркас produkty/, страницы analiz-osanki/ и specialistam/. Места, где нужен факт,
+     помечены комментарием НУЖЕН ФАКТ - поиск по этой строке находит все. -->
+<script>
+/* Режим страницы до загрузки скриптов: без WebGL - статичные картинки объектов; reduced motion - без
+   вращения и с мгновенной сменой темы; hover - есть ли у устройства наведение (тема СТАТЬ по наведению
+   или по положению блока на экране). */
+(function(){var r=document.documentElement,c=document.createElement('canvas'),gl=null;
+ try{gl=c.getContext('webgl2')}catch(e){}
+ if(!gl)r.classList.add('no-webgl');
+ if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)r.classList.add('reduce');
+ if(window.matchMedia&&matchMedia('(hover: hover) and (pointer: fine)').matches)r.classList.add('hover');
+})();
+</script>
+<style>
+/* Тема страницы - переменные на <html>. Светлая тема СТАТЬ: <html data-theme="stat">.
+   Переменные зарегистрированы (@property), поэтому переход 0,6 с идёт у самих переменных на <html>:
+   фон, текст, линии, кнопки и шапка перекрашиваются одновременно. Без поддержки @property - мгновенно. */
+@property --bg{syntax:'<color>';inherits:true;initial-value:#0A0A08}
+@property --fg{syntax:'<color>';inherits:true;initial-value:#F2F0EB}
+@property --soft{syntax:'<color>';inherits:true;initial-value:#C9C6BE}
+@property --mute{syntax:'<color>';inherits:true;initial-value:#86847C}
+@property --line{syntax:'<color>';inherits:true;initial-value:rgba(242,240,235,.16)}
+@property --line-2{syntax:'<color>';inherits:true;initial-value:rgba(242,240,235,.4)}
+@property --mark{syntax:'<color>';inherits:true;initial-value:#DDA74F}
+@property --hdr-bg{syntax:'<color>';inherits:true;initial-value:rgba(10,10,8,.55)}
+@property --hdr-nav{syntax:'<color>';inherits:true;initial-value:rgba(242,240,235,.7)}
+@property --logo-b{syntax:'<number>';inherits:true;initial-value:1}
+:root{--bg:#0A0A08;--fg:#F2F0EB;--soft:#C9C6BE;--mute:#86847C;--line:rgba(242,240,235,.16);--line-2:rgba(242,240,235,.4);
+ --mark:#DDA74F;--hdr-bg:rgba(10,10,8,.55);--hdr-nav:rgba(242,240,235,.7);--logo-b:1;
+ --surface:var(--bg);--on-surface:var(--fg);color-scheme:dark;
+ transition:--bg .6s ease-in-out,--fg .6s ease-in-out,--soft .6s ease-in-out,--mute .6s ease-in-out,--line .6s ease-in-out,
+  --line-2 .6s ease-in-out,--mark .6s ease-in-out,--hdr-bg .6s ease-in-out,--hdr-nav .6s ease-in-out,--logo-b .6s ease-in-out}
+/* светлая тема: фон #F2F0EB, текст #0A0A08; метка статуса - тёмная латунь (на светлом фоне #DDA74F не читается) */
+:root[data-theme="stat"]{--bg:#F2F0EB;--fg:#0A0A08;--soft:#3A3934;--mute:#6B6A63;--line:rgba(10,10,8,.14);--line-2:rgba(10,10,8,.4);
+ --mark:#8A5F17;--hdr-bg:rgba(242,240,235,.72);--hdr-nav:rgba(10,10,8,.7);--logo-b:.04;color-scheme:light}
+html.reduce{transition:none}
+html,body{background:var(--bg);color:var(--fg)}
+body{transition:none}
+a{text-decoration:none;color:inherit}
+a:focus-visible,button:focus-visible{outline:2px solid var(--mark);outline-offset:4px}
+
+/* шапка: общая (../_assets/header.css), здесь только цвета от темы страницы */
+.hdr{color:var(--fg)}
+.hdr-in::before{background:var(--hdr-bg)!important;border-color:var(--line)!important}
+.hdr-nav a{color:var(--hdr-nav)}
+.hdr-nav a:hover,.hdr-nav a[aria-current]{color:var(--fg)}
+.hdr .hdr-cta{background:var(--fg);color:var(--bg)}
+.hdr-logo img{filter:brightness(var(--logo-b))}
+
+/* общий холст 3D - один на страницу, под текстом; жесты ловят только области объектов (.stage) */
+#scene{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;pointer-events:none}
+html.no-webgl #scene{display:none}
+main{position:relative;z-index:3}
+
+.wrap{width:100%;max-width:var(--grid-max);margin:0 auto;padding:0 40px}
+.eyebrow{display:block;font-family:var(--font-mono);font-size:var(--fs-mono-s);letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:var(--sp-5)}
+.btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:var(--fs-text-s);padding:14px 22px;border:1px solid var(--fg);background:var(--fg);color:var(--bg);border-radius:2px;cursor:pointer;transition:opacity .15s,transform .15s}
+.btn:hover{opacity:.88;transform:translateY(-1px)}
+.btn.ghost{background:transparent;color:var(--fg);border-color:var(--line-2)}
+.btn.ghost:hover{border-color:var(--fg)}
+
+/* 01 */
+#top{min-height:100svh;display:flex;align-items:center;padding:140px 0 var(--sp-9)}
+#top h1{font-size:var(--fs-display-xl);max-width:12ch}
+#top .lead{font-size:var(--fs-text-l);color:var(--soft);margin-top:var(--sp-5);max-width:46ch}
+.toc{list-style:none;margin:var(--sp-8) 0 0;padding:0;max-width:760px;font-family:var(--font-mono);font-size:var(--fs-mono);letter-spacing:.04em}
+.toc a{display:grid;grid-template-columns:3ch minmax(0,1fr) auto;gap:var(--sp-4);align-items:baseline;padding:12px 0;border-top:1px solid var(--line);transition:color .2s}
+.toc li:last-child a{border-bottom:1px solid var(--line)}
+.toc .n{color:var(--mute)}
+.toc .t{color:var(--fg);text-transform:uppercase;letter-spacing:.08em}
+.toc .s{color:var(--mute);font-size:var(--fs-mono-s);text-transform:uppercase;letter-spacing:.12em;text-align:right}
+.toc a:hover .t{color:var(--soft)}
+
+/* 02-06: экран на продукт - слева текст, справа объект */
+.prod{position:relative;min-height:100svh;display:flex;align-items:center;padding:var(--sp-9) 0}
+.prod .wrap{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:var(--sp-7);align-items:center}
+.prod h2{font-size:var(--fs-display-l);margin-bottom:var(--sp-5)}
+.status{display:inline-flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:var(--fs-mono-s);letter-spacing:.12em;text-transform:uppercase;color:var(--mark);
+ border:1px solid currentColor;border-radius:2px;padding:6px 10px 5px}
+.status i{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.facts{margin:var(--sp-6) 0 0;max-width:52ch}
+.facts dt{font-family:var(--font-mono);font-size:var(--fs-mono-s);letter-spacing:.12em;text-transform:uppercase;color:var(--mute);padding-top:var(--sp-4);border-top:1px solid var(--line)}
+.facts dd{margin:var(--sp-2) 0 var(--sp-5);color:var(--soft)}
+.prod .btn{margin-top:var(--sp-3)}
+.stage{position:relative;height:min(78svh,760px);touch-action:pan-y}
+html:not(.no-webgl):not(.reduce) .stage[data-hit]{cursor:grab}
+html:not(.no-webgl):not(.reduce) .stage[data-hit]:active{cursor:grabbing}
+/* без WebGL (или объект не загрузился - .fallback): статичные картинки объектов */
+.static{display:none}
+html.no-webgl .static,.stage.fallback .static{display:block;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:100%;max-height:100%;width:auto;height:auto;pointer-events:none}
+html.no-webgl .static.stat,.stage.fallback .static.stat{width:80%;height:auto;aspect-ratio:1553/313;background:var(--fg);
+ -webkit-mask:url(../_assets/img/stat-logo.svg) center/contain no-repeat;mask:url(../_assets/img/stat-logo.svg) center/contain no-repeat}
+
+/* 06 SportTech: без 3D, тонкая линия точек */
+#p-sport{flex-direction:column;justify-content:center;align-items:stretch}
+#p-sport .wrap{grid-template-columns:minmax(0,1fr)}
+#p-sport .col{max-width:640px}
+.dotline{height:6px;margin-top:var(--sp-8);background:radial-gradient(circle,var(--soft) 0 1px,transparent 1.6px) 0 50%/14px 6px repeat-x;opacity:.7}
+
+/* 07 связь */
+#svyaz{padding:var(--sp-10) 0}
+.chain{list-style:none;margin:var(--sp-7) 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-6);position:relative}
+.chain li{position:relative;padding-top:var(--sp-6)}
+/* тонкая линия от узла к следующему: слова связаны, за последним линия не продолжается */
+.chain li:not(:last-child)::after{content:"";position:absolute;left:11px;top:5px;width:calc(100% + var(--sp-6) - 11px);height:1px;background:var(--line-2)}
+.chain li::before{content:"";position:absolute;left:0;top:0;width:11px;height:11px;border-radius:50%;background:var(--bg);border:1px solid var(--fg)}
+.chain b{display:block;font-family:var(--font-display);font-weight:300;font-size:var(--fs-display-m);line-height:1.2}
+.chain span{display:block;color:var(--soft);margin-top:var(--sp-2)}
+
+/* 08 */
+#start{padding:var(--sp-10) 0}
+#start .row{display:flex;justify-content:space-between;align-items:flex-end;gap:var(--sp-6);flex-wrap:wrap;border-top:1px solid var(--line);padding-top:var(--sp-7)}
+#start h2{font-size:var(--fs-display-l);margin:0}
+#start p{color:var(--soft);margin-top:var(--sp-4);max-width:48ch}
+
+/* подвал */
+.ftr{position:relative;z-index:3;padding:var(--sp-7) 40px var(--sp-8);max-width:var(--grid-max);margin:0 auto;display:flex;gap:var(--sp-4) var(--sp-6);flex-wrap:wrap;justify-content:space-between;font-size:13px;color:var(--mute);border-top:1px solid var(--line)}
+.ftr a{color:var(--mute)}.ftr a:hover{color:var(--fg)}
+.ftr .legal{display:flex;gap:var(--sp-4);flex-wrap:wrap}
+.ftr .credit{flex-basis:100%;font-family:var(--font-mono);font-size:11px;letter-spacing:.02em;line-height:1.6}
+.ftr .credit a{text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:.2em}
+
+/* Lenis */
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-stopped{overflow:clip}
+
+@media (max-width:860px){
+ .wrap{padding:0 18px}
+ #top{min-height:auto;padding:120px 0 var(--sp-8)}
+ .toc a{grid-template-columns:3ch minmax(0,1fr);row-gap:2px}
+ .toc .s{grid-column:2;text-align:left}
+ .prod{min-height:auto;padding:var(--sp-8) 0}
+ .prod .wrap{grid-template-columns:minmax(0,1fr);gap:var(--sp-5)}
+ /* объект над текстом: первый взгляд на продукт - объект и название */
+ .stage{order:-1;height:46svh;margin:0 -18px}
+ .chain{grid-template-columns:minmax(0,1fr);gap:var(--sp-6)}
+ .chain li:not(:last-child)::after{left:5px;top:11px;width:1px;height:calc(100% + var(--sp-6) - 11px)}
+ .chain li{padding:0 0 0 var(--sp-6)}
+ .ftr{padding:var(--sp-7) 18px var(--sp-8)}
+}
+html.reduce *{scroll-behavior:auto!important}
+</style>
+</head>
+<body>
+<!-- header:start - шаблон _assets/_header-template.mjs, правки там, затем node _assets/_header-apply.mjs -->
+<header id="hdr" class="hdr">
+  <div class="hdr-in">
+    <a class="hdr-logo" href="../" aria-label="Атлетикс Корп, на главную"><img src="../_assets/img/logo-ac-light@2x.png" srcset="../_assets/img/logo-ac-light@2x.png 2x, ../_assets/img/logo-ac-light@3x.png 3x" width="48" height="24" alt="Атлетикс Корп"></a>
+    <nav class="hdr-nav" aria-label="Основные разделы">
+      <a href="../podhod/">Подход</a>
+      <a href="../produkty/" aria-current="page">Продукты</a>
+      <a href="../analiz-osanki/">Анализ осанки</a>
+      <a href="../kompaniya/">Компания</a>
+    </nav>
+    <a class="hdr-cta" href="../analiz-osanki/#zapis">Записаться</a>
+    <button class="hdr-menu" id="menuBtn" type="button" aria-label="Меню" aria-expanded="false" aria-controls="siteMenu"><i></i><i></i></button>
+  </div>
+</header>
+<div class="smenu" id="siteMenu" role="dialog" aria-modal="true" aria-label="Меню сайта" hidden>
+  <button class="smenu-close" type="button" aria-label="Закрыть меню"><i></i><i></i></button>
+  <nav class="smenu-nav" aria-label="Все разделы">
+    <ul>
+      <li style="--i:0"><a href="../podhod/"><span>Подход</span></a></li>
+      <li style="--i:1"><a href="../produkty/" aria-current="page"><span>Продукты</span></a></li>
+      <li style="--i:2"><a href="../analiz-osanki/"><span>Анализ осанки</span></a></li>
+      <li style="--i:3"><a href="../biznes/"><span>Для бизнеса</span></a></li>
+      <li style="--i:4"><a href="../znaniya/"><span>Знания</span></a></li>
+      <li style="--i:5"><a href="../kompaniya/"><span>Компания</span></a></li>
+      <li style="--i:6"><a href="../partneram/"><span>Партнёрам</span></a></li>
+      <li style="--i:7"><a href="../investoram/"><span>Инвесторам</span></a></li>
+      <li style="--i:8"><a href="../karera/"><span>Карьера</span></a></li>
+    </ul>
+  </nav>
+  <div class="smenu-foot">
+    <a href="mailto:ac@athleticscorp.ru">ac@athleticscorp.ru</a>
+  </div>
+</div>
+<!-- header:end -->
+<canvas id="scene" aria-hidden="true"></canvas>
+
+<main>
+<!-- 01 · первый экран -->
+<section id="top">
+  <div class="wrap">
+    <span class="eyebrow">Продукты</span>
+    <h1>Пять продуктов. Одна система</h1>
+    <p class="lead">Что-то из этого работает уже сегодня, что-то мы только готовим.</p>
+    <ol class="toc" aria-label="Продукты">
+      <li><a href="#p-analiz"><span class="n">01</span><span class="t">Анализ осанки и движения</span><span class="s">работает</span></a></li>
+      <li><a href="#p-spec"><span class="n">02</span><span class="t">Работа со специалистами</span><span class="s">работает</span></a></li>
+      <li><a href="#p-mk"><span class="n">03</span><span class="t">Мастер-класс для специалистов</span><span class="s">работает</span></a></li>
+      <li><a href="#p-stat"><span class="n">04</span><span class="t">СТАТЬ</span><span class="s">в разработке · предпродажа</span></a></li>
+      <li><a href="#p-sport"><span class="n">05</span><span class="t">SportTech</span><span class="s">тестируется</span></a></li>
+    </ol>
+  </div>
+</section>
+
+<!-- 02 · анализ осанки и движения: позвоночник из точек -->
+<section class="prod" id="p-analiz">
+  <div class="wrap">
+    <div class="col">
+      <span class="eyebrow">01</span>
+      <h2>Анализ осанки и движения</h2>
+      <span class="status"><i></i>работает</span>
+      <dl class="facts">
+        <dt>Для кого</dt>
+        <dd>Для тех, кто хочет понять, что происходит с осанкой и движением, и получить понятный следующий шаг.</dd>
+        <dt>Что получает человек</dt>
+        <dd>Специалист разберёт осанку по фото или вживую и объяснит, что менять в обычном дне. Онлайн, очно или с выездом. Без диагнозов.</dd>
+      </dl>
+      <a class="btn" href="../analiz-osanki/">Подробнее</a>
+    </div>
+    <div class="stage" data-obj="spine" data-hit>
+      <img class="static" src="../_assets/img/spine-static.png" alt="" width="304" height="1440" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<!-- 03 · работа со специалистами: две фигуры из точек -->
+<section class="prod" id="p-spec">
+  <div class="wrap">
+    <div class="col">
+      <span class="eyebrow">02</span>
+      <h2>Работа со специалистами</h2>
+      <span class="status"><i></i>работает</span>
+      <dl class="facts">
+        <dt>Для кого</dt>
+        <dd>Для тех, кто после анализа хочет менять привычки движения не в одиночку.</dd>
+        <dt>Что получает человек</dt>
+        <dd>Онлайн-занятия, план и выездной формат: специалист помогает перенести выводы анализа в обычную жизнь.</dd>
+        <!-- НУЖЕН ФАКТ: формат и длительность занятий, цена, кто специалисты -->
+      </dl>
+      <!-- НУЖЕН ФАКТ: своей страницы у продукта нет; кнопка ведёт на запись, через первичную консультацию (канон §11) -->
+      <a class="btn" href="../analiz-osanki/#zapis">Начать с анализа</a>
+    </div>
+    <div class="stage" data-obj="duo" data-hit>
+      <img class="static" src="../_assets/img/produkty-duo.png" alt="" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<!-- 04 · мастер-класс для специалистов: фигуры полукругом -->
+<section class="prod" id="p-mk">
+  <div class="wrap">
+    <div class="col">
+      <span class="eyebrow">03</span>
+      <h2>Мастер-класс для специалистов</h2>
+      <span class="status"><i></i>работает</span>
+      <dl class="facts">
+        <dt>Для кого</dt>
+        <dd>Для тренеров, реабилитологов и специалистов по движению.</dd>
+        <dt>Что получает человек</dt>
+        <dd>Два дня по методологии Атлетикс Корп: как смотреть на осанку и движение и как применять это в своей работе.</dd>
+        <!-- НУЖЕН ФАКТ: программа дней, ближайшие даты, цена -->
+      </dl>
+      <a class="btn" href="../specialistam/">Подробнее</a>
+    </div>
+    <div class="stage" data-obj="class" data-hit>
+      <img class="static" src="../_assets/img/produkty-class.png" alt="" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<!-- 05 · СТАТЬ: 3D-логотип; наведение (или блок в центре экрана на телефоне) включает светлую тему -->
+<section class="prod" id="p-stat">
+  <div class="wrap">
+    <div class="col">
+      <span class="eyebrow">04</span>
+      <h2>СТАТЬ</h2>
+      <span class="status"><i></i>в разработке · предпродажа</span>
+      <dl class="facts">
+        <dt>Для кого</dt>
+        <dd>Для тех, кому нужна обратная связь не только на встрече со специалистом, но и в течение обычного дня.</dd>
+        <dt>Что получает человек</dt>
+        <dd>Носимое устройство, которое переносит обратную связь из встреч со специалистом в повседневную жизнь.</dd>
+        <!-- НУЖЕН ФАКТ: условия предпродажи, сроки, что уже есть и что пока не обещаем -->
+      </dl>
+      <a class="btn" href="https://стать.com" target="_blank" rel="noopener">Перейти на стать.com ↗</a>
+    </div>
+    <div class="stage" data-obj="stat" data-hit>
+      <div class="static stat" role="img" aria-label="СТАТЬ"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 · SportTech: без 3D, людей и детей не рисуем -->
+<!-- НУЖЕН ФАКТ: показываем ли SportTech сейчас и под каким названием, решает Арсений (пометка из каркаса) -->
+<section class="prod" id="p-sport">
+  <div class="wrap">
+    <div class="col">
+      <span class="eyebrow">05</span>
+      <h2>SportTech</h2>
+      <span class="status"><i></i>тестируется</span>
+      <dl class="facts">
+        <dt>Для кого</dt>
+        <dd>Для семей, которые хотят понять спортивный профиль и потенциал ребёнка.</dd>
+        <dt>Что получает человек</dt>
+        <dd>Оценку, которая помогает увидеть возможности ребёнка и подобрать более осмысленную траекторию развития. Без прогноза спортивной карьеры.</dd>
+        <!-- НУЖЕН ФАКТ: формат оценки, возраст, где проходит тестирование, куда ведёт кнопка -->
+      </dl>
+    </div>
+  </div>
+  <div class="wrap"><div class="dotline" aria-hidden="true"></div></div>
+</section>
+
+<!-- 07 · как продукты связаны -->
+<section id="svyaz">
+  <div class="wrap">
+    <span class="eyebrow">Как это связано</span>
+    <ol class="chain">
+      <li><b>Анализ</b><span>показывает, что происходит.</span></li>
+      <li><b>Специалист</b><span>помогает менять.</span></li>
+      <li><b>СТАТЬ</b><span>напоминает в течение дня.</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- 08 · с чего начать -->
+<section id="start">
+  <div class="wrap">
+    <div class="row">
+      <div>
+        <h2>С чего начать?</h2>
+        <p>С первичной консультации: анализ осанки и онлайн-разбор со специалистом.</p>
+      </div>
+      <a class="btn" href="../analiz-osanki/#zapis">Записаться на разбор</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="ftr">
+  <span>© 2026 Атлетикс Корп</span>
+  <span>Анализ немедицинский, не заменяет консультацию врача</span>
+  <span class="legal"><a href="../privacy-policy/">Политика конфиденциальности</a><a href="../personal-data-policy/">Согласие на обработку данных</a><a href="../consent-photo/">Согласие на обработку фото</a><a href="../oferta/">Публичная оферта</a></span>
+  <p class="credit">3D-модель позвоночника: <a href="https://sketchfab.com/3d-models/the-human-spinal-column-bcd9eee09ce044ef98a69c315aa792e2" target="_blank" rel="noopener">The human spinal column</a> от 3D (@scratchi), лицензия <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. Переведена в точки.</p>
+</footer>
+
+<script type="importmap">
+{ "imports": { "three": "../_assets/vendor/three/three.module.min.js" } }
+</script>
+<script src="../_assets/vendor/lenis.min.js"></script>
+<script src="produkty-page.js"></script>
+<script type="module" src="produkty-scene.js"></script>
+</body>
+</html>

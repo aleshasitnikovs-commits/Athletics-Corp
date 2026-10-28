@@ -1,1585 +1,407 @@
-<!DOCTYPE html>
-<html lang="ru">
+<!doctype html>
+<html lang="ru" class="hdr-solid">
 <head>
-<!-- Yandex.Metrika counter -->
-<script type="text/javascript">
-    (function(m,e,t,r,i,k,a){
-        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-        m[i].l=1*new Date();
-        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=110365930', 'ym');
-    ym(110365930, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Атлетикс Корп: Понимать человека. Через движение.</title>
+<meta name="description" content="Научно-продуктовая HealthTech-компания. Помогаем человеку лучше понимать своё состояние и осознанно управлять им через движение.">
+<script>
+/* Этап 0, п.3: WebGL проверяется до первой отрисовки. Нет контекста -> html.no-webgl
+   (холст не нужен) и html.story-static (главы обычными секциями друг за другом, без
+   фиксированных панелей и скролл-сцен). hero-scene.js при падении ставит те же классы. */
+(function(){var d=document.documentElement,ok=false;
+ try{var c=document.createElement('canvas');ok=!!(c.getContext('webgl2')||c.getContext('webgl'))}catch(e){}
+ /* п.4: prefers-reduced-motion -> тоже статичная раскладка глав (весь текст сразу, без
+    скролл-анимаций); холст при этом остаётся, но рисует один неподвижный кадр. */
+ var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(!ok)d.classList.add('no-webgl','story-static');else if(rm)d.classList.add('story-static');
+ /* Интро (задача 15): шапка и заголовок ждут конца интро (класс intro-hold - только прозрачность,
+    текст в HTML с самого начала, для поиска он есть). Сцена снимает класс, когда логотип ушёл в
+    человека, - проявление 0,8 с. Сразу (без перехода) - при прокрутке, клике, касании, любой
+    клавише во время интро, если через 3 с после загрузки сцена не готова, при падении сцены.
+    Без WebGL и при reduced motion класса нет. Повторный заход в той же вкладке (sessionStorage):
+    класса нет, интро короткое (window.__introShort, начинается с ухода логотипа в человека). */
+ var seen=false;try{seen=sessionStorage.getItem('ac-intro')==='1';sessionStorage.setItem('ac-intro','1')}catch(e){}
+ window.__introShort=seen;
+ window.__reveal=function(now){if(!d.classList.contains('intro-hold'))return;
+  if(now){d.classList.add('intro-now');requestAnimationFrame(function(){requestAnimationFrame(function(){d.classList.remove('intro-now')})})}
+  d.classList.remove('intro-hold');window.__revealedAt=performance.now()};
+ if(ok&&!rm&&!seen){d.classList.add('intro-hold');
+  var go=function(){window.__reveal(true)};
+  ['wheel','touchstart','pointerdown','keydown','scroll'].forEach(function(t){addEventListener(t,go,{passive:true,capture:true,once:true})});
+  /* 3 с от начала загрузки страницы (performance.now() идёт с навигации), а не от этой строки */
+  setTimeout(function(){if(!(window.__intro&&window.__intro.ready))go()},Math.max(0,3000-performance.now()))}
+})();
 </script>
-<noscript><div><img src="https://mc.yandex.ru/watch/110365930" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-<!-- /Yandex.Metrika counter -->
-<script>(function(){try{if(sessionStorage.getItem('ac_pre_shown')==='1'){document.documentElement.classList.add('no-pre');}}catch(e){}})();</script>
-<noscript><style>#pre{display:none!important;}</style></noscript>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- three@0.185.1 — единая версия ES-модулей для 3D-логотипа (#cta) и 3D-позвоночника (hero). importmap должен идти до любого <script type="module">. -->
+<!-- favicon: костяной знак на тёмной плашке (чисто белый знак пропал бы на светлой панели вкладок) -->
+<link rel="icon" type="image/png" href="_assets/img/favicon-ac-64.png">
+<link rel="stylesheet" href="_assets/tokens.css">
+<link rel="stylesheet" href="_assets/header.css">
+<script src="_assets/header.js"></script>
+<script src="_assets/site.js"></script>
+<style>
+/* Прелоадер и первый экран "Поле наблюдений" v7 — перенесено почти без изменений из
+   ШТАБ/06-сайт-и-конверсия/передача-в-vs-code/прототип-исходники/head3.html.
+   Шрифты теперь из tokens.css (самостоятельный хостинг), Google Fonts-ссылка убрана. */
+:root{--bg:#0A0A08;--fg:#F2F0EB;--soft:#C9C6BE;--mute:#86847C;--brass:#DDA74F;
+--display:"Unbounded","Arial Black",sans-serif;--body:"Golos Text","Segoe UI",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,Consolas,monospace;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 var(--body);-webkit-tap-highlight-color:transparent}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+a:focus-visible,button:focus-visible{outline:2px solid var(--brass);outline-offset:4px}
+#cv{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;pointer-events:none}
+.grain{position:fixed;inset:-50%;width:200%;height:200%;pointer-events:none;z-index:3;opacity:.07;
+ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+ animation:gr 1s steps(4) infinite}
+@keyframes gr{0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}100%{transform:translate(0,0)}}
+.vig{position:fixed;inset:0;pointer-events:none;z-index:2;background:radial-gradient(120% 90% at 50% 45%,transparent 55%,rgba(0,0,0,.65) 100%)}
+/* Прелоадера («калибровка», «Пропустить») нет (убран 27.10, задача 14). Шапка и заголовок до конца
+   интро прозрачны (html.intro-hold, ставит скрипт в <head>), затем проявляются за 0,8 с. В статичной
+   раскладке (без WebGL, reduced motion, падение сцены) класс не действует - текст виден сразу. */
+#hdr{transition:transform .35s cubic-bezier(.25,.46,.45,.94),opacity .8s ease}
+#hero .h1,#hero .down{transition:opacity .8s ease}
+html.intro-hold:not(.story-static) #hdr,html.intro-hold:not(.story-static) #hero .h1,html.intro-hold:not(.story-static) #hero .down{opacity:0;pointer-events:none}
+html.intro-now #hdr,html.intro-now #hero .h1,html.intro-now #hero .down{transition:none}
+html.story-static #hero .h1,html.story-static #hero .down{opacity:1!important;translate:none!important}
+html.story-static #hero .h1,html.story-static #hero a{pointer-events:auto!important}
+/* Шапка и меню - общие: _assets/header.css и header.js. */
+/* Слои первого экрана (этап 0): #cv 1, .vig 2, .grain 3, #hero 4, панели глав 5,
+   мобильное меню 7, шапка 8. #hero раньше был z-index:0 — под холстом, виньеткой и зерном.
+   #hero — прямой потомок body, родители своего stacking context не создают. */
+#hero{position:fixed;inset:0;z-index:4;pointer-events:none}
+/* Этап 0, п.6: сам #hero пропускает события сквозь пустое место, но заголовок и ссылка
+   ловят их (H1 раньше наследовал pointer-events:none - текст не выделялся, а
+   elementFromPoint в его центре проваливался насквозь). Когда заголовок ушёл по скроллу
+   (класс off из scroll-story.js), невидимые ссылка и H1 не перехватывают клики глав. */
+#hero .h1,#hero a{pointer-events:auto}
+#hero.off .h1,#hero.off a{pointer-events:none}
+/* Правка 16.10 (чистка): заголовок одним размером, обе строки — не надстрочная мелочь
+   плюс гигант. Первая строка --fg (основной смысл), вторая --soft (продолжение мысли),
+   снизу слева, без uppercase. */
+.h1{position:absolute;left:40px;right:40px;bottom:120px;margin:0;font-weight:inherit;text-align:left}
+.h1 .s,.h1 .b{display:block;font:200 clamp(40px,5.6vw,96px)/1.08 var(--display);letter-spacing:-.01em}
+.h1 .s{color:var(--fg)}
+.h1 .b{color:var(--soft)}
+/* "Как устроена компания" — тихая ссылка по центру снизу, без вертикальной палочки
+   (та читалась как глюк у края); стрелка-шеврон под текстом вместо линии. */
+.down{position:absolute;left:0;right:0;bottom:38px;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:14px;color:var(--soft);text-align:center}
+.down:hover{color:var(--fg)}
+.down i{display:block;width:7px;height:7px;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:rotate(45deg);animation:dn 1.8s ease-in-out infinite}
+@keyframes dn{0%,100%{transform:rotate(45deg) translate(0,0);opacity:.45}50%{transform:rotate(45deg) translate(3px,3px);opacity:1}}
+.on{pointer-events:auto}.off{pointer-events:none}
+@media (max-width:860px){
+ .h1{left:18px;right:18px;bottom:calc(96px + env(safe-area-inset-bottom))}
+ .down{bottom:calc(20px + env(safe-area-inset-bottom));font-size:13px}
+}
+@media (max-height:520px) and (orientation:landscape){
+ .h1{bottom:60px}.down{bottom:14px}}
+body.nogl{background:radial-gradient(80% 60% at 50% 70%,#1a1915,#0A0A08)}
+
+/* Стыковка с реальным контентом ниже первого экрана: канвас/виньетка/зерно — фон с
+   z-index 1-3, заголовок первого экрана 4, контентные блоки идут поверх них (z-index 5)
+   ниже первого экрана, шапка (z-index 8) всегда поверх всего.
+   Правка 16.10 (чистка, пункт B): был виден шов между холстом (~#111110 из-за прозрачного
+   clear + альфа-смешения точек) и страницей/шапкой (#0A0A08/#090907) — два разных чёрных.
+   Один цвет везде: рендерер теперь чистит холст непрозрачным #0A0A08 (было прозрачным,
+   R.setClearColor в hero-scene.js), #content тоже сплошной #0A0A08 без полупрозрачной
+   подложки (было rgba(9,9,7,.8) — компромисс ради главы 15.10, чтобы поле точек слабо
+   просвечивало сквозь старые статичные блоки; теперь это не нужно, блоки 8-10 всё равно
+   показываются только после главы 7, когда холст уже визуально "кончился" по сюжету). */
+#hero-spacer{height:100vh}
+.story-anchor{position:relative;top:50%;display:block;height:0}
+#content{position:relative;z-index:5;background:var(--bg)}
+
+/* ===== Иммерсивная история, главы 2-3 (15.10). Один холст на весь скролл, главы 1-3
+   сделаны, 4 и дальше пока статичные блоки ниже — переведём на тот же механизм следующими
+   связками. Триггеры (.story-trigger) — невидимые распорки высотой под главу, камера и
+   текст читают прогресс скролла по ним через GSAP ScrollTrigger (_assets/3d/scroll-story.js). */
+.story-trigger{height:90vh}
+.chapter-panel{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:40px;opacity:0;pointer-events:none}
+.chapter-text{max-width:900px}
+/* Правка 16.10 (чистка, пункт C8): прямоугольные подложки с видимой границей убраны -
+   читаемость теперь даёт гашение точек поля в 3D-шейдере (maskRect/maskOn в hero-scene.js,
+   считается по экранному прямоугольнику .chapter-text каждый кадр) плюс мягкая тень текста
+   здесь, без рамки и без жёсткого края. */
+.ch2-text{text-align:center}
+.ch2-text .bridge-line{font-family:var(--display);font-weight:200;font-size:clamp(2rem,5vw,4rem);line-height:1.2;letter-spacing:-.01em;margin:0;
+ text-shadow:0 2px 24px rgba(10,10,8,.9),0 0 3px rgba(10,10,8,.9)}
+.ch2-desc{max-width:46ch;margin:8px auto 0;color:var(--soft);font-size:15px;line-height:1.55;text-shadow:0 2px 16px rgba(10,10,8,.9)}
+.ch3-text h2{font-family:var(--display);font-weight:200;font-size:clamp(1.75rem,3.6vw,3rem);margin:0 0 16px;color:var(--fg);text-shadow:0 2px 24px rgba(10,10,8,.9),0 0 3px rgba(10,10,8,.9)}
+.ch3-text p{color:var(--soft);font-size:16px;line-height:1.6;max-width:56ch;margin:0;text-shadow:0 2px 16px rgba(10,10,8,.9)}
+@media (max-width:860px){
+ .chapter-panel{padding:22px}
+ .ch2-text .bridge-line{font-size:7.5vw}
+ .ch2-desc{font-size:14px}
+ #ch4panel{align-items:flex-end;padding-bottom:64px}
+}
+/* Этап 0, п.3: статичная раскладка истории (html.story-static) - без WebGL, если сцена
+   упала, или GSAP не загрузился. Первый экран и главы идут обычными секциями друг за
+   другом, распорки скролл-сцен убраны, весь текст виден сразу (opacity из scroll-story
+   перекрыта !important на случай, если класс появился уже после его работы). */
+/* Lenis (плавная прокрутка колесом, _assets/vendor/lenis.min.js) - минимум его CSS. */
+html.lenis,html.lenis body{height:auto}
+.lenis:not(.lenis-autoToggle).lenis-stopped{overflow:clip}
+.lenis.lenis-smooth iframe{pointer-events:none}
+html.no-webgl #cv{display:none}
+html.story-static #hero{position:relative;min-height:100vh;min-height:100svh;opacity:1!important}
+html.story-static .story-trigger,html.story-static .story-buffer{display:none}
+html.story-static .chapter-panel{position:relative;inset:auto;z-index:5;opacity:1!important;pointer-events:auto;
+ background:var(--bg);padding:88px 40px;align-items:flex-start;justify-content:center}
+@media (max-width:860px){html.story-static .chapter-panel{padding:64px 18px}}
+/* Этап 0, п.4: без бесконечных анимаций при prefers-reduced-motion. */
+@media (prefers-reduced-motion:reduce){
+ .grain{animation:none}
+ .down i{animation:none;opacity:1}
+}
+</style>
+</head>
+<body>
+<canvas id="cv" aria-hidden="true"></canvas>
+<div class="vig"></div><div class="grain"></div>
+
+
+
+<!-- header:start - шаблон _assets/_header-template.mjs, правки там, затем node _assets/_header-apply.mjs -->
+<header id="hdr" class="hdr">
+  <div class="hdr-in">
+    <a class="hdr-logo" href="./" aria-label="Атлетикс Корп, на главную"><img src="_assets/img/logo-ac-light@2x.png" srcset="_assets/img/logo-ac-light@2x.png 2x, _assets/img/logo-ac-light@3x.png 3x" width="48" height="24" alt="Атлетикс Корп"></a>
+    <nav class="hdr-nav" aria-label="Основные разделы">
+      <a href="podhod/">Подход</a>
+      <a href="produkty/">Продукты</a>
+      <a href="analiz-osanki/">Анализ осанки</a>
+      <a href="kompaniya/">Компания</a>
+    </nav>
+    <a class="hdr-cta" href="analiz-osanki/#zapis">Записаться</a>
+    <button class="hdr-menu" id="menuBtn" type="button" aria-label="Меню" aria-expanded="false" aria-controls="siteMenu"><i></i><i></i></button>
+  </div>
+</header>
+<div class="smenu" id="siteMenu" role="dialog" aria-modal="true" aria-label="Меню сайта" hidden>
+  <button class="smenu-close" type="button" aria-label="Закрыть меню"><i></i><i></i></button>
+  <nav class="smenu-nav" aria-label="Все разделы">
+    <ul>
+      <li style="--i:0"><a href="podhod/"><span>Подход</span></a></li>
+      <li style="--i:1"><a href="produkty/"><span>Продукты</span></a></li>
+      <li style="--i:2"><a href="analiz-osanki/"><span>Анализ осанки</span></a></li>
+      <li style="--i:3"><a href="biznes/"><span>Для бизнеса</span></a></li>
+      <li style="--i:4"><a href="znaniya/"><span>Знания</span></a></li>
+      <li style="--i:5"><a href="kompaniya/"><span>Компания</span></a></li>
+      <li style="--i:6"><a href="partneram/"><span>Партнёрам</span></a></li>
+      <li style="--i:7"><a href="investoram/"><span>Инвесторам</span></a></li>
+      <li style="--i:8"><a href="karera/"><span>Карьера</span></a></li>
+    </ul>
+  </nav>
+  <div class="smenu-foot">
+    <a href="mailto:ac@athleticscorp.ru">ac@athleticscorp.ru</a>
+  </div>
+</div>
+<!-- header:end -->
+
+<section id="hero">
+  <h1 class="h1"><span class="s">Понимать человека.</span><span class="b">Через движение.</span></h1>
+  <a class="down" href="#ch2read">Как устроена компания <i></i></a>
+</section>
+
+<!-- Главы 2-3: текст глав, фиксированные панели поверх холста, видимость и камера ведутся
+     прогрессом скролла по невидимым распоркам ниже (scroll-story.js). -->
+<section class="chapter-panel" id="ch2panel">
+  <div class="chapter-text ch2-text">
+    <p class="bridge-line">Каждый шаг рассказывает о человеке.<br>Мы научились это читать.</p>
+    <p class="ch2-desc">Научно-продуктовая HealthTech-компания: помогаем человеку понимать своё состояние и осознанно управлять им через движение.</p>
+  </div>
+</section>
+<section class="chapter-panel" id="ch3panel">
+  <div class="chapter-text ch3-text">
+    <h2>Осанка только вход. Объект один: человек через движение.</h2>
+    <p>Мы работаем с движением человека. Наблюдаем, измеряем, понимаем, выбираем решение и смотрим на реакцию. Каждый следующий цикл точнее предыдущего.</p>
+  </div>
+</section>
+<section class="chapter-panel" id="ch4panel">
+  <div class="chapter-text ch3-text">
+    <h2>Движение одновременно рассказывает о человеке и меняет его состояние</h2>
+  </div>
+</section>
+<section class="chapter-panel" id="ch5panel">
+  <div class="chapter-text ch3-text">
+    <h2>Движение шире тренировки</h2>
+    <div class="chips" style="margin-top:16px">
+      <span>осанка</span><span>моторный контроль</span><span>походка</span><span>дыхание</span><span>сенсомоторика</span><span>мышечный тонус</span><span>повседневная активность</span><span>спортивная нагрузка</span><span>восстановление</span><span>двигательные привычки</span><span>движение во сне</span>
+    </div>
+  </div>
+</section>
+<section class="chapter-panel" id="ch6panel">
+  <div class="chapter-text ch3-text">
+    <h2>Как мы работаем: петля, которая с каждым циклом точнее</h2>
+    <ol class="chain">
+      <li><b>наблюдать</b></li>
+      <li><b>измерять</b></li>
+      <li><b>понимать</b></li>
+      <li><b>объяснять</b></li>
+      <li><b>выбирать решение</b></li>
+      <li><b>воздействовать</b></li>
+      <li><b>измерять реакцию</b></li>
+      <li><b>уточнять модель</b></li>
+      <li><b>следующий цикл точнее</b></li>
+    </ol>
+    <div class="products">
+      <span data-status="ready">Анализ осанки и движения <i>работает</i></span>
+      <span data-status="ready">Работа со специалистами <i>работает</i></span>
+      <span data-status="ready">Мастер-класс для специалистов <i>работает</i></span>
+      <span data-status="dev">СТАТЬ <i>в разработке</i></span>
+      <span data-status="testing">SportTech <i>в тестировании</i></span>
+    </div>
+  </div>
+</section>
+<section class="chapter-panel" id="ch7panel">
+  <div class="chapter-text ch3-text">
+    <h2>Структурированная база наблюдений и повторных измерений</h2>
+    <div class="nums7">
+      <div><span id="ch7n1" class="ch7num" data-to="1000" data-suffix="+">1&nbsp;000+</span><i>стандартизированных анализов</i></div>
+      <div><span id="ch7n2" class="ch7num" data-to="300" data-suffix="+">300+</span><i>повторных измерений и тестирований</i></div>
+      <div><span id="ch7n3" class="ch7num" data-to="85" data-suffix="%" data-approx="1">≈85%</span><i>анализа алгоритмизировано</i></div>
+    </div>
+  </div>
+</section>
+
+<div id="hero-spacer" class="story-trigger" data-chapter="1" style="height:100vh"></div>
+<!-- #ch2read: цель ссылки "Как устроена компания" - середина диапазона главы 2, где её текст
+     уже виден полностью (было: начало распорки, где ещё виден заголовок первого экрана и
+     клик визуально ничего не менял). -->
+<div id="ch2start" class="story-trigger" data-chapter="2"><span id="ch2read" class="story-anchor"></span></div>
+<div class="story-trigger" data-chapter="3"></div>
+<div class="story-trigger" data-chapter="4" style="height:120vh"></div>
+<div class="story-trigger" data-chapter="5" style="height:160vh"></div>
+<div class="story-trigger" data-chapter="6" style="height:180vh"></div>
+<div class="story-trigger" data-chapter="7" style="height:140vh"></div>
+<!-- Буфер перед стартом старого статичного контента (баг 16.10: текст главы ещё не успевал
+     погаснуть, а следующий блок уже въезжал поверх и резал заголовок). Чистка 16.10 (пункт
+     D15): глава 7 теперь гаснет на 82% своего диапазона (fadeOutEnd в scroll-story.js), не
+     к самому концу — запас уже есть внутри главы, буфер сократили со 100vh до 30vh. -->
+<div class="story-buffer" style="height:30vh"></div>
+
+<div id="content">
+<style>
+  .block{ padding:var(--sp-9) 0; border-bottom:1px solid var(--line); }
+  .block:last-of-type{ border-bottom:none; }
+  .bridge{ min-height:70vh; display:flex; align-items:center; }
+  .bridge-line{ font-family:var(--font-display); font-weight:200; font-size:clamp(2.25rem,5.5vw,4.5rem); line-height:1.15; letter-spacing:-.01em; max-width:18ch; margin:0; }
+  .lead{ font-size:var(--fs-text-l); max-width:640px; }
+  .cards3{ display:grid; grid-template-columns:repeat(3,1fr); gap:var(--sp-4); }
+  .cards5{ display:grid; grid-template-columns:repeat(5,1fr); gap:var(--sp-4); }
+  @media (max-width:860px){ .cards3,.cards5{ grid-template-columns:1fr 1fr; } }
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:var(--sp-4); }
+  /* Чистка 16.10, пункт C11: было 12px/--mute, почти нечитаемо на тёмном. 15px/14px на
+     телефоне, --soft; активный чип глав 5 теперь не латунной заливкой (латунь только
+     логотип и измерения), а --fg текстом с тонкой рамкой --fg. */
+  .chips span{ font-size:15px; border:1px solid var(--line); border-radius:999px; padding:5px 12px; color:var(--soft); transition:color .25s,border-color .25s,background .25s; }
+  @media (max-width:860px){ .chips span{ font-size:14px; } }
+  #ch5panel .chips span.active{ color:var(--fg); background:transparent; border-color:var(--fg); }
+  /* Пункт C13: цифры данных были ~14px без подписи - крупно (измерение, латунь уместна),
+     подпись снизу под каждой (источник: ШТАБ/11-фундамент/база-смыслов, раздел про данные).
+     Цифры на 16.10 отмечены в ШТАБ как неподтверждённые финально - см. отчёт 03-чистка.md. */
+  .nums7{ display:flex; flex-wrap:wrap; gap:36px; margin-top:20px; }
+  .nums7 div{ display:flex; flex-direction:column; gap:6px; }
+  .ch7num{ font-family:var(--display); font-weight:200; font-size:clamp(40px,5vw,72px); line-height:1; color:var(--brass); white-space:nowrap; }
+  .nums7 i{ font-style:normal; font-size:13px; color:var(--soft); line-height:1.35; max-width:180px; }
+  /* Пункт C12: было 9 шагов строкой с висячими стрелками на переносе - список с номерами
+     01-09 в две колонки, без стрелок. Активный шаг - цвет --fg (не латунь), номер вместе с ним. */
+  .chain{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px 28px; margin:var(--sp-4) 0 0; padding:0; list-style:none; counter-reset:step; max-width:560px; }
+  @media (max-width:560px){ .chain{ grid-template-columns:1fr; } }
+  .chain li{ display:flex; align-items:baseline; gap:8px; font-size:14px; counter-increment:step; }
+  .chain li::before{ content:counter(step,decimal-leading-zero); font-family:var(--mono); font-size:11px; color:var(--mute); flex:none; }
+  .chain li:has(b.active)::before{ color:var(--fg); }
+  .chain b{ font-weight:500; color:var(--soft); transition:color .25s; }
+  .chain b.active{ color:var(--fg); font-weight:600; }
+  /* Пункт C12: статус продукта теперь словом рядом с названием, не только непрозрачностью
+     (СТАТЬ при opacity:.55 почти не читалась). Активный - --fg рамка, не латунная заливка. */
+  .products{ display:flex; flex-wrap:wrap; gap:8px; margin-top:var(--sp-4); }
+  .products span{ font-size:14px; border:1px solid var(--line); border-radius:999px; padding:5px 12px; color:var(--soft); transition:color .25s,border-color .25s,background .25s; }
+  .products span i{ font-style:normal; font-size:11px; color:var(--mute); margin-left:6px; }
+  .products span[data-status="dev"] i,.products span[data-status="testing"] i{ color:var(--brass); }
+  .products span.active{ color:var(--fg); background:transparent; border-color:var(--fg); }
+  .big{ font-family:var(--font-display); font-weight:200; font-size:2.25rem; }
+  .ftr{ padding:var(--sp-7) 0; display:flex; gap:var(--sp-4); flex-wrap:wrap; justify-content:space-between; font-size:13px; color:var(--mute); }
+  .ftr-legal{ display:flex; gap:var(--sp-4); flex-wrap:wrap; }
+  .ftr-legal a{ color:var(--mute); text-decoration:underline; text-decoration-color:var(--line); text-underline-offset:.2em; }
+  .ftr-legal a:hover{ color:var(--soft); text-decoration-color:var(--soft); }
+  /* Пункт D16: карточки этих двух блоков были в каркасном стиле (рамка-бокс .ds-card из
+     общей дизайн-системы) - здесь убрана рамка/фон, заголовок блока - те же пропорции, что
+     у заголовков глав (clamp, вес 200). .ds-card в остальных местах сайта не трогали. */
+  .block-plain h2{ font-weight:200!important; font-size:clamp(1.75rem,3.6vw,3rem)!important; }
+  .card-plain{ border:none!important; background:none!important; padding:0!important; }
+  .card-plain h3{ color:var(--fg); }
+  .card-plain p{ color:var(--soft); }
+  /* Пункт E18: grid-колонки по умолчанию не сжимаются уже содержимого (min-content) - на
+     узком экране длинное слово в карточке раздвигало колонку шире вьюпорта, горизонтальный
+     скролл всей страницы. minmax(0,1fr) разрешает колонке сжиматься, текст переносится. */
+  .cards3,.cards5{ grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .cards5{ grid-template-columns:repeat(5,minmax(0,1fr)); }
+  @media (max-width:860px){ .cards3,.cards5{ grid-template-columns:minmax(0,1fr) minmax(0,1fr); } }
+</style>
+
+<!-- Блок-мост, "Осанка только вход", "почему движение", "движение шире тренировки",
+     "петля"+"продукты" и "данные" теперь главы 2-7 (фиксированные панели + сцены выше),
+     ведутся скроллом. Правка 15-16.10: один холст, без разрыва на статичные блоки. -->
+
+<section class="block block-plain">
+  <div class="ds-wrap">
+    <h2 style="margin-bottom:var(--sp-5)">Наука отдельно, рынок отдельно, работают вместе</h2>
+    <div class="cards3" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+      <div class="ds-card card-plain"><h3>Институт Физической Адаптации Человека</h3><p>наука → методология → стандарты → образование</p></div>
+      <div class="ds-card card-plain"><h3>Атлетикс Корп</h3><p>знание → технология → продукт → рынок → новые данные</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="block block-plain" style="border-bottom:none">
+  <div class="ds-wrap">
+    <h2 style="margin-bottom:var(--sp-5)">С чего начать именно вам</h2>
+    <div class="cards5">
+      <div class="ds-card card-plain"><h3 style="font-size:1.1rem">Для себя</h3><p style="font-size:13px;margin:6px 0 10px">Сначала понять своё состояние.</p><a class="ds-link" href="analiz-osanki/">Консультация</a></div>
+      <div class="ds-card card-plain"><h3 style="font-size:1.1rem">Для бизнеса</h3><p style="font-size:13px;margin:6px 0 10px">Сотрудники или клиенты.</p><a class="ds-link" href="biznes/">Сценарии</a></div>
+      <div class="ds-card card-plain"><h3 style="font-size:1.1rem">Партнёрам</h3><p style="font-size:13px;margin:6px 0 10px">Дистрибуция, наука.</p><a class="ds-link" href="partneram/">Обсудить</a></div>
+      <div class="ds-card card-plain"><h3 style="font-size:1.1rem">Инвесторам</h3><p style="font-size:13px;margin:6px 0 10px">Продукты и данные.</p><a class="ds-link" href="investoram/">Материалы</a></div>
+      <div class="ds-card card-plain"><h3 style="font-size:1.1rem">Карьера</h3><p style="font-size:13px;margin:6px 0 10px">Задачи с рынка будущего.</p><a class="ds-link" href="karera/">Вакансии</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="block" style="border-bottom:none;padding-top:0">
+  <div class="ds-wrap">
+    <p class="lead">Мы хотим, чтобы человек как можно дольше оставался живым, функциональным и самостоятельным. Движение остаётся одним из главных инструментов для этого.</p>
+  </div>
+</section>
+
+<footer class="ds-wrap ftr">
+  <span>© 2026 Атлетикс Корп</span>
+  <span>Анализ немедицинский, не заменяет консультацию врача</span>
+  <span class="ftr-legal"><a href="privacy-policy/">Политика конфиденциальности</a><a href="personal-data-policy/">Согласие на обработку данных</a><a href="oferta/">Публичная оферта</a></span>
+</footer>
+</div>
+
+<!-- Three.js 0.186 (свежий, был r128) — ES-модуль, локально из npm, без сборщика.
+     importmap говорит браузеру, куда резолвить голый спецификатор "three" внутри
+     hero-scene.js и GLTFLoader.js (так эти файлы написаны самим Three.js). -->
 <script type="importmap">
 {
   "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/"
+    "three": "./_assets/vendor/three/three.module.min.js"
   }
 }
 </script>
-<title>Атлетикс Корп — Анализ движения и осанки</title>
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="icon" href="/favicon.ico" sizes="32x32">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#0A0A08">
-<link rel="canonical" href="https://athleticscorp.ru/">
-<meta name="description" content="Анализ движения и осанки в Москве и МО — точная научно обоснованная диагностика двигательных паттернов по фото. Бесплатный LITE-анализ, онлайн от 2 000 ₽, выезд от 15 000 ₽.">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Атлетикс Корп">
-<meta property="og:title" content="Атлетикс Корп — Анализ движения и осанки">
-<meta property="og:description" content="Точная, индивидуальная диагностика двигательных паттернов и осанки. Онлайн от 2 000 ₽, выезд по Москве и МО от 15 000 ₽. Бесплатный LITE-анализ по фото.">
-<meta property="og:url" content="https://athleticscorp.ru/">
-<meta property="og:image" content="https://athleticscorp.ru/assets/logo-og.png">
-<meta property="og:locale" content="ru_RU">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Атлетикс Корп — Анализ движения и осанки">
-<meta name="twitter:description" content="Точная диагностика двигательных паттернов и осанки по фото.">
-<meta name="twitter:image" content="https://athleticscorp.ru/assets/logo-og.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --bg:#0A0A08;--bg2:#0E0E0C;--bg3:#121210;
-  --line:rgba(255,255,255,0.055);--line2:rgba(255,255,255,0.09);
-  --gold:#C8B882;--gold2:#E0D09A;
-  --cyan:#3FD6E0;--cyan2:#7BE8EF;
-  --cream:#F0EDE6;--cream2:#FAF8F3;
-  --dim:#7A7A70;--muted:#4A4A42;
-  --serif:'Unbounded',Georgia,serif;
-  --mono:'Unbounded',monospace;
-  --sans:'Unbounded',system-ui,sans-serif;
-}
-html{scroll-behavior:smooth;}
-body{background:var(--bg);color:var(--cream);font-family:var(--sans);font-weight:300;line-height:1.75;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
-html,body,*{cursor:none!important;}
-body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:80px 80px;}
-#cur{position:fixed;z-index:9999;pointer-events:none;width:28px;height:28px;border-radius:50%;border:1px solid rgba(200,184,130,.5);transform:translate(-50%,-50%);will-change:left,top;transition:width .15s,height .15s,border-color .15s,background .15s;}
-#cur.h{width:44px;height:44px;border-color:rgba(200,184,130,.85);background:rgba(200,184,130,.05);}
-#pre{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;}
-html.no-pre #pre{display:none!important;}
-#pre.pre-out{opacity:0;pointer-events:none;transition:opacity .45s ease;}
-.pre-stage{position:relative;width:140px;height:230px;display:flex;align-items:center;justify-content:center;}
-.pre-spine{position:relative;z-index:1;display:flex;flex-direction:column-reverse;align-items:center;gap:5px;}
-.pre-spine.pulse{animation:spinePulse .3s ease-in-out 1;}
-.pre-spine.pre-exit{opacity:0;transform:scale(.92);transition:opacity .4s ease,transform .4s ease;}
-.vert{position:relative;height:16px;background:linear-gradient(180deg,var(--gold2),var(--gold));clip-path:polygon(30% 0%,70% 0%,70% 30%,100% 20%,100% 80%,70% 70%,70% 100%,30% 100%,30% 70%,0% 80%,0% 20%,30% 30%);opacity:0;transform:translateY(24px) scaleY(.5);animation:vertIn .26s cubic-bezier(.2,.8,.3,1) forwards;}
-.vert::before{content:'';position:absolute;inset:-10px;background:var(--gold);filter:blur(10px);opacity:.45;z-index:-1;border-radius:50%;}
-.pre-logo{position:absolute;z-index:2;width:120px;height:auto;opacity:0;transform:scale(.82);filter:drop-shadow(0 0 0 rgba(200,184,130,0));transition:opacity .4s ease,transform .4s ease,filter .4s ease;}
-.pre-logo.show{opacity:1;transform:scale(1);filter:drop-shadow(0 0 22px rgba(200,184,130,.6));}
-@keyframes vertIn{to{opacity:1;transform:translateY(0) scaleY(1);}}
-@keyframes spinePulse{0%,100%{filter:drop-shadow(0 0 4px rgba(200,184,130,.35));}50%{filter:drop-shadow(0 0 20px rgba(200,184,130,.9));}}
-@media(max-width:640px){
-  .pre-stage{width:110px;height:190px;}
-  .vert::before{filter:blur(6px);opacity:.3;}
-  .pre-logo{width:96px;}
-  .pre-logo.show{filter:drop-shadow(0 0 14px rgba(200,184,130,.5));}
-}
-@media(prefers-reduced-motion:reduce){
-  .vert{animation:none!important;opacity:0!important;}
-  .pre-spine{display:none!important;}
-  .pre-logo{transition:opacity .3s ease!important;}
-}
-@keyframes fU{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:none;}}
-@keyframes fI{from{opacity:0;}to{opacity:1;}}
-nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:1.2rem 3.5rem;background:rgba(10,10,8,.8);backdrop-filter:blur(16px);border-bottom:1px solid var(--line2);}
-.nav-l{display:flex;align-items:center;gap:.7rem;text-decoration:none;}
-.nav-l img{height:22px;width:auto;}
-.nav-l span{font-family:var(--mono);font-size:.65rem;font-weight:400;letter-spacing:.18em;text-transform:uppercase;color:var(--cream);}
-.nav-r{font-family:var(--mono);font-size:.6rem;color:var(--dim);letter-spacing:.15em;text-transform:uppercase;}
-.nav-right{display:flex;align-items:center;gap:1.75rem;}
-.nav-lk{font-family:var(--mono);font-size:.58rem;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);text-decoration:none;padding:.55rem 1.15rem;border:1px solid rgba(200,184,130,.35);background:rgba(200,184,130,.03);transition:all .3s;white-space:nowrap;}
-.nav-lk:hover{border-color:var(--gold);background:rgba(200,184,130,.08);color:var(--gold2);}
-#hero{position:relative;min-height:100vh;display:grid;grid-template-rows:1fr auto;z-index:1;}
-#heroParticles,#ctaParticles{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block;}
-.hero-body{display:grid;grid-template-columns:1fr 1fr;max-width:1160px;margin:0 auto;width:100%;padding:9rem 3.5rem 3rem;align-items:center;gap:3rem;}
-/* h1.hh растёт по clamp(...,6vw,...) быстрее, чем 1160px-контейнер может отдать
-   правой колонке места — на широких экранах канвас-колонка сжимается вплоть
-   до ~218px при 1920 (текст берёт ровно свой min-content, весь остаток уходит
-   канвасу), а .hero-canvas-col{overflow:hidden} обрезает 3D-модель по этой
-   границе. minmax(360px,500px) — страховочный пол колонки, безопасно ниже
-   372px, худшего случая на 1499px (иначе текст полез бы за границы);
-   расширение контейнера с 1500px даёт канвасу расти к полным 500px. */
-@media(min-width:1200px){
-  .hero-body{grid-template-columns:minmax(0,1fr) minmax(360px,500px);}
-}
-@media(min-width:1500px){
-  .hero-body{max-width:1460px;}
-}
-.hero-text{display:flex;flex-direction:column;}
-.hero-eye{font-family:var(--mono);font-size:.57rem;color:var(--gold);letter-spacing:.24em;text-transform:uppercase;display:flex;align-items:center;gap:.75rem;margin-bottom:2.5rem;opacity:0;animation:fU .9s .05s ease forwards;}
-.hero-eye::before{content:'';width:1.1rem;height:1px;background:var(--gold);display:block;}
-h1.hh{font-family:var(--serif);font-size:clamp(3.2rem,6vw,7rem);font-weight:600;line-height:1.04;letter-spacing:-.03em;color:var(--cream2);margin-bottom:2.5rem;opacity:0;animation:fU 1s .1s ease forwards;}
-h1.hh em{font-style:italic;}
-.hero-sub{font-size:.92rem;color:var(--dim);line-height:1.9;max-width:44ch;margin-bottom:2rem;opacity:0;animation:fU 1s .15s ease forwards;}
-.hero-sub strong{color:var(--cream);font-weight:400;}
-.hero-co{font-family:var(--mono);font-size:.62rem;color:var(--dim);letter-spacing:.15em;text-transform:uppercase;border-top:1px solid var(--line2);padding-top:1.5rem;opacity:0;animation:fU .9s .2s ease forwards;}
-.hero-canvas-col{position:relative;height:560px;border:1px solid var(--line2);background:var(--bg2);overflow:hidden;opacity:0;animation:fI 1.2s .7s ease forwards;}
-.hero-canvas-col::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 65% 70% at 50% 45%,rgba(200,184,130,.06) 0%,transparent 65%);pointer-events:none;z-index:1;}
-#heroSpineC{position:absolute;inset:0;width:100%;height:100%;z-index:2;}
-.spine-hint{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:.6rem;color:rgba(180,175,160,.45);letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;z-index:3;pointer-events:none;}
-.htk{border-top:1px solid var(--line2);padding:1.5rem 3.5rem;display:grid;grid-template-columns:1fr 1fr;background:rgba(10,10,8,.5);position:relative;z-index:1;opacity:0;animation:fU .8s 1s ease forwards;}
-.htk-left{display:flex;align-items:center;gap:3rem;}
-.htk-right{display:flex;align-items:center;justify-content:flex-end;font-family:var(--mono);font-size:.6rem;color:var(--dim);letter-spacing:.14em;text-transform:uppercase;}
-.ti{display:flex;flex-direction:column;gap:.1rem;}
-.tn{font-family:var(--serif);font-size:1.6rem;font-weight:300;color:var(--gold2);line-height:1;}
-.tl{font-family:var(--mono);font-size:.6rem;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;}
-.ts{width:1px;height:1.75rem;background:var(--line2);}
-section{position:relative;z-index:1;}
-.w{max-width:1120px;margin:0 auto;padding:0 3.5rem;}
-h2{font-family:var(--serif);font-size:clamp(2rem,3.8vw,4rem);font-weight:600;line-height:1.1;color:var(--cream2);letter-spacing:-.015em;}
-h2 em{font-style:italic;}
-.dv{padding:1.4rem 3.5rem;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;}
-.dn,.dt{font-family:var(--mono);font-size:.52rem;color:var(--muted);letter-spacing:.22em;text-transform:uppercase;}
-.dl{flex:1;height:1px;background:linear-gradient(to right,transparent,var(--line2),transparent);margin:0 2rem;}
-#problem{padding:12rem 0 13rem;}
-.prob-inner{max-width:560px;}
-.pl{display:block;font-family:var(--serif);font-size:clamp(1.3rem,2.3vw,1.85rem);font-weight:300;line-height:1.5;color:var(--cream2);opacity:0;transform:translateY(18px);transition:opacity .9s ease,transform .9s ease;}
-.pl.d{color:var(--dim);font-size:clamp(1rem,1.7vw,1.3rem);}
-.pl.v{opacity:1;transform:none;}
-.pl+.pl{margin-top:1.1rem;}
-.pl.d+.pl.d{margin-top:.5rem;}
-.pk{display:block;margin-top:4rem;padding-top:4rem;border-top:1px solid var(--line2);font-family:var(--serif);font-size:clamp(1.05rem,1.8vw,1.45rem);font-weight:300;line-height:1.65;color:var(--cream2);opacity:0;transform:translateY(18px);transition:opacity .9s ease,transform .9s ease;transition-delay:.5s;}
-.pk.v{opacity:1;transform:none;}
-#what{padding:10rem 0;background:var(--bg2);}
-.what-grid{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:start;margin-top:5rem;}
-.what-body p{font-size:.9rem;color:var(--dim);line-height:1.95;margin-bottom:1.4rem;}
-.what-body strong{color:var(--cream);font-weight:400;}
-.what-callout{margin-top:2.5rem;padding:1.75rem 2.25rem;border-left:1px solid var(--gold);background:rgba(200,184,130,.03);}
-.what-callout p{font-family:var(--serif);font-size:1.05rem;font-weight:300;color:var(--cream2);line-height:1.8;font-style:italic;}
-.what-diff{margin-top:3rem;}
-.diff-row{padding:1.1rem 0;border-bottom:1px solid var(--line2);display:grid;grid-template-columns:1fr 1.4fr;gap:1.5rem;font-size:.85rem;}
-.diff-row:first-child{border-top:1px solid var(--line2);}
-.diff-who{color:var(--cream);font-family:var(--mono);font-size:.76rem;letter-spacing:.06em;}
-.diff-what{color:var(--cream);font-size:.85rem;}
-#product{padding:10rem 0;}
-.product-grid{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:start;margin-top:5rem;}
-.product-desc p{font-size:.9rem;color:var(--dim);line-height:1.95;margin-bottom:1.4rem;}
-.product-desc strong{color:var(--cream);font-weight:400;}
-.product-included{margin-top:2rem;padding:1.5rem 2rem;background:var(--bg3);border:1px solid var(--line2);}
-.product-included p{font-family:var(--mono);font-size:.76rem;color:var(--cream);opacity:.7;letter-spacing:.06em;line-height:1.8;}
-.product-included strong{color:var(--gold);font-weight:400;}
-.formats{display:flex;flex-direction:column;gap:0;}
-.format{padding:1.75rem 0;border-bottom:1px solid var(--line2);display:grid;grid-template-columns:1fr auto;align-items:center;}
-.format:first-child{border-top:1px solid var(--line2);}
-.format-name{font-family:var(--serif);font-size:1.1rem;font-weight:400;color:var(--cream2);}
-.format-note{font-family:var(--mono);font-size:.68rem;color:var(--cream);opacity:.55;letter-spacing:.06em;margin-top:.2rem;}
-.format-price{font-family:var(--serif);font-size:1.5rem;font-weight:300;color:var(--gold2);line-height:1;}
-#scale{padding:8rem 0;background:var(--bg2);border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);}
-.scale-inner{display:grid;grid-template-columns:auto 1fr;gap:5rem;align-items:center;}
-.scale-num{font-family:var(--serif);font-size:clamp(5rem,10vw,11rem);font-weight:300;line-height:1;color:var(--gold2);white-space:nowrap;}
-.scale-text p{font-size:.92rem;color:var(--dim);line-height:1.9;max-width:48ch;}
-.scale-text p+p{margin-top:1rem;}
-.scale-text strong{color:var(--cream);font-weight:400;}
-.community-widget{margin-top:2.5rem;padding-top:2rem;border-top:1px solid var(--line2);}
-.cw-top{display:flex;align-items:center;gap:.6rem;margin-bottom:.9rem;}
-.cw-dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px rgba(63,214,224,.8);animation:cwPulse 1.8s ease-in-out infinite;flex-shrink:0;}
-@keyframes cwPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
-.cw-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);}
-.cw-count{font-family:var(--serif);font-size:2.1rem;font-weight:300;color:var(--cyan);line-height:1;display:flex;align-items:baseline;gap:.5rem;}
-.cw-goal{font-family:var(--mono);font-size:.8rem;color:var(--muted);letter-spacing:.03em;}
-.cw-bar{margin-top:1rem;height:3px;background:var(--line2);border-radius:2px;overflow:hidden;}
-.cw-fill{height:100%;width:0%;background:linear-gradient(90deg,rgba(63,214,224,.5),var(--cyan));border-radius:2px;transition:width 1.4s cubic-bezier(.16,1,.3,1);box-shadow:0 0 10px rgba(63,214,224,.5);}
-.social-proof{position:fixed;left:1.25rem;bottom:1.25rem;z-index:500;display:flex;align-items:center;gap:.85rem;padding:.7rem 1.3rem .7rem .7rem;background:rgba(14,14,12,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.08);border-radius:999px;opacity:0;transform:translateY(14px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1);pointer-events:none;}
-.social-proof.show{opacity:1;transform:none;pointer-events:auto;}
-.social-proof.hide{transition:opacity .4s ease,transform .4s ease;opacity:0;transform:translateY(10px);pointer-events:none;}
-.social-proof:hover .sp-close{opacity:1;pointer-events:auto;}
-.sp-close{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;background:#0e0e0c;border:1px solid rgba(255,255,255,.15);color:var(--dim);font-size:.55rem;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .25s,color .25s,border-color .25s;}
-.sp-close:hover{color:var(--gold);border-color:var(--gold);}
-.sp-avatars{display:flex;align-items:center;flex-shrink:0;}
-.sp-avatar{width:28px;height:28px;border-radius:50%;display:block;margin-left:-10px;}
-.sp-avatar:first-child{margin-left:0;}
-.sp-info{display:flex;flex-direction:column;gap:.2rem;}
-.sp-row{display:flex;align-items:center;gap:.5rem;}
-.sp-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 7px rgba(63,214,224,.8);flex-shrink:0;animation:cwPulse 1.8s ease-in-out infinite;}
-.sp-main{font-family:var(--mono);font-size:.64rem;letter-spacing:.03em;color:var(--cream2);white-space:nowrap;}
-.sp-main #spCount{color:var(--cyan);}
-.sp-sub{font-family:var(--mono);font-size:.54rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding-left:1.1rem;}
-@media(max-width:768px){
-  .social-proof{display:none!important;}
-}
-#founder{padding:10rem 0;}
-.founder-grid{display:grid;grid-template-columns:1fr 1.6fr;gap:6rem;align-items:start;margin-top:5rem;}
-.founder-photo-wrap{position:relative;}
-.founder-img{width:100%;aspect-ratio:1/1;object-fit:cover;object-position:center 20%;display:block;filter:grayscale(15%) contrast(1.05);max-width:100%;}
-.founder-name-block{margin-top:1.5rem;}
-.founder-name{font-family:var(--serif);font-size:1.15rem;font-weight:400;color:var(--cream2);}
-.founder-role{font-family:var(--mono);font-size:.64rem;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-top:.25rem;}
-.founder-body p{font-size:.92rem;color:var(--dim);line-height:1.95;margin-bottom:1.4rem;}
-.founder-body strong{color:var(--cream);font-weight:400;}
-#cta{padding:13rem 0 11rem;border-top:1px solid var(--line2);}
-.cta-inner{max-width:560px;}
-.cta-h{font-family:var(--serif);font-size:clamp(2.2rem,4vw,4.2rem);font-weight:600;line-height:1.1;color:var(--cream2);letter-spacing:-.015em;margin-bottom:1.75rem;}
-.cta-h em{font-style:italic;}
-.cta-sub{font-size:.9rem;color:var(--dim);line-height:1.9;max-width:44ch;margin-bottom:3rem;}
-.cta-form{display:flex;flex-direction:column;max-width:360px;}
-.inp{width:100%;background:transparent;border:none;border-bottom:1px solid var(--line2);color:var(--cream2);font-family:var(--sans);font-size:.88rem;font-weight:300;padding:1.1rem 0;outline:none;transition:border-color .3s;}
-.inp::placeholder{color:var(--muted);}
-.inp:focus{border-color:rgba(240,237,230,.25);}
-.cbtn{margin-top:2.25rem;padding:.9rem 2.5rem;align-self:flex-start;border:1px solid rgba(240,237,230,.35);color:var(--cream2);background:transparent;font-family:var(--mono);font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;transition:all .3s;cursor:pointer;}
-.cbtn:hover{border-color:var(--gold);color:var(--gold);}
-.cbtn-cyan{margin-top:2.25rem;padding:.95rem 2.75rem;align-self:flex-start;border:1px solid rgba(63,214,224,.55);color:var(--cyan);background:rgba(63,214,224,.045);font-family:var(--mono);font-size:.65rem;font-weight:400;letter-spacing:.2em;text-transform:uppercase;transition:background .35s,color .35s,border-color .35s,box-shadow .35s;cursor:pointer;box-shadow:0 0 14px rgba(63,214,224,.16),inset 0 0 10px rgba(63,214,224,.05);}
-.cbtn-cyan:hover{background:var(--cyan);color:var(--bg);border-color:var(--cyan2);box-shadow:0 0 30px rgba(63,214,224,.55),0 0 60px rgba(63,214,224,.2),inset 0 0 14px rgba(255,255,255,.15);}
-.cbtn-cyan:disabled{opacity:.6;cursor:default;box-shadow:0 0 14px rgba(63,214,224,.16);}
-.cpv{font-family:var(--mono);font-size:.62rem;color:var(--dim);letter-spacing:.1em;margin-top:1.1rem;}
-#disclaimer{padding:3rem 3.5rem;border-top:1px solid var(--line2);position:relative;z-index:1;}
-.disc-text{font-family:var(--mono);font-size:.64rem;color:var(--dim);letter-spacing:.06em;line-height:1.8;max-width:72ch;}
-footer{border-top:1px solid var(--line2);padding:2rem 3.5rem;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;}
-.fm{display:flex;gap:2.5rem;align-items:center;}
-.fm span,.fm a{font-family:var(--mono);font-size:.58rem;color:var(--dim);letter-spacing:.12em;text-decoration:none;transition:color .2s;}
-.fm a{color:var(--dim)!important;}
-.fm a:hover{color:var(--cream)!important;}
-.up{opacity:0;transform:translateY(24px);transition:opacity 1s cubic-bezier(.16,1,.3,1),transform 1s cubic-bezier(.16,1,.3,1);}
-.up.go{opacity:1;transform:none;}
-.up2{opacity:0;transform:translateY(18px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1);transition-delay:.16s;}
-.up2.go{opacity:1;transform:none;}
-.up3{opacity:0;transform:translateY(14px);transition:opacity .85s cubic-bezier(.16,1,.3,1),transform .85s cubic-bezier(.16,1,.3,1);transition-delay:.3s;}
-.lite-cta{display:inline-flex;align-items:center;gap:.7rem;margin-top:1.75rem;padding:.75rem 1.9rem;border:1px solid rgba(200,184,130,.28);color:var(--gold);background:rgba(200,184,130,.03);font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:border-color .3s,color .3s,background .3s;opacity:0;animation:fU .9s 1s ease forwards;}
-.lite-cta:hover{border-color:var(--gold);background:rgba(200,184,130,.07);color:var(--gold2);}
-.lite-arrow{font-size:.8rem;transition:transform .25s;}
-.lite-cta:hover .lite-arrow{transform:translateX(4px);}
-.hero-ctas{display:flex;align-items:center;flex-wrap:wrap;gap:1.75rem;margin-top:1.75rem;opacity:0;animation:fU .9s .25s ease forwards;}
-.premium-anchor{display:inline-flex;align-items:baseline;gap:.5rem;color:var(--gold);font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;border-bottom:1px solid rgba(200,184,130,.35);padding-bottom:.2rem;transition:color .3s,border-color .3s;}
-.premium-anchor:hover{color:var(--gold2);border-color:var(--gold2);}
-.premium-anchor-sub{font-family:var(--mono);font-size:.55rem;letter-spacing:.04em;text-transform:none;color:var(--dim);}
-.lite-hint{margin-top:1.75rem;padding:1rem 1.5rem;border:1px solid var(--line2);border-left:1px solid rgba(200,184,130,.22);background:rgba(200,184,130,.02);font-size:.82rem;color:var(--dim);line-height:1.8;}
-.lite-hint-lbl{font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-right:.4rem;}
-.lite-hint-link{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(200,184,130,.28);transition:color .2s,border-color .2s;}
-.lite-hint-link:hover{color:var(--gold2);border-color:var(--gold2);}
-.up3.go{opacity:1;transform:none;}
-.fd{opacity:0;transition:opacity 1.2s ease;}
-.fd.go{opacity:1;}
-@media(max-width:768px){
-  nav{padding:.8rem 1.2rem!important;}
-  .nav-l span{display:none!important;}
-  .nav-r{display:none!important;}
-  .nav-lk{padding:.45rem .85rem!important;font-size:.52rem!important;}
-  .hero-body{
-    grid-template-columns:1fr!important;
-    padding:5.5rem 1.2rem 1.5rem!important;
-    gap:1.5rem!important;
-  }
-  h1.hh{font-size:clamp(2.6rem,11vw,3.6rem)!important;margin-bottom:1.5rem!important;line-height:1.08!important;}
-  .hero-sub{max-width:100%!important;font-size:.88rem!important;}
-  .hero-co{font-size:.52rem!important;}
-  .hero-eye{font-size:.5rem!important;margin-bottom:1.5rem!important;}
-  .hero-canvas-col{height:280px!important;}
-  .hero-ctas{gap:1rem!important;}
-  .htk{
-    grid-template-columns:1fr!important;
-    padding:.8rem 1.2rem!important;
-  }
-  .htk-left{gap:1.2rem!important;flex-wrap:wrap!important;}
-  .htk-right{display:none!important;}
-  .tn{font-size:1.3rem!important;}
-  .tl{font-size:.55rem!important;}
-  .dv{padding:.8rem 1.2rem!important;}
-  .dn,.dt{font-size:.45rem!important;}
-  .w{padding:0 1.2rem!important;}
-  #problem{padding:4.5rem 0 5rem!important;}
-  #what{padding:4.5rem 0!important;}
-  #product{padding:4.5rem 0!important;}
-  #scale{padding:4rem 0!important;}
-  #founder{padding:4.5rem 0!important;}
-  #cta{padding:5rem 0 4rem!important;}
-  #disclaimer{padding:1.5rem 1.2rem!important;}
-  section[style*="padding-top:8rem"]{padding-top:3.5rem!important;padding-bottom:3.5rem!important;}
-  h2{font-size:clamp(1.8rem,7vw,2.6rem)!important;}
-  .prob-inner{max-width:100%!important;}
-  .pl{font-size:clamp(1.15rem,5vw,1.5rem)!important;}
-  .pl.d{font-size:clamp(.9rem,4vw,1.1rem)!important;}
-  .pk{font-size:clamp(.95rem,4vw,1.2rem)!important;margin-top:2.5rem!important;padding-top:2.5rem!important;}
-  .what-grid{grid-template-columns:1fr!important;gap:2.5rem!important;}
-  .what-body p{font-size:.87rem!important;}
-  .what-callout{padding:1.2rem 1.5rem!important;}
-  .what-callout p{font-size:.95rem!important;}
-  .diff-row{grid-template-columns:1fr!important;gap:.3rem!important;padding:.8rem 0!important;}
-  .diff-who{font-size:.7rem!important;}
-  .diff-what{font-size:.82rem!important;}
-  .product-grid{grid-template-columns:1fr!important;gap:2.5rem!important;}
-  .product-desc p{font-size:.87rem!important;}
-  .format{grid-template-columns:1fr auto!important;padding:1.1rem 0!important;}
-  .format-name{font-size:1rem!important;}
-  .format-note{font-size:.62rem!important;}
-  .format-price{font-size:1.25rem!important;}
-  .product-included{padding:1.1rem 1.4rem!important;}
-  .scale-inner{grid-template-columns:1fr!important;gap:1.2rem!important;}
-  .scale-num{font-size:clamp(3.8rem,16vw,6rem)!important;}
-  .scale-text p{font-size:.87rem!important;max-width:100%!important;}
-  .cw-count{font-size:1.7rem!important;}
-  .cw-label{font-size:.55rem!important;}
-  .founder-grid{grid-template-columns:1fr!important;gap:2rem!important;}
-  .founder-img{max-width:260px!important;aspect-ratio:1/1!important;}
-  .founder-photo-wrap{max-width:260px!important;}
-  .founder-name{font-size:1rem!important;}
-  .founder-body p{font-size:.87rem!important;}
-  #cta .w > div[style*="grid"]{grid-template-columns:1fr!important;gap:2rem!important;}
-  #logoWrap3d{height:240px!important;}
-  .cta-h{font-size:clamp(1.9rem,7vw,2.6rem)!important;}
-  .cta-sub{font-size:.87rem!important;max-width:100%!important;}
-  .cta-inner,.cta-form{max-width:100%!important;}
-  .cbtn,.cbtn-cyan{width:100%!important;text-align:center!important;padding:.85rem 1rem!important;}
-  .inp{font-size:.85rem!important;}
-  .cpv{font-size:.58rem!important;}
-  footer{padding:1.2rem 1.2rem!important;flex-direction:column!important;align-items:flex-start!important;gap:.8rem!important;}
-  .fm{flex-wrap:wrap!important;gap:.8rem!important;}
-  .fm span,.fm a{font-size:.52rem!important;}
-  #cur{display:none!important;}
-  .disc-text{font-size:.58rem!important;}
-}
-#liteModal{position:fixed;inset:0;z-index:9000;display:none;align-items:flex-end;justify-content:center;}
-#liteModal.open{display:flex;}
-.lm-bg{position:absolute;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);}
-.lm-panel{position:relative;z-index:1;background:var(--bg2);border:1px solid var(--line2);border-bottom:none;width:100%;max-width:680px;height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .42s cubic-bezier(.16,1,.3,1);scrollbar-width:thin;scrollbar-color:var(--muted) transparent;}
-#liteModal.open .lm-panel{transform:translateY(0);}
-.lm-bar{position:sticky;top:0;z-index:10;background:rgba(14,14,12,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--line2);padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
-.lm-title{font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);}
-.lm-close{width:32px;height:32px;border-radius:50%;border:1px solid var(--line2);background:transparent;color:var(--dim);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:border-color .2s,color .2s;}
-.lm-close:hover{border-color:var(--gold);color:var(--gold);}
-.li-top{padding:2.5rem 1.75rem 2rem;border-bottom:1px solid var(--line2);}
-.li-tag{font-family:var(--mono);font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:.6rem;margin-bottom:1.2rem;}
-.li-tag::before{content:'';width:.8rem;height:1px;background:var(--gold);}
-.li-h{font-family:var(--serif);font-size:clamp(1.5rem,4vw,2.2rem);font-weight:600;line-height:1.1;color:var(--cream2);letter-spacing:-.015em;margin-bottom:.7rem;}
-.li-h em{font-style:italic;}
-.li-sub{font-size:.85rem;color:var(--dim);line-height:1.8;}
-.li-sub strong{color:var(--cream);font-weight:400;}
-.li-sdv{padding:.75rem 1.75rem;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);display:flex;align-items:center;justify-content:space-between;}
-.li-sn,.li-st{font-family:var(--mono);font-size:.5rem;color:var(--muted);letter-spacing:.2em;text-transform:uppercase;}
-.li-sl{flex:1;height:1px;background:linear-gradient(to right,transparent,var(--line2),transparent);margin:0 1.2rem;}
-.li-step{padding:1.75rem 1.75rem 0;}
-.li-shd{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;}
-.li-snum{width:24px;height:24px;border-radius:50%;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.55rem;color:var(--gold);flex-shrink:0;}
-.li-stitle{font-family:var(--serif);font-size:1rem;font-weight:400;color:var(--cream2);}
-.li-items{display:flex;flex-direction:column;gap:2px;padding-bottom:1.75rem;}
-.li-item{background:var(--bg3);border:1px solid var(--line2);padding:.75rem 1rem;display:flex;gap:.75rem;align-items:flex-start;}
-.li-ico{font-size:.95rem;width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line2);flex-shrink:0;}
-.li-lbl{font-family:var(--mono);font-size:.62rem;letter-spacing:.06em;color:var(--gold);margin-bottom:.15rem;}
-.li-txt{font-size:.8rem;color:var(--dim);line-height:1.65;}
-.li-shots{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:2px;}
-.li-shot{background:var(--bg3);border:1px solid var(--line2);padding:1rem;}
-.li-sbadge{font-family:var(--mono);font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(200,184,130,.22);background:rgba(200,184,130,.04);padding:2px 7px;display:inline-block;margin-bottom:.6rem;}
-.li-sttl{font-size:.82rem;font-weight:400;color:var(--cream2);margin-bottom:.5rem;}
-.li-srow{font-size:.78rem;color:var(--dim);display:flex;gap:.45rem;align-items:flex-start;padding:.15rem 0;border-bottom:1px solid var(--line);line-height:1.5;}
-.li-srow:last-child{border-bottom:none;}
-.li-dot{color:var(--gold);font-size:.55rem;flex-shrink:0;padding-top:.2rem;}
-.li-tip{background:rgba(200,184,130,.04);border:1px solid rgba(200,184,130,.16);padding:.75rem 1rem;display:flex;gap:.75rem;align-items:flex-start;margin-top:2px;margin-bottom:1.75rem;}
-.li-tlbl{font-family:var(--mono);font-size:.62rem;color:var(--gold);letter-spacing:.06em;margin-bottom:.1rem;}
-.li-txt2{font-size:.8rem;color:var(--dim);line-height:1.65;}
-.li-donts{display:flex;flex-direction:column;gap:2px;padding-bottom:1.75rem;}
-.li-dont{background:var(--bg3);border:1px solid var(--line2);border-left:2px solid rgba(200,100,80,.35);padding:.7rem 1rem;display:flex;gap:.7rem;align-items:flex-start;}
-.li-dx{font-family:var(--mono);font-size:.65rem;color:rgba(220,130,110,.65);flex-shrink:0;}
-.li-dt{font-size:.8rem;color:var(--dim);line-height:1.6;}
-.li-dt strong{color:var(--cream);font-weight:400;}
-.li-send{background:var(--bg3);border-top:1px solid var(--line2);padding:2rem 1.75rem;}
-.li-slbl{font-family:var(--mono);font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem;}
-.li-srows{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem;}
-.li-srow2{display:flex;gap:.75rem;align-items:flex-start;}
-.li-sn2{font-family:var(--mono);font-size:.62rem;color:var(--gold);flex-shrink:0;width:1.1rem;}
-.li-st2{font-size:.82rem;color:var(--dim);line-height:1.65;}
-.li-st2 strong{color:var(--cream);font-weight:400;}
-.li-email{border:1px solid rgba(200,184,130,.2);background:rgba(200,184,130,.03);padding:.9rem 1.1rem;font-family:var(--mono);font-size:.76rem;color:var(--gold);letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;}
-.li-ecopy{background:none;border:none;font-family:var(--mono);font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:color .2s;}
-.li-ecopy:hover{color:var(--gold);}
-.li-dz{border:1px dashed var(--line2);background:var(--bg2);padding:2.25rem 1.5rem;text-align:center;cursor:pointer;transition:border-color .25s,background .25s;}
-.li-dz.drag{border-color:var(--gold);background:rgba(200,184,130,.05);}
-.li-dz-ico{font-size:1.6rem;margin-bottom:.75rem;}
-.li-dz-txt{font-size:.85rem;color:var(--dim);line-height:1.6;}
-.li-dz-link{color:var(--gold);border-bottom:1px solid rgba(200,184,130,.3);}
-.li-dz-hint{font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:.08em;margin-top:.6rem;text-transform:uppercase;}
-.li-thumbs{display:none;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.75rem;}
-.li-thumbs.has{display:grid;}
-.li-thumb{position:relative;aspect-ratio:3/4;border:1px solid var(--line2);overflow:hidden;background:var(--bg3);}
-.li-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
-.li-thumb-rm{position:absolute;top:.35rem;right:.35rem;width:22px;height:22px;border-radius:50%;border:none;background:rgba(10,10,8,.75);color:var(--cream2);font-size:.7rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.li-upload-fields{display:flex;flex-direction:column;gap:0;margin-top:1.5rem;}
-.li-upload-status{font-family:var(--mono);font-size:.62rem;color:var(--dim);letter-spacing:.06em;margin-top:1rem;}
-@media(max-width:480px){
-  .lm-panel{height:95vh;border-radius:12px 12px 0 0;}
-  .li-shots{grid-template-columns:1fr;}
-  .li-top,.li-step,.li-send{padding-left:1.2rem;padding-right:1.2rem;}
-  .li-sdv{padding:.7rem 1.2rem;}
-  .li-dz{padding:1.75rem 1rem;}
-}
-</style>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "ProfessionalService",
-      "@id": "https://athleticscorp.ru/#organization",
-      "name": "Атлетикс Корп",
-      "alternateName": "Athletics Corp",
-      "url": "https://athleticscorp.ru/",
-      "logo": "https://athleticscorp.ru/assets/logo-og.png",
-      "image": "https://athleticscorp.ru/assets/logo-og.png",
-      "description": "Атлетикс Корп — исследовательско-продуктовая компания. Точный, индивидуальный, научно обоснованный анализ движения и осанки по фото или очно. Не медицинская услуга, не заменяет консультацию врача.",
-      "email": "ac@athleticscorp.ru",
-      "foundingDate": "2023",
-      "priceRange": "0–15000 ₽",
-      "areaServed": [
-        { "@type": "City", "name": "Москва" },
-        { "@type": "AdministrativeArea", "name": "Московская область" },
-        { "@type": "Country", "name": "Россия" }
-      ],
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Москва",
-        "addressCountry": "RU"
-      },
-      "founder": { "@id": "https://athleticscorp.ru/#founder" },
-      "makesOffer": [
-        { "@id": "https://athleticscorp.ru/#offer-lite" },
-        { "@id": "https://athleticscorp.ru/#offer-online" },
-        { "@id": "https://athleticscorp.ru/#offer-onsite" }
-      ]
-    },
-    {
-      "@type": "Person",
-      "@id": "https://athleticscorp.ru/#founder",
-      "name": "Арсений Кулаков",
-      "jobTitle": "Основатель, методолог",
-      "description": "7+ лет практики с клиентами высокой ответственности. Основал Атлетикс Корп и Институт физической адаптации человека. Специализация — биомеханика, нейрофизиология движения, управление физической адаптацией человека.",
-      "worksFor": { "@id": "https://athleticscorp.ru/#organization" },
-      "knowsAbout": ["Биомеханика", "Нейрофизиология движения", "Постуральный анализ", "Анализ осанки"]
-    },
-    {
-      "@type": "Service",
-      "@id": "https://athleticscorp.ru/#service",
-      "name": "Анализ движения и осанки",
-      "serviceType": "Анализ постурального и двигательного паттерна",
-      "provider": { "@id": "https://athleticscorp.ru/#organization" },
-      "areaServed": { "@type": "Country", "name": "Россия" },
-      "hasOfferCatalog": {
-        "@type": "OfferCatalog",
-        "name": "Форматы анализа",
-        "itemListElement": [
-          { "@id": "https://athleticscorp.ru/#offer-lite" },
-          { "@id": "https://athleticscorp.ru/#offer-online" },
-          { "@id": "https://athleticscorp.ru/#offer-onsite" }
-        ]
-      }
-    },
-    {
-      "@type": "Offer",
-      "@id": "https://athleticscorp.ru/#offer-lite",
-      "name": "LITE — бесплатный анализ осанки",
-      "description": "Первичный разбор осанки по двум фотографиям.",
-      "price": "0",
-      "priceCurrency": "RUB",
-      "availability": "https://schema.org/InStock",
-      "areaServed": { "@type": "Country", "name": "Россия" },
-      "url": "https://athleticscorp.ru/#product"
-    },
-    {
-      "@type": "Offer",
-      "@id": "https://athleticscorp.ru/#offer-online",
-      "name": "Онлайн-анализ движения и осанки",
-      "description": "Анализ в видеоформате. Подходит для первичного знакомства с методологией.",
-      "price": "2000",
-      "priceCurrency": "RUB",
-      "availability": "https://schema.org/InStock",
-      "areaServed": { "@type": "Country", "name": "Россия" },
-      "url": "https://athleticscorp.ru/#product"
-    },
-    {
-      "@type": "Offer",
-      "@id": "https://athleticscorp.ru/#offer-onsite",
-      "name": "Выездной анализ движения и осанки",
-      "description": "Анализ в локации клиента — офис, дом, корпоративное пространство.",
-      "price": "15000",
-      "priceCurrency": "RUB",
-      "availability": "https://schema.org/InStock",
-      "areaServed": [
-        { "@type": "City", "name": "Москва" },
-        { "@type": "AdministrativeArea", "name": "Московская область" }
-      ],
-      "url": "https://athleticscorp.ru/#cta"
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://athleticscorp.ru/#website",
-      "url": "https://athleticscorp.ru/",
-      "name": "Атлетикс Корп",
-      "inLanguage": "ru-RU",
-      "publisher": { "@id": "https://athleticscorp.ru/#organization" }
-    },
-    {
-      "@type": "WebPage",
-      "@id": "https://athleticscorp.ru/#webpage",
-      "url": "https://athleticscorp.ru/",
-      "name": "Атлетикс Корп — Анализ движения и осанки",
-      "isPartOf": { "@id": "https://athleticscorp.ru/#website" },
-      "about": { "@id": "https://athleticscorp.ru/#organization" },
-      "inLanguage": "ru-RU"
-    }
-  ]
-}
-</script>
-</head>
-<body>
-<div id="cur"></div>
-<div id="pre">
-  <div class="pre-stage">
-    <div class="pre-spine" id="preSpine"></div>
-    <img class="pre-logo" id="preLogo" data-logo="1" alt="Атлетикс Корп"/>
-  </div>
-</div>
-<script src="preloader.js"></script>
-
-<nav>
-  <a href="#" class="nav-l">
-    <img data-logo="1" alt="AC" style="height:22px;"/>
-    <span>Атлетикс Корп</span>
-  </a>
-  <div class="nav-right">
-    <span class="nav-r">Анализ движения и осанки</span>
-    <!-- ЛК ещё в разработке, включить обратно когда login.html будет опубликован -->
-    <!-- <a href="login.html" class="nav-lk">Личный кабинет</a> -->
-  </div>
-</nav>
-
-<section id="hero">
-  <canvas id="heroParticles" aria-hidden="true"></canvas>
-  <div class="hero-body">
-    <div class="hero-text">
-      <p class="hero-eye">AC — 001</p>
-      <h1 class="hh">Чувствуете себя<br><em>как в тумане?</em><br>Снижена энергия?</h1>
-      <p class="hero-sub">Ваше тело годами копит напряжение. Получите объективную картину и <strong>персональную инструкцию по эксплуатации своего тела</strong> всего по двум фотографиям.</p>
-      <p class="hero-co">Атлетикс Корп — исследовательско-продуктовая компания</p>
-      <div class="hero-ctas">
-        <button class="lite-cta" style="margin-top:0;opacity:1;animation:none;" onclick="openLite()">Получить LITE-анализ бесплатно <span class="lite-arrow">→</span></button>
-        <a href="#cta" class="premium-anchor">Выездной анализ <span class="premium-anchor-sub">(Москва и МО)</span></a>
-      </div>
-    </div>
-    <div class="hero-canvas-col" id="heroSpineWrap">
-      <canvas id="heroSpineC" width="500" height="560"></canvas>
-      <div class="spine-hint">↻ Перетащите для поворота</div>
-    </div>
-  </div>
-  <div class="htk">
-    <div class="htk-left">
-      <div class="ti"><span class="tn" id="heroAnalysesNum">1000+</span><span class="tl">Анализов с 2023</span></div>
-      <div class="ts"></div>
-      <div class="ti"><span class="tn">7+</span><span class="tl">Лет практики</span></div>
-      <div class="ts"></div>
-      <div class="ti"><span class="tn">2023</span><span class="tl">Год основания</span></div>
-    </div>
-    <div class="htk-right">Атлетикс Корп — Анализ движения и осанки</div>
-  </div>
-</section>
-
-<div class="dv"><span class="dn">002</span><div class="dl"></div><span class="dt">Контекст</span></div>
-
-<section id="problem">
-  <div class="w">
-    <div class="prob-inner" id="pb">
-      <span class="pl">Тело работает.</span>
-      <span class="pl d">Но что-то забирает энергию раньше,<br>чем заканчивается день.</span>
-      <span class="pl d">Спина не болит — но напряжение есть.</span>
-      <span class="pl d">Голова работает — но ясность не та.</span>
-      <span class="pl d">К вечеру остаётся меньше, чем должно.</span>
-      <span class="pk">Это не усталость и не болезнь.<br>Это накопленное адаптационное напряжение —<br>то, что ещё не болит, но уже снижает работоспособность.</span>
-    </div>
-  </div>
-</section>
-
-<div class="dv"><span class="dn">003</span><div class="dl"></div><span class="dt">Суть</span></div>
-
-<section id="what">
-  <div class="w" style="padding-top:8rem;padding-bottom:8rem;">
-    <h2 class="up">Мы работаем с тем,<br><em>что обычно невидимо</em></h2>
-    <div class="what-grid">
-      <div class="what-body up2">
-        <p>Атлетикс Корп анализирует как нервная система организует движение и осанку под нагрузкой — и показывает где тело теряет ресурс впустую.</p>
-        <p>Результат: <strong>конкретная, научно обоснованная картина двигательных и постуральных паттернов</strong> — то, что влияет на энергию, ясность и работоспособность, но обычно невидимо.</p>
-        <div class="what-callout"><p>Не лечение. Не тренировка.<br>Анализ — точный, индивидуальный, научно обоснованный.</p></div>
-      </div>
-      <div class="up3">
-        <div class="what-diff">
-          <div class="diff-row"><span class="diff-who">Физиотерапевт</span><span class="diff-what">Работает с болью и травмой</span></div>
-          <div class="diff-row"><span class="diff-who">Остеопат</span><span class="diff-what">Работает со структурой</span></div>
-          <div class="diff-row"><span class="diff-who">Тренер</span><span class="diff-what">Работает с кондицией</span></div>
-          <div class="diff-row"><span class="diff-who" style="color:var(--gold);">Атлетикс Корп</span><span class="diff-what" style="color:var(--cream2);">Работает с двигательной стратегией нервной системы</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="dv"><span class="dn">004</span><div class="dl"></div><span class="dt">Продукт</span></div>
-
-<section id="product">
-  <div class="w" style="padding-top:8rem;padding-bottom:8rem;">
-    <h2 class="up">Анализ движения<br>и <em>осанки</em></h2>
-    <div class="product-grid">
-      <div class="product-desc up2">
-        <p>Точный, индивидуальный, научно обоснованный анализ постурального и двигательного паттерна.</p>
-        <p>Клиент двигается в стандартных паттернах — специалист наблюдает и фиксирует. Длительность от 30 до 60 минут в зависимости от формата.</p>
-        <div class="product-included"><p><strong>В любом формате:</strong><br>Устная интерпретация сразу после.<br>PDF-отчёт — через 16–24 часа на почту или в мессенджер.</p></div>
-      </div>
-      <div class="up3">
-        <div class="formats">
-          <div class="format"><div><p class="format-name">Онлайн</p><p class="format-note">Анализ в видеоформате. Подходит для первичного знакомства с методологией.</p></div><span class="format-price">2 000 ₽</span></div>
-          <div class="format"><div><p class="format-name">Выезд</p><p class="format-note">Анализ в вашей локации — офис, дом, корпоративное пространство.</p></div><span class="format-price">15 000 ₽</span></div>
-        </div>
-        <div class="lite-hint"><span class="lite-hint-lbl">Не уверены?</span> Попробуйте <a href="#" class="lite-hint-link" onclick="openLite();return false;">бесплатный LITE-анализ</a> — пришлите два фото, получите первичный разбор осанки.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="dv"><span class="dn">005</span><div class="dl"></div><span class="dt">Масштаб</span></div>
-
-<section id="scale">
-  <div class="w">
-    <div class="scale-inner fd">
-      <div class="scale-num" id="scaleNum">1000+</div>
-      <div class="scale-text">
-        <p><strong>Анализов движения и осанки — с 2023 года.</strong></p>
-        <p>Клиент определяется не по профессии или доходу. По типу мышления — замечает тонкие сигналы тела, инвестирует в себя осознанно, хочет понять механизм.</p>
-        <p>Возраст 30–50. Как правило высокая интеллектуальная или физическая нагрузка.</p>
-        <div class="community-widget" id="communityWidget">
-          <div class="cw-top"><span class="cw-dot"></span><span class="cw-label">Комьюнити — снимков осанки собрано</span></div>
-          <div class="cw-count"><span id="cwNum">2 400</span><span class="cw-goal">/ 3 000</span></div>
-          <div class="cw-bar"><div class="cw-fill" id="cwFill" style="width:80.0%;"></div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="dv"><span class="dn">006</span><div class="dl"></div><span class="dt">Основатель</span></div>
-
-<section id="founder">
-  <div class="w" style="padding-top:8rem;padding-bottom:8rem;">
-    <div class="founder-grid">
-      <div class="up">
-        <div class="founder-photo-wrap">
-          <img src="https://i.imgur.com/KTEJ9N3.jpeg" alt="Арсений Кулаков" class="founder-img"/>
-        </div>
-        <div class="founder-name-block">
-          <p class="founder-name">Арсений Кулаков</p>
-          <p class="founder-role">Основатель, методолог</p>
-        </div>
-      </div>
-      <div class="founder-body up2">
-        <p style="font-family:var(--mono);font-size:.54rem;color:var(--muted);letter-spacing:.22em;text-transform:uppercase;margin-bottom:2rem;">006 — Основатель</p>
-        <p><strong>7+ лет практики</strong> с клиентами высокой ответственности. Основал Атлетикс Корп и Институт физической адаптации человека.</p>
-        <p>Специализация — биомеханика, нейрофизиология движения, управление физической адаптацией человека.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="cta">
-  <canvas id="ctaParticles" aria-hidden="true"></canvas>
-  <div class="w">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;">
-    <div class="cta-inner">
-      <h2 class="cta-h up">Записаться<br>на <em>анализ</em></h2>
-      <p class="cta-sub up2">Анализ — точка входа. Он даёт конкретную картину ваших двигательных паттернов. Формат и длительность подбираются под запрос.</p>
-      <div class="cta-form up3" id="ctaForm">
-        <input class="inp" id="fName" type="text" placeholder="Имя" required/>
-        <input class="inp" id="fEmail" type="email" placeholder="Email" required/>
-        <input class="inp" id="fPhone" type="tel" placeholder="Телефон (необязательно)"/>
-        <label style="display:flex;align-items:flex-start;gap:.6rem;margin-top:1.75rem;font-size:.76rem;color:var(--dim);line-height:1.6;cursor:pointer;">
-          <input type="checkbox" id="fConsentData" required style="margin-top:.2rem;flex-shrink:0;accent-color:var(--gold);width:15px;height:15px;cursor:pointer;">
-          <span>Я согласен(на) с <a href="/privacy-policy" target="_blank" rel="noopener" style="color:var(--gold);border-bottom:1px solid rgba(200,184,130,.35);text-decoration:none;">Политикой конфиденциальности</a> и даю <a href="/personal-data-policy" target="_blank" rel="noopener" style="color:var(--gold);border-bottom:1px solid rgba(200,184,130,.35);text-decoration:none;">согласие на обработку персональных данных</a></span>
-        </label>
-        <label style="display:flex;align-items:flex-start;gap:.6rem;margin-top:.9rem;font-size:.76rem;color:var(--dim);line-height:1.6;cursor:pointer;">
-          <input type="checkbox" id="fConsentAds" style="margin-top:.2rem;flex-shrink:0;accent-color:var(--gold);width:15px;height:15px;cursor:pointer;">
-          <span>Хочу получать информацию об услугах и акциях (<a href="/advertising-consent" target="_blank" rel="noopener" style="color:var(--gold);border-bottom:1px solid rgba(200,184,130,.35);text-decoration:none;">Согласие на получение рекламной информации</a>)</span>
-        </label>
-        <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:2.25rem;">
-          <button class="cbtn-cyan" style="margin-top:0;" onclick="submitForm(event)">Записаться на интерпретацию</button>
-          <button class="lite-cta" style="margin-top:0;opacity:1;animation:none;" onclick="openLite()">LITE — бесплатно <span class="lite-arrow">→</span></button>
-        </div>
-        <p class="cpv" id="fStatus">Никаких рассылок. Только прямой контакт.</p>
-      </div>
-    </div>
-
-    <div id="logoWrap3d" style="position:relative;height:500px;display:flex;align-items:center;justify-content:center;" aria-hidden="true">
-      <div style="position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(200,184,130,0.07) 0%,transparent 70%);pointer-events:none;"></div>
-      <canvas id="logoCanvas3d" style="width:100%;height:100%;display:block;"></canvas>
-    </div>
-
-    </div>
-  </div>
-</section>
-
-<section id="disclaimer">
-  <div class="w">
-    <p class="disc-text">Анализ движения и осанки Атлетикс Корп — немедицинская оценка постурального и двигательного паттерна. Не является постановкой диагноза и не заменяет консультацию врача.</p>
-  </div>
-</section>
-
-<footer style="flex-wrap:wrap;row-gap:.75rem;">
-  <div style="display:flex;align-items:center;gap:.7rem;">
-    <img data-logo="1" alt="AC" style="height:18px;opacity:.4;"/>
-    <span style="font-family:var(--mono);font-size:.52rem;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;">Атлетикс Корп</span>
-  </div>
-  <div class="fm">
-    <span>© 2026</span>
-    <a href="mailto:ac@athleticscorp.ru">Контакт</a>
-    <a href="/privacy-policy">Конфиденциальность</a>
-    <a href="/personal-data-policy">Обработка ПДн</a>
-    <a href="/oferta">Оферта</a>
-    <a href="/disclaimer">Дисклеймер</a>
-    <a href="/consent-photo">Согласие на фото</a>
-    <a href="/advertising-consent">Согласие на рекламу</a>
-    <a href="/cookies">Cookie</a>
-  </div>
-  <p style="flex-basis:100%;margin:0;font-family:var(--mono);font-size:.5rem;color:var(--muted);letter-spacing:.04em;line-height:1.6;">3D-модель позвоночника — <a href="https://sketchfab.com/3d-models/the-human-spinal-column-bcd9eee09ce044ef98a69c315aa792e2" target="_blank" rel="noopener" style="color:var(--muted);border-bottom:1px solid rgba(122,122,112,.35);text-decoration:none;">The human spinal column</a> от 3D (@scratchi), лицензия <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" style="color:var(--muted);border-bottom:1px solid rgba(122,122,112,.35);text-decoration:none;">CC BY 4.0</a></p>
-</footer>
-
+<script src="_assets/vendor/gsap.min.js"></script>
+<script src="_assets/vendor/ScrollTrigger.min.js"></script>
+<script src="_assets/vendor/SplitText.min.js"></script>
+<script src="_assets/vendor/lenis.min.js"></script>
 <script>
-(function(){
-  var s='https://i.imgur.com/cuiy9Zo.png';
-  function i(){document.querySelectorAll('[data-logo]').forEach(function(e){e.src=s;});}
-  i(); document.addEventListener('DOMContentLoaded',i);
-})();
+// Человек меняется одной строкой: сейчас временный Xbot, когда будет готова новая модель —
+// поменять только MODEL_URL, остальной код сцены трогать не нужно.
+var MODEL_URL = "_assets/3d/xbot.glb";
+var LOGO_SRC = "_assets/3d/logo-white-mask.png";
+var LOGO_FILL_SRC = "_assets/img/logo-ac-negative.svg";
 </script>
-
-<script>
-var cur=document.getElementById('cur');
-document.addEventListener('mousemove',function(e){cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});
-document.querySelectorAll('a,button,input,.format,.diff-row').forEach(function(el){
-  el.addEventListener('mouseenter',function(){cur.classList.add('h');});
-  el.addEventListener('mouseleave',function(){cur.classList.remove('h');});
-});
-function submitForm(e){
-  e.preventDefault();
-  var name=document.getElementById('fName').value.trim();
-  var email=document.getElementById('fEmail').value.trim();
-  var phone=document.getElementById('fPhone').value.trim();
-  var consentData=document.getElementById('fConsentData').checked;
-  var consentAds=document.getElementById('fConsentAds').checked;
-  var btn=e.target;
-  var status=document.getElementById('fStatus');
-  if(!name||!email){status.textContent='Заполните имя и email.';status.style.color='var(--gold)';return;}
-  if(!consentData){status.textContent='Подтвердите согласие на обработку персональных данных.';status.style.color='var(--gold)';return;}
-  btn.textContent='Отправляем...';btn.disabled=true;btn.style.opacity='.6';
-  fetch('https://formspree.io/f/mlgvapod',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body:JSON.stringify({name:name,email:email,phone:phone||'—',consent_ads:consentAds?'да':'нет',_subject:'Запись на анализ — Атлетикс Корп',_replyto:email})
-  }).then(function(r){return r.json();}).then(function(d){
-    if(d.ok||d.next){
-      var ctaForm=document.getElementById('ctaForm');
-      ctaForm.innerHTML='';
-      var ok=document.createElement('p');
-      ok.style.cssText='font-family:var(--serif);font-size:1.2rem;font-weight:300;color:var(--cream2);line-height:1.8;';
-      var check=document.createElement('span');
-      check.style.cssText='color:var(--cyan);font-family:var(--mono);margin-right:.4rem;';
-      check.textContent='✓';
-      ok.appendChild(check);
-      ok.appendChild(document.createTextNode('Спасибо, '+name+'.'));
-      ok.appendChild(document.createElement('br'));
-      ok.appendChild(document.createTextNode('Мы свяжемся с вами в ближайшее время.'));
-      ctaForm.appendChild(ok);
-    }else{throw 0;}
-  }).catch(function(){
-    btn.textContent='Записаться на интерпретацию';btn.disabled=false;btn.style.opacity='1';
-    status.textContent='Ошибка. Напишите напрямую: ac@athleticscorp.ru';status.style.color='var(--gold)';
-  });
-}
-</script>
-
-<!-- ============== LITE MODAL ============== -->
-<div id="liteModal">
-  <div class="lm-bg" onclick="closeLite()"></div>
-  <div class="lm-panel" id="lmPanel">
-    <div class="lm-bar">
-      <span class="lm-title">LITE — Бесплатный анализ осанки</span>
-      <button class="lm-close" onclick="closeLite()">✕</button>
-    </div>
-    <div style="padding:0 0 3rem;">
-      <div class="li-top">
-        <div class="li-tag">LITE / Бесплатный анализ</div>
-        <h2 class="li-h">Как сделать фото<br>для <em>анализа осанки</em></h2>
-        <p class="li-sub">Два снимка — специалист получит всё необходимое.<br><strong>Пришлите фото — мы пришлём первичный анализ.</strong></p>
-      </div>
-      <div class="li-sdv"><span class="li-sn">01</span><div class="li-sl"></div><span class="li-st">Подготовка</span></div>
-      <div class="li-step">
-        <div class="li-shd"><div class="li-snum">1</div><div class="li-stitle">Подготовьтесь</div></div>
-        <div class="li-items">
-          <div class="li-item"><div class="li-ico">👕</div><div><div class="li-lbl">Одежда</div><div class="li-txt">Облегающая — леггинсы и майка или футболка. Контуры тела должны быть чётко видны.</div></div></div>
-          <div class="li-item"><div class="li-ico">🧍</div><div><div class="li-lbl">Поза</div><div class="li-txt">Ноги на ширине плеч, руки свободно опущены. Стойте естественно — не выпрямляйтесь специально.</div></div></div>
-          <div class="li-item"><div class="li-ico">💡</div><div><div class="li-lbl">Освещение</div><div class="li-txt">Равномерный свет со всех сторон. Тени не должны скрывать контуры тела.</div></div></div>
-        </div>
-      </div>
-      <div class="li-sdv"><span class="li-sn">02</span><div class="li-sl"></div><span class="li-st">Съёмка</span></div>
-      <div class="li-step">
-        <div class="li-shd"><div class="li-snum">2</div><div class="li-stitle">Сделайте два снимка</div></div>
-        <div class="li-shots">
-          <div class="li-shot"><div class="li-sbadge">Снимок 1</div><div class="li-sttl">Спереди или сзади</div><div class="li-srow"><div class="li-dot">→</div>Лицом или спиной к камере</div><div class="li-srow"><div class="li-dot">→</div>Камера на уровне пупка</div><div class="li-srow"><div class="li-dot">→</div>Голова, тело и ноги в кадре</div></div>
-          <div class="li-shot"><div class="li-sbadge">Снимок 2</div><div class="li-sttl">Сбоку</div><div class="li-srow"><div class="li-dot">→</div>Повернитесь боком</div><div class="li-srow"><div class="li-dot">→</div>Камера на уровне пупка</div><div class="li-srow"><div class="li-dot">→</div>Голова, тело и ноги в кадре</div></div>
-        </div>
-        <div class="li-tip"><div style="font-size:.95rem;flex-shrink:0;">📐</div><div><div class="li-tlbl">Высота камеры</div><div class="li-txt2">Поставьте телефон на стол или книги — объектив на уровне пупка. Снимает другой человек — попросите его присесть.</div></div></div>
-      </div>
-      <div class="li-sdv"><span class="li-sn">03</span><div class="li-sl"></div><span class="li-st">Ошибки</span></div>
-      <div class="li-step">
-        <div class="li-shd"><div class="li-snum">3</div><div class="li-stitle">Чего избегать</div></div>
-        <div class="li-donts">
-          <div class="li-dont"><div class="li-dx">✕</div><div class="li-dt"><strong>Камера сверху или снизу</strong> — только строго на уровне пупка</div></div>
-          <div class="li-dont"><div class="li-dx">✕</div><div class="li-dt"><strong>Широкоугольный режим</strong> — исказит пропорции тела</div></div>
-          <div class="li-dont"><div class="li-dx">✕</div><div class="li-dt"><strong>Скрещенные руки, напряжение</strong> — стойте свободно</div></div>
-          <div class="li-dont"><div class="li-dx">✕</div><div class="li-dt"><strong>Тёмные или размытые фото</strong> — тело должно быть видно полностью</div></div>
-          <div class="li-dont"><div class="li-dx">✕</div><div class="li-dt"><strong>Мешковатая одежда</strong> — скрывает контуры, снижает точность</div></div>
-        </div>
-      </div><div class="li-sdv"><span class="li-sn">04</span><div class="li-sl"></div><span class="li-st">Примеры</span></div>
-      <div class="li-step">
-        <div class="li-shd"><div class="li-snum">4</div><div class="li-stitle">Примеры удачных снимков</div></div>
-        <div class="li-shots" style="gap:4px;margin-bottom:0;">
-          <div class="li-shot" style="padding:0;overflow:hidden;background:var(--bg3);border:1px solid var(--line2);">
-            <img src="https://i.ibb.co/sJ9DTF3k/photo-2026-06-10-14-53-51.jpg" alt="Снимок спереди — пример" style="width:100%;display:block;object-fit:cover;max-height:380px;">
-          </div>
-          <div class="li-shot" style="padding:0;overflow:hidden;background:var(--bg3);border:1px solid var(--line2);">
-            <img src="https://i.ibb.co/n8grM3XH/photo-2026-06-10-14-53-53.jpg" alt="Снимок сбоку — пример" style="width:100%;display:block;object-fit:cover;max-height:380px;">
-          </div>
-        </div>
-        <div class="li-tip" style="margin-top:4px;margin-bottom:1.75rem;">
-          <div style="font-size:.9rem;flex-shrink:0;color:var(--muted);">ℹ️</div>
-          <div style="font-size:.78rem;color:var(--muted);line-height:1.65;">Маркеры на теле клеить не надо&nbsp;— это примеры с разметкой из профессиональной съёмки.</div>
-        </div>
-      </div>
-      <div class="li-send" id="liteUpload">
-        <div class="li-slbl">— Загрузите фото</div>
-        <input type="file" id="liteFileInput" accept="image/*" multiple hidden>
-        <div class="li-dz" id="liteDz">
-          <div class="li-dz-ico">📷</div>
-          <p class="li-dz-txt">Перетащите два фото сюда<br>или <span class="li-dz-link">выберите файлы</span></p>
-          <p class="li-dz-hint">JPG, PNG — до 15 МБ каждое</p>
-        </div>
-        <div class="li-thumbs" id="liteThumbs"></div>
-        <div class="li-upload-fields">
-          <input class="inp" id="liteName" type="text" placeholder="Имя" required>
-          <input class="inp" id="liteContact" type="text" placeholder="Телефон или Telegram" required>
-        </div>
-        <label style="display:flex;align-items:flex-start;gap:.6rem;margin-top:1.5rem;font-size:.76rem;color:var(--dim);line-height:1.6;cursor:pointer;">
-          <input type="checkbox" id="liteConsent" required style="margin-top:.2rem;flex-shrink:0;accent-color:var(--gold);width:15px;height:15px;cursor:pointer;">
-          <span>Я согласен(на) на обработку фотографий в соответствии с <a href="/consent-photo" target="_blank" rel="noopener" style="color:var(--gold);border-bottom:1px solid rgba(200,184,130,.35);text-decoration:none;">Согласием на обработку фотографий для скрининга осанки</a></span>
-        </label>
-        <button class="cbtn" id="liteSubmitBtn" style="margin-top:1.75rem;" onclick="submitLite(event)">Отправить фото на анализ</button>
-        <p class="li-upload-status" id="liteStatus">Фото передаются напрямую специалисту. Без рассылок.</p>
-        <div class="li-email" style="margin-top:1.5rem;">
-          <span>Или на почту: ac@athleticscorp.ru</span>
-          <button class="li-ecopy" onclick="navigator.clipboard.writeText('ac@athleticscorp.ru');this.textContent='Скопировано ✓'">Копировать</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<script>
-function openLite(){var m=document.getElementById('liteModal');m.classList.add('open');document.body.style.overflow='hidden';var p=document.getElementById('lmPanel');if(p)p.scrollTop=0;}
-function closeLite(){document.getElementById('liteModal').classList.remove('open');document.body.style.overflow='';}
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLite();});
-</script>
-
-<!-- ============== SUPABASE CLIENT ============== -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script>
-(function(){
-  var SUPABASE_URL='https://ttiumewnkdwzfleyobqe.supabase.co';
-  // Settings → API → "Publishable key" (формат sb_publishable_...). Вставьте свой ключ ниже.
-  var SUPABASE_PUBLISHABLE_KEY='sb_publishable_hB8eRMx1a6z-soXKM4CgTw_SEpSiz2Q';
-  if(window.supabase && SUPABASE_PUBLISHABLE_KEY.indexOf('ВСТАВЬТЕ_СЮДА')===-1){
-    window.supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
-  }
-})();
-</script>
-
-<!-- ============== LITE UPLOAD (drag&drop) ============== -->
-<script>
-(function(){
-  var liteFiles=[];
-  var dz=document.getElementById('liteDz');
-  var fileInput=document.getElementById('liteFileInput');
-  var thumbs=document.getElementById('liteThumbs');
-  if(!dz||!fileInput||!thumbs)return;
-
-  dz.addEventListener('click',function(){fileInput.click();});
-  fileInput.addEventListener('change',function(e){handleFiles(e.target.files);fileInput.value='';});
-  ['dragover','dragenter'].forEach(function(ev){dz.addEventListener(ev,function(e){e.preventDefault();dz.classList.add('drag');});});
-  ['dragleave','dragend'].forEach(function(ev){dz.addEventListener(ev,function(e){dz.classList.remove('drag');});});
-  dz.addEventListener('drop',function(e){
-    e.preventDefault();dz.classList.remove('drag');
-    if(e.dataTransfer&&e.dataTransfer.files)handleFiles(e.dataTransfer.files);
-  });
-
-  function handleFiles(fileList){
-    var status=document.getElementById('liteStatus');
-    for(var i=0;i<fileList.length;i++){
-      var f=fileList[i];
-      if(liteFiles.length>=2){if(status)status.textContent='Достаточно двух фото — лишние не добавлены.';break;}
-      if(f.type.indexOf('image/')!==0)continue;
-      liteFiles.push(f);
-    }
-    renderThumbs();
-  }
-
-  function renderThumbs(){
-    thumbs.innerHTML='';
-    liteFiles.forEach(function(f,idx){
-      var url=URL.createObjectURL(f);
-      var el=document.createElement('div');
-      el.className='li-thumb';
-      el.innerHTML='<img src="'+url+'" alt="Фото '+(idx+1)+'"><button type="button" class="li-thumb-rm" aria-label="Удалить">✕</button>';
-      el.querySelector('.li-thumb-rm').addEventListener('click',function(e){
-        e.stopPropagation();
-        URL.revokeObjectURL(url);
-        liteFiles.splice(idx,1);
-        renderThumbs();
-      });
-      thumbs.appendChild(el);
-    });
-    thumbs.classList.toggle('has',liteFiles.length>0);
-  }
-
-  function compressImage(file,maxBytes,maxDim){
-    return new Promise(function(resolve,reject){
-      var url=URL.createObjectURL(file);
-      var img=new Image();
-      img.onload=function(){
-        URL.revokeObjectURL(url);
-        var w=img.naturalWidth,h=img.naturalHeight;
-        if(w>maxDim||h>maxDim){
-          var scale=maxDim/Math.max(w,h);
-          w=Math.round(w*scale);h=Math.round(h*scale);
-        }
-        var canvas=document.createElement('canvas');
-        canvas.width=w;canvas.height=h;
-        var ctx=canvas.getContext('2d');
-        ctx.drawImage(img,0,0,w,h);
-        var quality=0.86;
-        (function tryEncode(){
-          canvas.toBlob(function(blob){
-            if(!blob){reject(new Error('Не удалось обработать изображение'));return;}
-            if(blob.size<=maxBytes||quality<=0.35){resolve(blob);}
-            else{quality-=0.12;tryEncode();}
-          },'image/jpeg',quality);
-        })();
-      };
-      img.onerror=function(){URL.revokeObjectURL(url);reject(new Error('Не удалось загрузить изображение'));};
-      img.src=url;
-    });
-  }
-
-  window.submitLite=async function(e){
-    e.preventDefault();
-    var name=document.getElementById('liteName').value.trim();
-    var contact=document.getElementById('liteContact').value.trim();
-    var consent=document.getElementById('liteConsent');
-    var status=document.getElementById('liteStatus');
-    var btn=document.getElementById('liteSubmitBtn');
-    if(!name||!contact){status.textContent='Заполните имя и телефон/telegram.';status.style.color='var(--gold)';return;}
-    if(liteFiles.length<2){status.textContent='Прикрепите оба фото — спереди/сзади и сбоку.';status.style.color='var(--gold)';return;}
-    if(consent&&!consent.checked){status.textContent='Подтвердите согласие на обработку фотографий для скрининга осанки.';status.style.color='var(--gold)';return;}
-    if(!window.supabaseClient){
-      status.textContent='Загрузка временно недоступна. Напишите на ac@athleticscorp.ru.';status.style.color='var(--gold)';return;
-    }
-
-    btn.textContent='Отправляем...';btn.disabled=true;btn.style.opacity='.6';
-    status.style.color='var(--dim)';status.textContent='Сжимаем и загружаем фото…';
-
-    try{
-      var paths=[];
-      for(var i=0;i<liteFiles.length;i++){
-        var compressed=await compressImage(liteFiles[i],2*1024*1024,1800);
-        var path='lite/'+Date.now()+'-'+Math.random().toString(36).slice(2,9)+'-'+(i+1)+'.jpg';
-        var up=await window.supabaseClient.storage.from('photos').upload(path,compressed,{contentType:'image/jpeg',upsert:false});
-        if(up.error)throw up.error;
-        paths.push(path);
-      }
-
-      var ins=await window.supabaseClient.from('submissions').insert({name:name,contact:contact,photo_urls:paths});
-      if(ins.error)throw ins.error;
-
-      var upload=document.getElementById('liteUpload');
-      upload.innerHTML='';
-      var p=document.createElement('p');
-      p.style.cssText='font-family:var(--serif);font-size:1.1rem;font-weight:300;color:var(--cream2);line-height:1.8;';
-      var check=document.createElement('span');
-      check.style.cssText='color:var(--cyan);font-family:var(--mono);margin-right:.4rem;';
-      check.textContent='✓';
-      p.appendChild(check);
-      p.appendChild(document.createTextNode('Спасибо, '+name+'.'));
-      p.appendChild(document.createElement('br'));
-      p.appendChild(document.createTextNode('Фото получены — первичный анализ пришлём в течение 2–3 рабочих дней на '+contact+'.'));
-      upload.appendChild(p);
-    }catch(err){
-      console.error('LITE submit error:',err);
-      btn.textContent='Отправить фото на анализ';btn.disabled=false;btn.style.opacity='1';
-      status.textContent='Не получилось отправить. Попробуйте ещё раз или напишите на ac@athleticscorp.ru';status.style.color='var(--gold)';
-    }
-  };
-})();
-</script>
-
-<!-- ============== THREE.JS LIBRARY ============== -->
-<!-- three@0.185.1 подключается как ES-модуль через importmap в <head> (see выше).
-     SVGLoader и RoomEnvironment импортируются из three/addons/ напрямую в модульных
-     скриптах ниже — отдельный classic-скрипт для них больше не нужен. -->
-<!-- polygon-clipping — робастные булевы операции над 2D-полигонами.
-     Нужна, чтобы вычесть залитые контуры трассировки (фон + перемычки)
-     из прямоугольника и получить именно буквы "AC↑" как отдельную
-     геометрию — см. комментарий в блоке "3D LOGO" ниже про то, почему
-     штатных THREE.Shape.holes для этого оказалось недостаточно. -->
-<script src="https://cdn.jsdelivr.net/npm/polygon-clipping@0.15.7/dist/polygon-clipping.umd.js"></script>
-
-<!-- ============== 3D LOGO (CTA SECTION) ============== -->
-<script type="module">
-import * as THREE from 'three';
-import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
-/*
-  3D-логотип "AC" в секции "Записаться на анализ".
-
-  Геометрия: ТОЧНЫЙ контур логотипа, взятый из logo-athletics-corp.svg
-  (трассировка реального PNG-логотипа компании, лежит рядом в репозитории
-  как источник истины). SVG-текст инлайнится в LOGO_SVG ниже (не через
-  fetch() — fetch локального файла блокируется CORS на file://, а сайт
-  открывали напрямую с диска при проверке).
-
-  Важная особенность именно этого файла (выяснено эмпирически, рендером
-  в изолированном прототипе — по координатам это было не читаемо):
-  potrace протрассировал исходный PNG как ПЛИТКУ — сплошной золотой фон
-  с вырезанной "дырой" в форме "AC↑", а не голые золотые буквы. Из 6
-  <path> элементов файла два больших (фон, разбитый на 2 куска) и четыре
-  маленьких — которые оказались не "золотыми акцентами" (как решила первая
-  попытка, из-за чего буквы слиплись в одну "литую" деталь без разделителей),
-  а тонкими перемычками того же фона между буквами. Поэтому нужные буквы —
-  это НЕГАТИВНОЕ пространство: прямоугольник МИНУС все 6 залитых контуров.
-  Штатный механизм THREE.Shape.holes для этого вычитания не подошёл: дыры
-  (фоновые контуры) касаются краёв прямоугольника вдоль длинных отрезков,
-  и earcut-триангуляция вместо чистого выреза оставляла паразитные "уголки"
-  у краёв (bounding box результата не уменьшался — оставался почти во весь
-  квадрат). Поэтому вычитание считается через polygon-clipping.difference()
-  (библиотека для робастных булевых операций над полигонами) — она умеет
-  корректно резать полигоны с касающимися границами.
-
-  SVG использует систему координат Y-вниз, а мировое пространство Three.js —
-  Y-вверх, поэтому Y каждой точки инвертируется при сборке колец для
-  polygon-clipping — без этого логотип рендерился бы вверх ногами.
-
-  Первая попытка (до получения исходного SVG) реконструировала форму вручную
-  «на глаз» и вышла неточной, плюс к ней была добавлена сплошная
-  графитовая подложка-плашка, которая на плоской грани ловила слишком
-  много света и рендерилась светлым пятном, а не тёмным графитом —
-  подложка полностью убрана.
-
-  Материал: одна MeshStandardMaterial (metalness .85 / roughness .38).
-  Контраст «графит / латунь» здесь не из двух материалов, а из
-  взаимодействия ОДНОГО металлического материала с направленным
-  key-light под углом: грани, попадающие под свет (особенно скошенные
-  bevel-рёбра), дают яркий латунный блик, грани в тени уходят в тёмный
-  графитовый тон — ровно то поведение, которое MeshStandardMaterial даёт
-  «из коробки» при высоком metalness и не заглаженном (moderate) roughness.
-
-  Свет: один key-light под выраженным углом (не в лоб) + слабый холодный
-  fill с обратной стороны, чтобы тени не проваливались в чистый чёрный,
-  + слабый ambient. Без пульсации интенсивности — свет статичен, только
-  вращение объекта заставляет блик "гулять" по граням.
-
-  Масштаб: геометрия из SVG приходит в единицах исходного viewBox
-  (сотни-тысячи условных единиц) — после сборки меша считается bounding
-  box и группа приводится к TARGET_WORLD_HEIGHT мировых единиц. При
-  текущей камере (fov 34, дистанция 5.8, канвас 500px на десктопе)
-  1 мировая единица ≈ 141px на экране, так что TARGET_WORLD_HEIGHT=1.5
-  даёт логотип высотой ~210px на десктопе — заметный акцент на всю
-  правую половину секции, а не мелкая деталь сбоку.
-
-  Анимация: линейное вращение только вокруг оси Y, без ускорений и без
-  drag-интерактивности (в отличие от позвоночника в hero, этот объект
-  не перетаскивается). ROTATION_SPEED подобран на ~25с на полный оборот
-  при допущении ~60fps — та же наивная (без реального delta-time) схема
-  анимации, что и в остальных 3D-блоках сайта.
-
-  Производительность и доступность:
-  - respects prefers-reduced-motion: рендерится один статичный кадр,
-    цикл анимации не запускается вовсе;
-  - на мобильных (<=768px) — pixelRatio ограничен 1 и снижен
-    curveSegments экструзии (грубее тесселяция кривых из SVG), а не
-    выключена анимация — сцена лёгкая (десяток низкополигональных
-    мешей) и просадок по FPS не даёт;
-  - сцена и рендерер создаются лениво через IntersectionObserver, когда
-    #logoWrap3d появляется во вьюпорте, и цикл анимации приостанавливается
-    (cancelAnimationFrame), когда блок уходит из вьюпорта;
-  - отдельный WebGLRenderer (не общий с hero-позвоночником) оставлен
-    намеренно: секции разнесены по скроллу и почти не бывают видны
-    одновременно, а слияние в общий рендерер с двумя вьюпортами добавило
-    бы сложности и риск сломать уже работающий рендер hero ради
-    небольшого выигрыша — вместо этого пауза по IntersectionObserver
-    даёт тот же эффект (никогда не работают оба цикла анимации без нужды).
-*/
-(function(){
-  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
-  var wrap = document.getElementById('logoWrap3d');
-  var canvas = document.getElementById('logoCanvas3d');
-  if(!wrap || !canvas || typeof polygonClipping === 'undefined') return;
-
-  var ROTATION_SPEED = 0.0042; // ~1 оборот / 25с при допущении ~60fps
-  var TARGET_WORLD_HEIGHT = 1.5; // см. комментарий "Масштаб" выше — крупный акцент на всю правую половину секции
-  var renderer, scene, camera, grp, running = false, raf = null, rotY = 0;
-
-  // Точная копия logo-athletics-corp.svg (потрейс реального логотипа).
-  // Инлайн вместо fetch() — см. комментарий про file:// выше.
-  var LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="1000pt" height="1000pt" viewBox="0 0 1000 1000">'
-    + '<g transform="translate(0,1000) scale(0.1,-0.1)" fill="#DDA74F" stroke="none">'
-    + '<path d="M0 6303 c0 -2033 2 -3694 4 -3692 5 4 315 652 816 1699 180 377 504 1054 720 1505 216 451 477 996 579 1210 l187 390 297 0 297 0 118 -245 c65 -135 196 -408 292 -608 l173 -363 41 67 c252 416 680 774 1146 958 716 282 1662 252 2403 -77 l57 -26 0 -158 0 -158 305 305 305 305 1130 -1130 1130 -1130 0 2423 0 2422 -5000 0 -5000 0 0 -3697z"/>'
-    + '<path d="M6806 6481 l-319 -319 57 -16 c179 -52 381 -163 554 -302 l32 -27 0 492 c0 270 -1 491 -3 491 -1 0 -146 -144 -321 -319z"/>'
-    + '<path d="M5756 6219 c-363 -34 -662 -166 -886 -388 -218 -217 -330 -493 -330 -816 0 -208 35 -368 120 -540 182 -372 556 -614 1040 -674 109 -14 384 -14 508 0 332 36 667 173 875 358 l47 43 0 441 0 442 -393 -393 c-215 -215 -397 -392 -402 -392 -6 0 -201 191 -435 425 l-425 425 504 504 c277 277 499 506 495 509 -13 7 -156 35 -245 46 -116 16 -362 21 -473 10z"/>'
-    + '<path d="M3424 6074 c-238 -502 -291 -1152 -143 -1738 155 -613 575 -1133 1170 -1445 192 -101 494 -204 688 -236 39 -6 42 -5 37 12 -7 21 -1685 3515 -1691 3522 -3 2 -30 -49 -61 -115z"/>'
-    + '<path d="M2563 5163 c-18 -43 -73 -172 -123 -288 -51 -115 -111 -255 -135 -310 -23 -55 -59 -137 -78 -182 l-36 -83 415 0 c329 0 415 3 411 13 -3 6 -67 152 -142 322 -75 171 -165 375 -200 455 -35 79 -67 146 -71 147 -5 2 -23 -32 -41 -74z"/>'
-    + '<path d="M9568 4723 l-428 -428 -388 388 c-213 213 -390 387 -395 387 -4 0 -8 -557 -9 -1237 l-3 -1238 -607 -3 -608 -2 0 150 c0 82 -2 150 -4 150 -2 0 -32 -13 -67 -29 -270 -122 -649 -218 -991 -251 -164 -16 -625 -7 -753 14 -118 20 -118 20 -112 -4 5 -20 2 -20 -721 -18 l-726 3 -116 262 -115 263 -921 0 -922 0 -117 -265 -117 -265 -724 0 -724 0 0 -1300 0 -1300 5000 0 5000 0 0 2575 c0 1416 -1 2575 -3 2575 -1 0 -194 -192 -429 -427z"/>'
-    + '</g></svg>';
-
-  function build(){
-    var W = wrap.offsetWidth || 500, H = wrap.offsetHeight || 500;
-    if(W < 50){ W = 500; H = 500; }
-
-    renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:true, alpha:true});
-    renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 1.5));
-    renderer.setSize(W, H);
-    renderer.setClearColor(0x000000, 0);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
-
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(34, W / H, .01, 100);
-    camera.position.set(0, 0, 5.8);
-
-    // Приглушённый свет с выраженным углом на key-light — контраст
-    // графит/латунь читается за счёт этого угла, не за счёт цвета
-    scene.add(new THREE.AmbientLight(0x141008, 1.1));
-    var key = new THREE.DirectionalLight(0xF0DFB0, 4.0); key.position.set(4, 6, 3); scene.add(key);
-    var fill = new THREE.DirectionalLight(0x2A2010, 1.0); fill.position.set(-4, -2, -3); scene.add(fill);
-    var rim = new THREE.DirectionalLight(0x3A2C12, 0.6); rim.position.set(-2, 3, -4); scene.add(rim);
-
-    var matMetal = new THREE.MeshStandardMaterial({color:0x8A6E3E, metalness:.85, roughness:.38, side:THREE.DoubleSide});
-
-    var extrudeSettings = {
-      depth: 45,
-      bevelEnabled: true,
-      bevelThickness: 8,
-      bevelSize: 6,
-      bevelSegments: isMobile ? 1 : 2
-    };
-    var CURVE_DIVISIONS = isMobile ? 24 : 48; // разрешение при уплощении bezier-кривых SVG в отрезки
-
-    grp = new THREE.Group(); scene.add(grp);
-
-    // SVG Y-вниз → three.js Y-вверх: инвертируем Y при сборке колец.
-    function ringOf(vec2points){
-      var ring = vec2points.map(function(v){ return [v.x, -v.y]; });
-      var f = ring[0], l = ring[ring.length - 1];
-      if(f[0] !== l[0] || f[1] !== l[1]) ring.push([f[0], f[1]]); // замкнуть кольцо
-      return ring;
-    }
-
-    var svgData = new SVGLoader().parse(LOGO_SVG);
-    var allRings = [];
-    svgData.paths.forEach(function(path){
-      path.subPaths.forEach(function(subPath){
-        allRings.push(ringOf(subPath.getPoints(CURVE_DIVISIONS)));
-      });
-    });
-    // Прямоугольник, из которого вычитаются все залитые контуры трассировки
-    // (фон + перемычки) — остаток и есть буквы "AC↑". Тот же Y-инверт,
-    // поэтому здесь используются отрицательные Y. INSET чуть уменьшает
-    // прямоугольник относительно полного viewBox: у самой трассировки
-    // тонкая необработанная кайма прямо по краю холста (0 и 1000), которая
-    // не попала ни в фон, ни в перемычки — без инсета она читалась как
-    // "буква" и торчала тонкими вертикальными полосками слева и справа.
-    var INSET = 30;
-    var squareRing = [[INSET,-INSET],[1000-INSET,-INSET],[1000-INSET,-(1000-INSET)],[INSET,-(1000-INSET)],[INSET,-INSET]];
-    var clipArgs = [[squareRing]].concat(allRings.map(function(r){ return [r]; }));
-    var letterPolygons = polygonClipping.difference.apply(null, clipArgs);
-
-    letterPolygons.forEach(function(polygon){
-      var outerPts = polygon[0].map(function(p){ return new THREE.Vector2(p[0], p[1]); });
-      var shape = new THREE.Shape(outerPts);
-      for(var h = 1; h < polygon.length; h++){
-        var holePts = polygon[h].map(function(p){ return new THREE.Vector2(p[0], p[1]); });
-        shape.holes.push(new THREE.Path(holePts));
-      }
-      var geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-      grp.add(new THREE.Mesh(geo, matMetal));
-    });
-
-    // Центрирование — сдвигаем ПОЗИЦИИ ДЕТЕЙ внутри grp (не позицию самой
-    // grp!), чтобы содержимое оказалось вокруг локального (0,0,0) группы.
-    // grp.rotation.y в цикле анимации вращает вокруг ЛОКАЛЬНОГО начала
-    // координат group — если сдвигать вместо этого grp.position (как было
-    // раньше), сама точка вращения остаётся в случайной точке исходных
-    // SVG-координат, и логотип не крутится на месте, а обходит по дуге
-    // вокруг неё (ровно то, что было видно на скриншотах — "уезжает влево").
-    var bbRaw = new THREE.Box3().setFromObject(grp);
-    var bcRaw = new THREE.Vector3(); bbRaw.getCenter(bcRaw);
-    grp.children.forEach(function(child){ child.position.sub(bcRaw); });
-
-    // Нормализация масштаба по высоте bounding box до TARGET_WORLD_HEIGHT
-    // (см. комментарий "Масштаб" в шапке файла). Масштабируется вся grp —
-    // безопасно, т.к. содержимое уже центрировано вокруг её локального нуля.
-    var sizeRaw = new THREE.Vector3(); bbRaw.getSize(sizeRaw);
-    var scaleFactor = TARGET_WORLD_HEIGHT / (sizeRaw.y || 1);
-    grp.scale.setScalar(scaleFactor);
-
-    window.addEventListener('resize', function(){
-      if(!renderer) return;
-      W = wrap.offsetWidth || 500; H = wrap.offsetHeight || 500;
-      camera.aspect = W/H; camera.updateProjectionMatrix(); renderer.setSize(W,H);
-      renderer.render(scene, camera);
-    });
-
-    if(reduceMotion){
-      grp.rotation.y = 0.42; // статичный кадр под приятным углом, без цикла анимации
-      renderer.render(scene, camera);
-      return;
-    }
-    startLoop();
-  }
-
-  function startLoop(){
-    if(running || reduceMotion) return;
-    running = true;
-    (function loop(){
-      raf = requestAnimationFrame(loop);
-      rotY += ROTATION_SPEED;
-      grp.rotation.y = rotY; // только вертикальная ось, линейно, без ускорений
-      renderer.render(scene, camera);
-    })();
-  }
-
-  function stopLoop(){
-    running = false;
-    if(raf) cancelAnimationFrame(raf);
-    raf = null;
-  }
-
-  var built = false;
-  if('IntersectionObserver' in window){
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(entry){
-        if(entry.isIntersecting){
-          if(!built){ built = true; build(); }
-          else { startLoop(); }
-        } else if(built){
-          stopLoop();
-        }
-      });
-    }, {threshold:.15});
-    io.observe(wrap);
-  } else {
-    built = true; build();
-  }
-})();
-</script>
-
-<!-- ============== 3D SPINE (HERO SECTION) ============== -->
-<script type="module">
-import * as THREE from 'three';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-(function(){
-  function showStaticFallback(wrap, canvas){
-    if(!wrap) return;
-    if(canvas) canvas.style.display='none';
-    var hint = wrap.querySelector('.spine-hint');
-    if(hint) hint.style.display='none';
-    var fb = document.createElement('div');
-    fb.setAttribute('aria-hidden','true');
-    fb.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;';
-    var rows='';
-    for(var i=0;i<22;i++){
-      var y=10+i*18, w=14+Math.sin(i/21*Math.PI)*14, op=(0.35+0.5*Math.sin(i/21*Math.PI)).toFixed(2);
-      rows+='<ellipse cx="45" cy="'+y+'" rx="'+w+'" ry="7" fill="url(#sfg)" opacity="'+op+'"/>';
-    }
-    fb.innerHTML='<svg width="90" height="410" viewBox="0 0 90 410"><defs><linearGradient id="sfg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E0D09A"/><stop offset="1" stop-color="#8A6E3E"/></linearGradient></defs>'+rows+'</svg>';
-    wrap.appendChild(fb);
-  }
-
-  function init(){
-    var wrap = document.getElementById('heroSpineWrap');
-    var canvas = document.getElementById('heroSpineC');
-    if(!canvas || canvas._spineReady) return;
-    canvas._spineReady = true;
-
-    var hasWebGL = (function(){
-      try{
-        var t = document.createElement('canvas');
-        return !!(window.WebGLRenderingContext && (t.getContext('webgl2')||t.getContext('webgl')));
-      }catch(e){ return false; }
-    })();
-    if(!hasWebGL){ showStaticFallback(wrap, canvas); return; }
-
-    var isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
-    var lowPower = isMobile || (navigator.hardwareConcurrency && navigator.hardwareConcurrency<=4);
-    var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    // Размер берём из реального бокса контейнера, а не хардкодим — иначе на
-    // широких экранах, где .hero-canvas-col уже колонки грид-шаблона (грид
-    // отдаёт тексту его min-content, канвасу — остаток), overflow:hidden
-    // родителя обрезает модель по границе вместо того, чтобы она уменьшилась
-    // и осталась целиком в кадре. ResizeObserver ниже держит это в согласии
-    // при ресайзе окна/смене раскладки (в т.ч. после late-load шрифта).
-    var wrapBox = wrap.getBoundingClientRect();
-    var W = Math.max(1, Math.round(wrapBox.width)) || 480;
-    var H = Math.max(1, Math.round(wrapBox.height)) || 540;
-    canvas.width=W; canvas.height=H;
-
-    var renderer;
-    try{
-      renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:true, alpha:true});
-    }catch(e){ showStaticFallback(wrap, canvas); return; }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, lowPower?1.5:2));
-    renderer.setSize(W,H);
-    renderer.setClearColor(0x000000,0);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 2.2;
-
-    var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera(28, W/H, 0.01, 200);
-    camera.position.set(0, 0, 6.5);
-
-    // Студийное окружение для отражений на золотом металле — процедурное,
-    // без внешнего HDRI (ноль лишнего веса). Генератор одноразовый:
-    // среда статична, поэтому диспозим сразу после генерации текстуры.
-    var pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-    pmrem.dispose();
-
-    scene.add(new THREE.AmbientLight(0xC8A050, 6));
-    var L1 = new THREE.DirectionalLight(0xFFD060, 12);
-    L1.position.set(4, 8, 6); scene.add(L1);
-    var L2 = new THREE.PointLight(0xFFBB44, 8, 30);
-    L2.position.set(-3, 3, 4); scene.add(L2);
-    var L3 = new THREE.DirectionalLight(0xE8A020, 5);
-    L3.position.set(-2,-4,-3); scene.add(L3);
-    var L4 = new THREE.PointLight(0xFFE090, 5, 20);
-    L4.position.set(0, 10, 0); scene.add(L4);
-
-    var mGold = new THREE.MeshStandardMaterial({color:0xC4A84A, metalness:0.75, roughness:0.15});
-
-    // grp остаётся пустой обёрткой до загрузки модели — весь код ниже
-    // (drag-to-rotate, автовращение, composer) уже целится в неё, поэтому
-    // достаточно добавить загруженную сцену как ребёнка после загрузки,
-    // не переписывая остальную логику.
-    var grp = new THREE.Group();
-    scene.add(grp);
-    var modelReady = false;
-    var isVisible = true; // предположение до первого срабатывания IntersectionObserver ниже
-
-    canvas.style.opacity = '0';
-    canvas.style.transition = 'opacity .5s ease';
-
-    var TARGET_HEIGHT = 6.3; // высота прежней процедурной модели в юнитах сцены — держим тот же силуэт в кадре камеры/канваса
-
-    var dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/libs/draco/');
-    var gltfLoader = new GLTFLoader();
-    gltfLoader.setDRACOLoader(dracoLoader);
-    gltfLoader.load('assets/spine-model.glb', function(gltf){
-      gltf.scene.traverse(function(node){
-        if(node.isMesh){ node.material = mGold; }
-      });
-      grp.add(gltf.scene);
-
-      // Отцентровать и масштабировать под тот же силуэт, что у прежней
-      // процедурной модели — реальные анатомические юниты модели не
-      // совпадают с юнитами сцены, поэтому подгоняем по высоте (Box3).
-      //
-      // Важно: центрируем сдвигом ПОЗИЦИИ САМОЙ МОДЕЛИ (gltf.scene — ребёнка
-      // grp), а не позиции grp. grp.rotation.y в цикле анимации крутит вокруг
-      // ЛОКАЛЬНОГО нуля группы — если сдвигать вместо этого grp.position (как
-      // было раньше), точка вращения остаётся в произвольной точке исходных
-      // координат модели (её экспортировали не из геометрического центра), и
-      // модель не крутится на месте, а обходит по дуге вокруг этой точки —
-      // ровно баг "уезжает/крутится как будто по орбите". Это та же ошибка,
-      // что уже ловили и чинили на 3D-логотипе в блоке #cta — см. комментарий
-      // там же. Центрируем ДО масштабирования, тем же порядком, что и там.
-      var box = new THREE.Box3().setFromObject(grp);
-      var center = new THREE.Vector3(); box.getCenter(center);
-      gltf.scene.position.sub(center);
-      var size = new THREE.Vector3(); box.getSize(size);
-      var scale = TARGET_HEIGHT / (size.y || 1);
-      grp.scale.setScalar(scale);
-
-      modelReady = true;
-      canvas.style.opacity = '1';
-      renderFrame();
-      if(!reducedMotion && isVisible) startLoop();
-    }, undefined, function(err){
-      console.error('spine-model.glb load failed', err);
-      showStaticFallback(wrap, canvas);
-    });
-
-    // Bloom — только на некомпактных устройствах и очень сдержанно: лёгкое
-    // премиальное свечение на самых ярких бликах металла, а не заливка светом.
-    // Порог высокий намеренно, чтобы в статике эффект был почти незаметен.
-    var composer=null;
-    if(!lowPower){
-      composer = new EffectComposer(renderer);
-      composer.setSize(W,H);
-      composer.addPass(new RenderPass(scene,camera));
-      composer.addPass(new UnrealBloomPass(new THREE.Vector2(W,H), 0.28, 0.25, 0.92));
-      composer.addPass(new OutputPass());
-    }
-    function renderFrame(){
-      if(composer) composer.render(); else renderer.render(scene,camera);
-    }
-
-    // Держим буфер рендера синхронным с реальным размером .hero-canvas-col —
-    // тот меняется на пересечении медиа-запросов грид-колонок, при late-load
-    // шрифта (сдвигает min-content h1) и при ресайзе окна. Без этого канвас
-    // остаётся в исходном размере и либо обрезается overflow:hidden родителя,
-    // либо мылится, если контейнер вырос.
-    if('ResizeObserver' in window){
-      var spineRO = new ResizeObserver(function(entries){
-        var box = entries[entries.length-1].contentRect;
-        var w = Math.max(1, Math.round(box.width));
-        var h = Math.max(1, Math.round(box.height));
-        if(w===W && h===H) return;
-        W=w; H=h;
-        renderer.setSize(W,H);
-        camera.aspect = W/H;
-        camera.updateProjectionMatrix();
-        if(composer) composer.setSize(W,H);
-        renderFrame();
-      });
-      spineRO.observe(wrap);
-    }
-
-    var drag=false, px=0, py=0, rx=0, ry=0, vx=0, t=0;
-    canvas.addEventListener('mousedown',function(e){drag=true;px=e.clientX;py=e.clientY;});
-    window.addEventListener('mouseup',function(){drag=false;});
-    window.addEventListener('mousemove',function(e){
-      if(!drag)return;
-      vx=(e.clientX-px)*0.013; rx+=vx;
-      ry+=(e.clientY-py)*0.008; ry=Math.max(-0.55,Math.min(0.55,ry));
-      px=e.clientX; py=e.clientY;
-      grp.rotation.y=rx; grp.rotation.x=ry;
-      if(reducedMotion) renderFrame();
-    });
-    // touchIntent решает, чем является жест: 'rotate' (вращать модель) или
-    // 'scroll' (обычный скролл страницы). Раньше touchstart сразу ставил
-    // drag=true, и touchmove крутил модель по X-компоненте пальца ДАЖЕ
-    // когда человек просто скроллил страницу пальцем, начавшим движение с
-    // канваса (а канвас растянут на весь hero, так что это почти любой
-    // скролл с герой-секции) — визуально модель "уезжала"/крутилась при
-    // скролле. Плюс touchend не ловил touchcancel (когда браузер сам
-    // забирает жест под скролл и обрывает touch-последовательность), из-за
-    // чего drag мог зависать в true и следующий тач давал резкий скачок
-    // поворота. Фикс: ждём первого заметного сдвига, определяем по нему
-    // намерение (dx>dy — вращение, иначе — скролл, руки прочь от rotation),
-    // и сбрасываем drag также по touchcancel.
-    var touchIntent = null, touchStartY = 0;
-    canvas.addEventListener('touchstart',function(e){
-      drag=true; touchIntent=null;
-      px=e.touches[0].clientX; touchStartY=e.touches[0].clientY;
-    },{passive:true});
-    function touchRelease(){ drag=false; touchIntent=null; }
-    window.addEventListener('touchend', touchRelease);
-    window.addEventListener('touchcancel', touchRelease);
-    window.addEventListener('touchmove',function(e){
-      if(!drag)return;
-      var cx=e.touches[0].clientX, cy=e.touches[0].clientY;
-      if(touchIntent===null){
-        var dx=cx-px, dy=cy-touchStartY;
-        if(Math.abs(dx)<4 && Math.abs(dy)<4) return; // жест ещё не определился, ждём
-        touchIntent = Math.abs(dx)>Math.abs(dy) ? 'rotate' : 'scroll';
-        if(touchIntent==='scroll'){ drag=false; return; } // отдаём жест странице как есть
-      }
-      if(touchIntent!=='rotate') return;
-      vx=(cx-px)*0.013; rx+=vx; px=cx; grp.rotation.y=rx;
-      if(reducedMotion) renderFrame();
-    },{passive:true});
-
-    // renderFrame() и (для не-reducedMotion) startLoop() вызываются из
-    // колбэка gltfLoader.load выше — до загрузки модели рисовать нечего,
-    // канвас скрыт через opacity:0 и проявляется после первого кадра.
-
-    var running=false;
-    function loop(){
-      if(!running) return;
-      requestAnimationFrame(loop);
-      t+=0.009;
-      if(!drag){
-        if(Math.abs(vx)>0.001){vx*=0.93;rx+=vx;}
-        else{rx+=0.004;vx=0;}
-      }
-      grp.rotation.y=rx; grp.rotation.x=ry;
-      grp.rotation.z=Math.sin(t*0.35)*0.01;
-      L1.intensity=8+Math.sin(t*0.5)*1;
-      L2.intensity=6+Math.sin(t*0.7+1)*0.8;
-      renderFrame();
-    }
-    function startLoop(){ if(running || !modelReady) return; running=true; requestAnimationFrame(loop); }
-    function stopLoop(){ running=false; }
-
-    if(reducedMotion){
-      // Без авто-вращения и без непрерывного цикла — статичный кадр (см.
-      // колбэк загрузки выше), перерисовка только по drag-действию.
-      return;
-    }
-
-    // Рендер-цикл на паузе, пока hero не виден на экране — экономит
-    // батарею/GPU на мобильных, когда пользователь проскроллил дальше.
-    if('IntersectionObserver' in window){
-      var io = new IntersectionObserver(function(entries){
-        entries.forEach(function(entry){
-          isVisible = entry.isIntersecting;
-          if(isVisible) startLoop(); else stopLoop();
-        });
-      },{threshold:0.05});
-      io.observe(canvas);
-    }else{
-      startLoop();
-    }
-  }
-  init();
-})();
-</script>
-
-<!-- ============== SOCIAL PROOF BADGE ============== -->
-<div class="social-proof" id="socialProof">
-  <button class="sp-close" id="spClose" type="button" aria-label="Закрыть">✕</button>
-  <div class="sp-avatars" aria-hidden="true">
-    <svg class="sp-avatar" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#0e0e0c" stroke="rgba(200,184,130,.5)" stroke-width="1"/><circle cx="20" cy="16" r="6" fill="none" stroke="rgba(224,208,154,.8)" stroke-width="1.3"/><path d="M7 33c0-7.5 6-12 13-12s13 4.5 13 12" fill="none" stroke="rgba(224,208,154,.8)" stroke-width="1.3" stroke-linecap="round"/></svg>
-    <svg class="sp-avatar" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#0e0e0c" stroke="rgba(200,184,130,.5)" stroke-width="1"/><circle cx="20" cy="15" r="6.8" fill="none" stroke="rgba(224,208,154,.7)" stroke-width="1.3"/><path d="M6 34c0-8 6.5-13 14-13s14 5 14 13" fill="none" stroke="rgba(224,208,154,.7)" stroke-width="1.3" stroke-linecap="round"/></svg>
-    <svg class="sp-avatar" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#0e0e0c" stroke="rgba(200,184,130,.5)" stroke-width="1"/><circle cx="20" cy="17" r="5.6" fill="none" stroke="rgba(224,208,154,.85)" stroke-width="1.3"/><path d="M8 33c0-7 5.5-11.5 12-11.5s12 4.5 12 11.5" fill="none" stroke="rgba(224,208,154,.85)" stroke-width="1.3" stroke-linecap="round"/></svg>
-    <svg class="sp-avatar" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#0e0e0c" stroke="rgba(200,184,130,.5)" stroke-width="1"/><circle cx="20" cy="16.5" r="6.3" fill="none" stroke="rgba(224,208,154,.75)" stroke-width="1.3"/><path d="M7 34c0-7.8 6-12.5 13-12.5s13 4.7 13 12.5" fill="none" stroke="rgba(224,208,154,.75)" stroke-width="1.3" stroke-linecap="round"/></svg>
-  </div>
-  <div class="sp-info">
-    <div class="sp-row"><span class="sp-dot"></span><span class="sp-main"><span id="spCount">0</span> снимков собрано</span></div>
-    <div class="sp-sub">цель — 3 000</div>
-  </div>
-</div>
-
-<!-- ============== IMMERSIVE LAYER ============== -->
-<script src="immersive.js" defer onerror="document.querySelectorAll('.up,.up2,.up3,.fd').forEach(function(el){el.classList.add('go');});document.querySelectorAll('#pb .pl,#pb .pk').forEach(function(el){el.classList.add('v');});"></script>
-
-<!-- ============== COOKIE NOTICE ============== -->
-<script src="cookie-consent.js" defer></script>
-
+<script src="_assets/3d/scroll-story.js"></script>
+<!-- onerror: модуль сцены или его импорт (Three.js) не загрузился -> статичная раскладка -->
+<script type="module" src="_assets/3d/hero-scene.js" onerror="document.documentElement.classList.add('no-webgl','story-static');document.dispatchEvent(new Event('story:static'))"></script>
 </body>
 </html>

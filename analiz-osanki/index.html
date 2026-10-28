@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Анализ осанки онлайн и в Москве: разбор за 30 минут | Атлетикс Корп</title>
+<meta name="description" content="Специалист разберёт вашу осанку по фото или вживую и объяснит, что менять в обычном дне. Онлайн 2 000 ₽, бесплатный первый взгляд по двум фото. Без диагнозов.">
+<link rel="canonical" href="https://athleticscorp.ru/analiz-osanki/">
+<link rel="icon" type="image/png" href="../_assets/img/favicon-ac-64.png">
+<link rel="stylesheet" href="../_assets/tokens.css">
+<link rel="stylesheet" href="../_assets/header.css">
+<script src="../_assets/header.js"></script>
+<script src="../_assets/site.js"></script>
+<!-- Все тексты страницы - ГИПОТЕЗА до согласования с Арсением (источник: ШТАБ/06-сайт-и-конверсия/
+     анализ-осанки-страница-разбор-2026-10-26.html, раздел 4). Места, где нужен факт, помечены
+     комментарием НУЖЕН ФАКТ - поиск по этой строке находит все. -->
+<script>
+/* Режим страницы до загрузки скриптов: без WebGL или при reduced motion - статичная раскладка
+   (без построчного выезда заголовков и без 3D), весь текст виден сразу. */
+(function(){var r=document.documentElement,c=document.createElement('canvas'),gl=null;
+ try{gl=c.getContext('webgl2')}catch(e){}
+ if(!gl)r.classList.add('no-webgl');
+ if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)r.classList.add('reduce');
+})();
+</script>
+<style>
+:root{--bg:#0A0A08;--fg:#F2F0EB;--soft:#C9C6BE;--mute:#86847C;--brass:#DDA74F;color-scheme:dark}
+html,body{background:var(--bg);color:var(--fg)}
+a{text-decoration:none}
+a:focus-visible,button:focus-visible{outline:2px solid var(--brass);outline-offset:4px}
+button{font:inherit;color:inherit}
+
+/* шапка и меню - общие: ../_assets/header.css и header.js */
+
+/* холст позвоночника - один на страницу, фиксирован, под текстом; ловит жесты только в зонах .spine-hit */
+#spine{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;pointer-events:none}
+.spine-labels{position:fixed;inset:0;z-index:2;pointer-events:none}
+.spine-label{position:absolute;left:0;top:0;display:flex;align-items:center;gap:10px;opacity:0;white-space:nowrap;
+ font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft);will-change:transform,opacity}
+.spine-label i{width:7px;height:7px;border-radius:50%;background:var(--brass);flex:none}
+.spine-label b{display:block;width:28px;height:1px;background:rgba(221,167,79,.55);flex:none}
+.spine-label.left{flex-direction:row-reverse}
+.spine-label{flex-direction:row}
+main{position:relative;z-index:3}
+
+/* экраны */
+.scr{position:relative;padding:var(--sp-10) 0}
+.wrap{width:100%;max-width:var(--grid-max);margin:0 auto;padding:0 40px}
+.col{max-width:620px}
+.eyebrow{display:block;font-family:var(--font-mono);font-size:var(--fs-mono-s);letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:var(--sp-5)}
+.lead{font-size:var(--fs-text-l);color:var(--soft);margin-top:var(--sp-5);max-width:56ch}
+p+p{margin-top:var(--sp-4)}
+.txt{color:var(--soft);max-width:60ch;margin-top:var(--sp-5)}
+h2{margin-bottom:var(--sp-5)}
+.rv-line{display:block}
+
+/* 01 */
+#s01{min-height:100svh;display:flex;align-items:center;padding-top:120px}
+#s01 .kicker{font-family:var(--font-mono);font-size:var(--fs-mono-s);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+/* колонка первого экрана шире обычной, чтобы заголовок шёл не больше чем в 4 строки (при 4.2vw нужна
+   колонка 940 px и текст заходит на позвоночник, поэтому кегль 3.85vw, до 56 px); правый край -
+   с запасом слева от позвоночника (центр на 79% ширины окна, полуширина ~70 px при 900 px высоты) */
+@media (min-width:861px){#s01 .col{max-width:min(880px,calc(79vw - 120px - max(40px,50vw - 600px)))}}
+#s01 h1{font-size:clamp(36px,3.85vw,56px);margin-top:var(--sp-5)}
+.btns{display:flex;flex-wrap:wrap;gap:var(--sp-3);margin-top:var(--sp-6)}
+.btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:var(--fs-text-s);padding:14px 22px;border:1px solid var(--fg);background:var(--fg);color:var(--bg);border-radius:2px;cursor:pointer;transition:opacity .15s,transform .15s}
+.btn:hover{opacity:.88;transform:translateY(-1px)}
+.btn.ghost{background:transparent;color:var(--fg);border-color:rgba(242,240,235,.4)}
+.btn.ghost:hover{border-color:var(--fg)}
+.spine-hit{position:absolute;right:0;top:0;bottom:0;width:42%;z-index:2;touch-action:pan-y;cursor:grab}
+.spine-hit:active{cursor:grabbing}
+html.no-webgl .spine-hit,html.reduce .spine-hit{display:none}
+.spine-static{display:none}
+.spine-stage{display:none}
+html.no-webgl .spine-static{display:block;position:absolute;right:21%;top:calc(50% + 14px);transform:translate(50%,-50%);height:min(80vh,1000px);width:auto;opacity:.9;pointer-events:none}
+
+/* 02 */
+.list{list-style:none;padding:0;margin:var(--sp-6) 0 0;max-width:640px}
+.list li{font-family:var(--font-display);font-weight:200;font-size:var(--fs-display-m);line-height:1.25;padding:var(--sp-4) 0;border-top:1px solid var(--line)}
+.list li:last-child{border-bottom:1px solid var(--line)}
+
+/* 03, 04 - место под позвоночник справа */
+#s03,#s04{min-height:110svh;display:flex;align-items:center}
+/* 04 длиннее: профиль с метками держится, пока экран 04 в кадре, и гаснет до начала 05 */
+#s04{min-height:125svh}
+#s03 .spine-hit{width:46%}
+.steps{list-style:none;padding:0;margin:var(--sp-6) 0 0;counter-reset:st;max-width:600px}
+.steps li{position:relative;padding:var(--sp-4) 0 var(--sp-4) 56px;border-top:1px solid var(--line);color:var(--soft)}
+.steps li::before{counter-increment:st;content:"0" counter(st);position:absolute;left:0;top:var(--sp-4);font-family:var(--font-mono);font-size:var(--fs-mono-s);color:var(--mute);letter-spacing:.1em}
+.steps b{color:var(--fg);font-weight:600}
+
+/* 05 */
+.report{margin-top:var(--sp-6);border:1px solid var(--line);aspect-ratio:16/9;max-width:860px;display:flex;align-items:center;justify-content:center;text-align:center;padding:var(--sp-6);
+ font-family:var(--font-mono);font-size:var(--fs-mono-s);letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+
+/* 06 */
+/* к запуску скрыта карточка очного формата: колонки по числу карточек */
+[hidden]{display:none!important}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--sp-4);margin-top:var(--sp-6)}
+.card{border:1px solid var(--line);padding:var(--sp-6) var(--sp-5);display:flex;flex-direction:column;gap:var(--sp-3);background:var(--bg)}
+.card .price{font-family:var(--font-display);font-weight:200;font-size:clamp(1.8rem,3vw,2.6rem);line-height:1}
+.card h3{font-size:1.15rem}
+.card p{color:var(--soft);font-size:var(--fs-text-s)}
+.card .tag{font-family:var(--font-mono);font-size:var(--fs-mono-s);letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.card.main{border-color:var(--fg)}
+.card .go{margin-top:auto;padding-top:var(--sp-4)}
+
+/* 07 */
+.person{display:grid;grid-template-columns:200px minmax(0,1fr);gap:var(--sp-6);margin-top:var(--sp-6);align-items:start}
+.photo-ph{aspect-ratio:3/4;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;text-align:center;padding:var(--sp-4);font-family:var(--font-mono);font-size:var(--fs-mono-s);color:var(--mute);letter-spacing:.08em;text-transform:uppercase}
+
+/* 09 */
+.faq{margin-top:var(--sp-6);max-width:760px}
+.faq details{border-top:1px solid var(--line)}
+.faq details:last-child{border-bottom:1px solid var(--line)}
+.faq summary{list-style:none;cursor:pointer;padding:var(--sp-5) 40px var(--sp-5) 0;position:relative;font-family:var(--font-display);font-weight:300;font-size:1.15rem;line-height:1.3}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:4px;top:var(--sp-5);font-family:var(--font-text);font-weight:300;font-size:1.4rem;line-height:1;color:var(--mute);transition:transform .2s}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{color:var(--soft);padding:0 0 var(--sp-5);max-width:62ch}
+
+/* 10 форма */
+.form{max-width:560px;margin-top:var(--sp-6)}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:var(--sp-4)}
+.field label{font-size:var(--fs-text-s);color:var(--soft)}
+.field input{font:inherit;font-size:var(--fs-text);padding:14px;border:1px solid var(--line);border-radius:2px;background:transparent;color:var(--fg)}
+.field input:focus{outline:none;border-color:var(--fg)}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--soft);line-height:1.5;margin-top:var(--sp-3);cursor:pointer}
+.check input{margin-top:3px;accent-color:var(--fg);width:15px;height:15px;flex:none}
+.check a{text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:.2em}
+.status{margin-top:var(--sp-4);font-size:var(--fs-text-s);color:var(--soft);min-height:1.5em}
+.status.err{color:var(--fg)}
+.status.err::before{content:"· ";color:var(--brass)}
+
+/* LITE: инструкция и загрузка фото, окно поверх страницы */
+#lite{position:fixed;inset:0;z-index:30;display:none}
+#lite.open{display:block}
+.lite-bg{position:absolute;inset:0;background:rgba(10,10,8,.82)}
+.lite-panel{position:absolute;right:0;top:0;bottom:0;width:min(640px,100%);background:var(--bg);border-left:1px solid var(--line);overflow-y:auto;padding:28px 36px 60px;overscroll-behavior:contain}
+.lite-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-6)}
+.lite-close{background:none;border:0;cursor:pointer;color:var(--soft);font-size:20px;padding:4px 8px}
+.lite-panel h2{font-size:clamp(1.6rem,3vw,2.2rem)}
+.lite-panel h3{font-size:1.05rem;margin:var(--sp-6) 0 var(--sp-3)}
+.lite-panel ul{margin:0;padding-left:1.1em;color:var(--soft)}
+.lite-panel li{margin:6px 0}
+.dz{margin-top:var(--sp-5);border:1px dashed rgba(242,240,235,.35);padding:var(--sp-6) var(--sp-4);text-align:center;cursor:pointer;color:var(--soft);transition:border-color .2s,background .2s}
+.dz.drag,.dz:hover{border-color:var(--fg);background:rgba(242,240,235,.03)}
+.dz small{display:block;margin-top:6px;color:var(--mute);font-size:12px}
+.thumbs{display:none;gap:8px;margin-top:var(--sp-3)}
+.thumbs.has{display:flex}
+.thumb{position:relative;width:92px;height:122px;border:1px solid var(--line);overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb button{position:absolute;right:2px;top:2px;width:22px;height:22px;border:0;background:rgba(10,10,8,.8);color:var(--fg);cursor:pointer;font-size:12px}
+
+/* 11 */
+.next{display:flex;flex-wrap:wrap;gap:var(--sp-3);margin-top:var(--sp-6)}
+
+/* подвал */
+.ftr{position:relative;z-index:3;padding:var(--sp-7) 40px var(--sp-8);max-width:var(--grid-max);margin:0 auto;display:flex;gap:var(--sp-4) var(--sp-6);flex-wrap:wrap;justify-content:space-between;font-size:13px;color:var(--mute);border-top:1px solid var(--line)}
+.ftr a{color:var(--mute)}.ftr a:hover{color:var(--fg)}
+.ftr .legal{display:flex;gap:var(--sp-4);flex-wrap:wrap}
+.ftr .credit{flex-basis:100%;font-family:var(--font-mono);font-size:11px;letter-spacing:.02em;line-height:1.6}
+.ftr .credit a{text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:.2em}
+
+/* Lenis */
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-stopped{overflow:clip}
+
+@media (max-width:860px){
+ .wrap{padding:0 18px}
+ .scr{padding:var(--sp-9) 0}
+ #s01{align-items:flex-start;padding-top:110px;min-height:auto}
+ #s03{min-height:auto;padding-bottom:58svh}
+ #s04{min-height:auto}
+ .spine-hit{display:block;position:absolute;left:0;right:0;width:auto;top:auto;bottom:0;height:58svh}
+ #s03 .spine-hit{width:auto}
+ /* 04: область позвоночника между заголовком и шагами, а не внизу экрана - так он успевает
+    погаснуть до начала экрана 05 */
+ #s04 .spine-stage{display:block;position:relative;height:52svh;margin:0 -18px var(--sp-5);pointer-events:none}
+ /* 01: позвоночник над заголовком по центру (~38% высоты экрана), текст ниже - виден без прокрутки.
+    Вариант «за заголовком справа, яркость 40%» сравнивался 26.10 и отклонён: точки шли сквозь буквы
+    заголовка (скриншоты в _отчёты/скрины/анализ-осанки-2/). */
+ #s01{padding-top:calc(72px + 44svh + 8px)}
+ #s01 .spine-hit{top:72px;bottom:auto;height:44svh}
+ html.no-webgl .spine-static{right:50%;top:calc(72px + 3svh);transform:translateX(50%);height:38svh}
+ .cards{grid-template-columns:minmax(0,1fr)}
+ .person{grid-template-columns:minmax(0,1fr)}
+ .photo-ph{max-width:220px}
+ .lite-panel{padding:22px 18px 60px}
+ .ftr{padding:var(--sp-7) 18px var(--sp-8)}
+}
+html.reduce *{scroll-behavior:auto!important}
+</style>
+<!-- SEO: услуга с ценами и частые вопросы. Цены очного формата и выезда - НУЖЕН ФАКТ (см. экран 06). -->
+<script type="application/ld+json">
+{
+ "@context":"https://schema.org",
+ "@graph":[
+  {"@type":"Service","@id":"https://athleticscorp.ru/analiz-osanki/#service",
+   "name":"Анализ осанки и движения",
+   "serviceType":"Немедицинский анализ осанки и движения",
+   "description":"Специалист разберёт вашу осанку по фото или вживую и объяснит, что менять в обычном дне. Без диагнозов.",
+   "provider":{"@type":"Organization","name":"Атлетикс Корп","url":"https://athleticscorp.ru/"},
+   "areaServed":[{"@type":"Country","name":"Россия"},{"@type":"City","name":"Москва"}],
+   "offers":[
+    {"@type":"Offer","name":"Первый взгляд по двум фото","price":"0","priceCurrency":"RUB"},
+    {"@type":"Offer","name":"Онлайн-разбор","price":"2000","priceCurrency":"RUB"}
+   ]},
+  {"@type":"FAQPage","@id":"https://athleticscorp.ru/analiz-osanki/#faq",
+   "mainEntity":[
+    {"@type":"Question","name":"Нужно ли, если ничего не болит?","acceptedAnswer":{"@type":"Answer","text":"Разбор нужен, чтобы понять, как ваше тело привыкло двигаться, и решить, что с этим делать дальше. Боль для этого не обязательна."}},
+    {"@type":"Question","name":"Что будет с моими фото? Кто их видит и когда они удаляются?","acceptedAnswer":{"@type":"Answer","text":"Фото передаются напрямую специалисту. Без рассылок."}},
+    {"@type":"Question","name":"Чем это отличается от остеопата или тренера?","acceptedAnswer":{"@type":"Answer","text":"Мы не ставим диагнозов и не лечим. Это не тренировка и не массаж. Разбор показывает, как вы стоите, сидите и двигаетесь, и что менять в обычном дне."}},
+    {"@type":"Question","name":"Как сделать фото, если снимаю сам?","acceptedAnswer":{"@type":"Answer","text":"Поставьте телефон на стол или книги, объектив на уровне пупка. Два снимка: спереди или сзади и сбоку. Облегающая одежда, ноги на ширине плеч, руки свободно опущены, стойте естественно."}},
+    {"@type":"Question","name":"Онлайн так же точно, как вживую?","acceptedAnswer":{"@type":"Answer","text":"Онлайн разбор идёт по двум фото по инструкции: система отмечает опорные точки и считает углы, специалист объясняет результат по видеосвязи."}},
+    {"@type":"Question","name":"Что делать после разбора?","acceptedAnswer":{"@type":"Answer","text":"Можно продолжить со специалистом или вернуться через несколько месяцев и сравнить замеры."}}
+   ]}
+ ]
+}
+</script>
+</head>
+<body>
+
+<!-- header:start - шаблон _assets/_header-template.mjs, правки там, затем node _assets/_header-apply.mjs -->
+<header id="hdr" class="hdr">
+  <div class="hdr-in">
+    <a class="hdr-logo" href="../" aria-label="Атлетикс Корп, на главную"><img src="../_assets/img/logo-ac-light@2x.png" srcset="../_assets/img/logo-ac-light@2x.png 2x, ../_assets/img/logo-ac-light@3x.png 3x" width="48" height="24" alt="Атлетикс Корп"></a>
+    <nav class="hdr-nav" aria-label="Основные разделы">
+      <a href="../podhod/">Подход</a>
+      <a href="../produkty/">Продукты</a>
+      <a href="../analiz-osanki/" aria-current="page">Анализ осанки</a>
+      <a href="../kompaniya/">Компания</a>
+    </nav>
+    <a class="hdr-cta" href="../analiz-osanki/#zapis">Записаться</a>
+    <button class="hdr-menu" id="menuBtn" type="button" aria-label="Меню" aria-expanded="false" aria-controls="siteMenu"><i></i><i></i></button>
+  </div>
+</header>
+<div class="smenu" id="siteMenu" role="dialog" aria-modal="true" aria-label="Меню сайта" hidden>
+  <button class="smenu-close" type="button" aria-label="Закрыть меню"><i></i><i></i></button>
+  <nav class="smenu-nav" aria-label="Все разделы">
+    <ul>
+      <li style="--i:0"><a href="../podhod/"><span>Подход</span></a></li>
+      <li style="--i:1"><a href="../produkty/"><span>Продукты</span></a></li>
+      <li style="--i:2"><a href="../analiz-osanki/" aria-current="page"><span>Анализ осанки</span></a></li>
+      <li style="--i:3"><a href="../biznes/"><span>Для бизнеса</span></a></li>
+      <li style="--i:4"><a href="../znaniya/"><span>Знания</span></a></li>
+      <li style="--i:5"><a href="../kompaniya/"><span>Компания</span></a></li>
+      <li style="--i:6"><a href="../partneram/"><span>Партнёрам</span></a></li>
+      <li style="--i:7"><a href="../investoram/"><span>Инвесторам</span></a></li>
+      <li style="--i:8"><a href="../karera/"><span>Карьера</span></a></li>
+    </ul>
+  </nav>
+  <div class="smenu-foot">
+    <a href="mailto:ac@athleticscorp.ru">ac@athleticscorp.ru</a>
+  </div>
+</div>
+<!-- header:end -->
+
+<canvas id="spine" aria-hidden="true"></canvas>
+<div class="spine-labels" id="spineLabels" aria-hidden="true">
+  <div class="spine-label" data-k="neck"><i></i><b></b>шейный отдел</div>
+  <div class="spine-label" data-k="thoracic"><i></i><b></b>грудной отдел</div>
+  <div class="spine-label" data-k="lumbar"><i></i><b></b>поясничный отдел</div>
+  <div class="spine-label" data-k="sacrum"><i></i><b></b>крестец</div>
+</div>
+
+<main>
+<!-- 01 · первый экран -->
+<section class="scr" id="s01" data-stage="01">
+  <div class="wrap">
+    <div class="col">
+      <span class="kicker">Анализ осанки и движения · онлайн и в Москве</span>
+      <h1>Посмотрим, как вы стоите, сидите и двигаетесь. И объясним, что менять в обычном дне</h1>
+      <p class="lead">Специалист разбирает вашу осанку по фото или вживую и простыми словами говорит, откуда сутулость или усталость в спине и с чего начать. Без диагнозов и лечения.</p>
+      <div class="btns">
+        <a class="btn" href="#zapis">Записаться на разбор · 2 000 ₽</a>
+        <button class="btn ghost" type="button" data-lite>Сначала бесплатно по 2 фото</button>
+      </div>
+    </div>
+  </div>
+  <div class="spine-hit" data-hit data-stage-box></div>
+  <img class="spine-static" src="../_assets/img/spine-static.png" alt="" width="304" height="1440" loading="lazy">
+</section>
+
+<!-- 02 · узнаёте себя -->
+<section class="scr" id="s02">
+  <div class="wrap">
+    <span class="eyebrow">02 · узнаёте себя</span>
+    <h2 class="rv">С чем к нам приходят</h2>
+    <ul class="list">
+      <li>Увидели себя на фото с созвона и не узнали свою осанку</li>
+      <li>Весь день за компьютером, к вечеру тянет шею и плечи</li>
+      <li>Держите спину, а через час снова сутулитесь</li>
+      <li>Ходите на йогу или в зал, а осанка та же</li>
+      <li>Хочется понимать своё тело, а не гадать</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 03 · почему -->
+<!-- НУЖЕН ФАКТ: Арсению сверить формулировку механизма, чтобы она была точной и без медицинских обещаний. -->
+<section class="scr" id="s03" data-stage="03">
+  <div class="wrap">
+    <div class="col">
+      <span class="eyebrow">03 · почему</span>
+      <h2 class="rv">Почему «просто держать спину» не работает</h2>
+      <p class="txt">Осанка это не поза, которую можно запомнить. Это то, как тело привыкло распределять нагрузку за ваш обычный день: восемь часов за столом, телефон в руке, сумка на одном плече. Выпрямиться усилием можно, но через десять минут внимание уходит, и тело возвращается к привычному. Чтобы что-то изменилось, нужно понять, что именно у вас перегружено, и поменять это в дне, а не держать себя силой.</p>
+    </div>
+  </div>
+  <div class="spine-hit" data-hit data-stage-box></div>
+</section>
+
+<!-- 04 · как проходит -->
+<!-- НУЖЕН ФАКТ: длительность разговора (30 или 30–60 минут), что входит в план, сколько упражнений, срок отчёта (на живом сайте «16–24 часа»). -->
+<section class="scr" id="s04" data-stage="04">
+  <div class="wrap">
+    <div class="col">
+      <span class="eyebrow">04 · как проходит</span>
+      <h2 class="rv">Как проходит разбор</h2>
+      <div class="spine-stage" data-stage-box></div>
+      <ol class="steps">
+        <li><b>Фото или встреча.</b> Присылаете два снимка по инструкции или приходите в Москве.</li>
+        <li><b>Измерение.</b> Система отмечает опорные точки и считает углы: как стоят голова, плечи, таз, колени.</li>
+        <li><b>Разговор 30 минут.</b> Специалист показывает, что видно, и объясняет, как это связано с вашим днём.</li>
+        <li><b>План.</b> Что поменять в привычках, 3–4 упражнения и что пока не трогать. Отчёт приходит в течение суток.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- 05 · что получите -->
+<!-- НУЖЕН ФАКТ: реальный обезличенный отчёт. Это самый сильный блок доверия, и сейчас его нет нигде. -->
+<section class="scr" id="s05">
+  <div class="wrap">
+    <span class="eyebrow">05 · что получите</span>
+    <h2 class="rv">Что вы получите</h2>
+    <p class="txt">Отчёт с вашими фото и отметками, короткое объяснение человеческим языком и план на ближайшие недели.</p>
+    <!-- СКРЫТО К ЗАПУСКУ (задача 19): рамка-заглушка примера отчёта. Вернуть, когда будет реальный обезличенный отчёт:
+    <div class="report">[обезличенный пример отчёта, с согласия клиента]</div> -->
+  </div>
+</section>
+
+<!-- 06 · форматы -->
+<section class="scr" id="s06">
+  <div class="wrap">
+    <span class="eyebrow">06 · форматы</span>
+    <h2 class="rv">Как можно пройти</h2>
+    <div class="cards">
+      <div class="card">
+        <span class="tag">Бесплатно</span>
+        <h3>По двум фото</h3>
+        <p>Первый взгляд специалиста. Подходит, чтобы понять, нужен ли полный разбор.</p>
+        <div class="go"><button class="btn ghost" type="button" data-lite>Бесплатно по 2 фото</button></div>
+      </div>
+      <div class="card main">
+        <span class="price">2 000 ₽</span>
+        <h3>Онлайн-разбор</h3>
+        <p>Видеосвязь, отчёт и план. Из любого города.</p>
+        <div class="go"><a class="btn" href="#zapis" data-format="online">Записаться · 2 000 ₽</a></div>
+      </div>
+      <!-- НУЖЕН ФАКТ: очный формат 5 000 ₽ на Красносельской: со слов Всеволода 28.09, на живом сайте его нет. Подтвердить. Выезд 15 000 ₽ показываем? -->
+      <div class="card" hidden><!-- СКРЫТО К ЗАПУСКУ (задача 19): цена не подтверждена, см. НУЖЕН ФАКТ выше -->
+        <span class="price">5 000 ₽</span>
+        <h3>Очно в Москве</h3>
+        <p>Красносельская. Выезд к вам: 15 000 ₽.</p>
+        <div class="go"><a class="btn ghost" href="#zapis" data-format="ochno">Записаться</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 · кто проводит -->
+<!-- НУЖЕН ФАКТ: кто проводит разборы сейчас (Арсений, Александр Крылов?), фото, согласие. Можно ли писать «1 000+ анализов осанки» и с какой даты. -->
+<section class="scr" id="s07" hidden><!-- СКРЫТО К ЗАПУСКУ (задача 19): вместо фото и текста заглушки -->
+  <div class="wrap">
+    <span class="eyebrow">07 · кто проводит</span>
+    <h2 class="rv">Кто будет разбирать вашу осанку</h2>
+    <div class="person">
+      <div class="photo-ph">фото специалиста</div>
+      <div>
+        <p class="txt" style="margin-top:0">Фото, имя и пара строк о специалисте. Ниже: методика, по которой с 2023 года сделано больше 1 000 стандартизированных анализов. Измерения и расчёты делает система, выводы и план специалист.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 08 · честно -->
+<section class="scr" id="s08">
+  <div class="wrap">
+    <span class="eyebrow">08 · честно</span>
+    <h2 class="rv">Чем это не является</h2>
+    <p class="txt">Мы не ставим диагнозов и не лечим. Это не тренировка и не массаж. Если у вас острая боль или она не проходит, сначала к врачу. Разбор нужен, чтобы понять, как ваше тело привыкло двигаться, и решить, что с этим делать дальше.</p>
+  </div>
+</section>
+
+<!-- 09 · вопросы. Вопросы - из документа; ответов в документе нет, они собраны из текста этой же страницы
+     и инструкции по фото с живого сайта - ГИПОТЕЗА. -->
+<section class="scr" id="s09">
+  <div class="wrap">
+    <span class="eyebrow">09 · вопросы</span>
+    <h2 class="rv">Частые вопросы</h2>
+    <div class="faq">
+      <details><summary>Нужно ли, если ничего не болит?</summary><p>Разбор нужен, чтобы понять, как ваше тело привыкло двигаться, и решить, что с этим делать дальше. Боль для этого не обязательна.</p></details>
+      <!-- НУЖЕН ФАКТ: политика хранения фото: кто видит, где хранятся, когда удаляются. -->
+      <details><summary>Что будет с моими фото? Кто их видит и когда они удаляются?</summary><p>Фото передаются напрямую специалисту. Без рассылок.</p></details>
+      <details><summary>Чем это отличается от остеопата или тренера?</summary><p>Мы не ставим диагнозов и не лечим. Это не тренировка и не массаж. Разбор показывает, как вы стоите, сидите и двигаетесь, и что менять в обычном дне.</p></details>
+      <details><summary>Как сделать фото, если снимаю сам?</summary><p>Поставьте телефон на стол или книги, объектив на уровне пупка. Два снимка: спереди или сзади и сбоку. Облегающая одежда, ноги на ширине плеч, руки свободно опущены, стойте естественно.</p></details>
+      <!-- НУЖЕН ФАКТ: насколько онлайн-разбор точнее или менее точен, чем очный. -->
+      <details><summary>Онлайн так же точно, как вживую?</summary><p>Онлайн разбор идёт по двум фото по инструкции: система отмечает опорные точки и считает углы, специалист объясняет результат по видеосвязи.</p></details>
+      <details><summary>Что делать после разбора?</summary><p>Можно продолжить со специалистом или вернуться через несколько месяцев и сравнить замеры.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- 10 · запись -->
+<!-- НУЖЕН ФАКТ: реальный срок ответа и куда приходят заявки (Telegram @athleticscorpmsc?). Сейчас заявка уходит
+     в Formspree (тот же адрес формы, что на живом сайте). -->
+<section class="scr" id="zapis">
+  <div class="wrap">
+    <span class="eyebrow">10 · запись</span>
+    <h2 class="rv">Записаться на разбор</h2>
+    <p class="txt">Имя и телефон или Telegram. Ответим в течение часа в рабочее время и подберём удобное время.</p>
+    <form class="form" id="bookForm" novalidate>
+      <div class="field"><label for="fName">Имя</label><input id="fName" name="name" type="text" autocomplete="name" required></div>
+      <div class="field"><label for="fContact">Телефон или Telegram</label><input id="fContact" name="contact" type="text" autocomplete="tel" required></div>
+      <input type="hidden" id="fFormat" name="format" value="online">
+      <label class="check"><input type="checkbox" id="fConsentData" required><span>Я согласен(на) на <a href="../personal-data-policy/" target="_blank" rel="noopener">обработку персональных данных</a></span></label>
+      <label class="check"><input type="checkbox" id="fConsentAds"><span>Я согласен(на) на <a href="../advertising-consent/" target="_blank" rel="noopener">получение рекламных сообщений</a></span></label>
+      <div class="btns">
+        <button class="btn" type="submit" id="fSubmit">Записаться · 2 000 ₽</button>
+        <button class="btn ghost" type="button" data-lite>Бесплатно по 2 фото</button>
+      </div>
+      <p class="status" id="fStatus" role="status"></p>
+    </form>
+  </div>
+</section>
+
+<!-- 11 · дальше -->
+<section class="scr" id="s11">
+  <div class="wrap">
+    <span class="eyebrow">11 · дальше</span>
+    <h2 class="rv">После разбора</h2>
+    <p class="txt">Можно продолжить со специалистом или вернуться через несколько месяцев и сравнить замеры. Анализ один из продуктов Атлетикс Корп.</p>
+    <div class="next">
+      <a class="btn ghost" href="../specialistam/">Работа со специалистами</a>
+      <a class="btn ghost" href="../produkty/">Все продукты</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="ftr">
+  <span>© 2026 Атлетикс Корп</span>
+  <span>Анализ немедицинский, не заменяет консультацию врача</span>
+  <span class="legal"><a href="../privacy-policy/">Политика конфиденциальности</a><a href="../personal-data-policy/">Согласие на обработку данных</a><a href="../consent-photo/">Согласие на обработку фото</a><a href="../oferta/">Публичная оферта</a></span>
+  <p class="credit">3D-модель позвоночника: <a href="https://sketchfab.com/3d-models/the-human-spinal-column-bcd9eee09ce044ef98a69c315aa792e2" target="_blank" rel="noopener">The human spinal column</a> от 3D (@scratchi), лицензия <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. Переведена в точки.</p>
+</footer>
+
+<!-- LITE: инструкция по фото и загрузка двух снимков (логика с живого сайта; фото уходят в то же
+     хранилище Supabase, что и там - без библиотеки supabase-js с CDN, теми же двумя запросами). -->
+<div id="lite" role="dialog" aria-modal="true" aria-labelledby="liteTitle">
+  <div class="lite-bg" data-lite-close></div>
+  <div class="lite-panel">
+    <div class="lite-bar"><span class="eyebrow" style="margin:0">Бесплатно · по двум фото</span><button class="lite-close" type="button" data-lite-close aria-label="Закрыть">✕</button></div>
+    <h2 id="liteTitle">Как сделать фото для анализа осанки</h2>
+    <p class="txt">Два снимка, и специалист получит всё необходимое. Пришлите фото, мы пришлём первичный разбор.</p>
+    <h3>Подготовьтесь</h3>
+    <ul>
+      <li>Одежда облегающая: леггинсы и майка или футболка. Контуры тела должны быть чётко видны.</li>
+      <li>Ноги на ширине плеч, руки свободно опущены. Стойте естественно, не выпрямляйтесь специально.</li>
+      <li>Равномерный свет со всех сторон. Тени не должны скрывать контуры тела.</li>
+    </ul>
+    <h3>Сделайте два снимка</h3>
+    <ul>
+      <li>Снимок 1: спереди или сзади. Лицом или спиной к камере, голова, тело и ноги в кадре.</li>
+      <li>Снимок 2: сбоку. Повернитесь боком, голова, тело и ноги в кадре.</li>
+      <li>Камера на уровне пупка: поставьте телефон на стол или книги. Снимает другой человек, попросите его присесть.</li>
+    </ul>
+    <h3>Чего избегать</h3>
+    <ul>
+      <li>Камера сверху или снизу: только строго на уровне пупка.</li>
+      <li>Широкоугольный режим: исказит пропорции тела.</li>
+      <li>Скрещенные руки, напряжение: стойте свободно.</li>
+      <li>Тёмные или размытые фото: тело должно быть видно полностью.</li>
+      <li>Мешковатая одежда: скрывает контуры, снижает точность.</li>
+    </ul>
+    <form id="liteForm" novalidate>
+      <h3>Загрузите фото</h3>
+      <input type="file" id="liteFile" accept="image/*" multiple hidden>
+      <div class="dz" id="liteDz" tabindex="0" role="button">Перетащите два фото сюда или выберите файлы<small>JPG, PNG, до 15 МБ каждое</small></div>
+      <div class="thumbs" id="liteThumbs"></div>
+      <div class="field" style="margin-top:var(--sp-5)"><label for="liteName">Имя</label><input id="liteName" type="text" autocomplete="name" required></div>
+      <div class="field"><label for="liteContact">Телефон или Telegram</label><input id="liteContact" type="text" autocomplete="tel" required></div>
+      <label class="check"><input type="checkbox" id="liteConsent" required><span>Я согласен(на) на обработку фотографий в соответствии с <a href="../consent-photo/" target="_blank" rel="noopener">Согласием на обработку фотографий для скрининга осанки</a></span></label>
+      <div class="btns"><button class="btn" type="submit" id="liteSubmit">Отправить фото на разбор</button></div>
+      <p class="status" id="liteStatus" role="status">Фото передаются напрямую специалисту. Без рассылок.</p>
+      <p class="status">Или на почту: <a href="mailto:ac@athleticscorp.ru" style="text-decoration:underline;text-underline-offset:.2em">ac@athleticscorp.ru</a></p>
+    </form>
+  </div>
+</div>
+
+<script type="importmap">
+{ "imports": { "three": "../_assets/vendor/three/three.module.min.js" } }
+</script>
+<script src="../_assets/vendor/gsap.min.js"></script>
+<script src="../_assets/vendor/ScrollTrigger.min.js"></script>
+<script src="../_assets/vendor/SplitText.min.js"></script>
+<script src="../_assets/vendor/lenis.min.js"></script>
+<script src="analiz.js"></script>
+<script type="module" src="../_assets/3d/spine-page.js"></script>
+</body>
+</html>

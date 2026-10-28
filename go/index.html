@@ -189,6 +189,8 @@
   footer a { color: var(--muted); }
   [hidden] { display: none !important; }
 </style>
+<link rel="stylesheet" href="../_assets/header.css">
+<script src="../_assets/header.js"></script>
 </head>
 <body>
 <main class="wrap">
@@ -201,10 +203,40 @@
     <span class="ver">МАТЕРИАЛЫ V0.4</span>
   </div>
 
-  <header>
-    <h1>Понимать человека. Через движение.</h1>
-    <p class="lead">Мы научно-продуктовая HealthTech-компания. Здесь два документа, выберите свой.</p>
-  </header>
+  <!-- header:start - шаблон _assets/_header-template.mjs, правки там, затем node _assets/_header-apply.mjs -->
+<header id="hdr" class="hdr">
+  <div class="hdr-in">
+    <a class="hdr-logo" href="../" aria-label="Атлетикс Корп, на главную"><img src="../_assets/img/logo-ac-light@2x.png" srcset="../_assets/img/logo-ac-light@2x.png 2x, ../_assets/img/logo-ac-light@3x.png 3x" width="48" height="24" alt="Атлетикс Корп"></a>
+    <nav class="hdr-nav" aria-label="Основные разделы">
+      <a href="../podhod/">Подход</a>
+      <a href="../produkty/">Продукты</a>
+      <a href="../analiz-osanki/">Анализ осанки</a>
+      <a href="../kompaniya/">Компания</a>
+    </nav>
+    <a class="hdr-cta" href="../analiz-osanki/#zapis">Записаться</a>
+    <button class="hdr-menu" id="menuBtn" type="button" aria-label="Меню" aria-expanded="false" aria-controls="siteMenu"><i></i><i></i></button>
+  </div>
+</header>
+<div class="smenu" id="siteMenu" role="dialog" aria-modal="true" aria-label="Меню сайта" hidden>
+  <button class="smenu-close" type="button" aria-label="Закрыть меню"><i></i><i></i></button>
+  <nav class="smenu-nav" aria-label="Все разделы">
+    <ul>
+      <li style="--i:0"><a href="../podhod/"><span>Подход</span></a></li>
+      <li style="--i:1"><a href="../produkty/"><span>Продукты</span></a></li>
+      <li style="--i:2"><a href="../analiz-osanki/"><span>Анализ осанки</span></a></li>
+      <li style="--i:3"><a href="../biznes/"><span>Для бизнеса</span></a></li>
+      <li style="--i:4"><a href="../znaniya/"><span>Знания</span></a></li>
+      <li style="--i:5"><a href="../kompaniya/"><span>Компания</span></a></li>
+      <li style="--i:6"><a href="../partneram/"><span>Партнёрам</span></a></li>
+      <li style="--i:7"><a href="../investoram/"><span>Инвесторам</span></a></li>
+      <li style="--i:8"><a href="../karera/"><span>Карьера</span></a></li>
+    </ul>
+  </nav>
+  <div class="smenu-foot">
+    <a href="mailto:ac@athleticscorp.ru">ac@athleticscorp.ru</a>
+  </div>
+</div>
+<!-- header:end -->
 
   <section class="doors">
     <a class="door" href="/go/stat.pdf" data-goal="go_stat_pdf">

@@ -1,0 +1,112 @@
+/* Шапка и полноэкранное меню - одни на все страницы (задача 14, ветка header-v2).
+   Разметка - _assets/_header-template.mjs (вставляется в страницы _header-apply.mjs), поведение -
+   _assets/header.js. Три варианта через <html data-header>: pill (основной, по умолчанию), line, rail.
+   Переключить для просмотра: ?header=line в адресе страницы.
+   Файл самодостаточный: шрифты и цвета заданы здесь, от tokens.css и стилей страницы не зависит
+   (каркас-страницы tokens.css не подключают). Слои: шапка 25, меню 40; окно LITE (30) - поверх шапки. */
+@font-face{font-family:'Unbounded';src:url('fonts/unbounded/unbounded-variable.woff2') format('woff2');font-weight:200 900;font-display:swap}
+@font-face{font-family:'Golos Text';src:url('fonts/golos-text/golos-text-variable.woff2') format('woff2');font-weight:400 900;font-display:swap}
+@font-face{font-family:'JetBrains Mono';src:url('fonts/jetbrains-mono/jetbrains-mono-variable.woff2') format('woff2');font-weight:100 800;font-display:swap}
+
+/* ----------------------------------------------------------- общее */
+/* power2.out, как в GSAP */
+.hdr{--ease:cubic-bezier(.25,.46,.45,.94);position:fixed;z-index:25;left:0;right:0;top:0;pointer-events:none;
+ font:400 14px/1.2 "Golos Text","Segoe UI",system-ui,sans-serif;color:#F2F0EB;transition:transform .35s var(--ease)}
+.hdr-in{position:relative;display:flex;align-items:center;pointer-events:auto}
+/* подложка отдельным слоем: размытие и рамка не становятся «родителем» для fixed-кнопки в варианте rail */
+.hdr-in::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
+.hdr a{color:inherit;text-decoration:none}
+.hdr-logo{display:block;flex:none}
+.hdr-logo img{display:block;height:22px;width:auto}
+.hdr-nav{display:flex;gap:26px;white-space:nowrap}
+.hdr-nav a{color:rgba(242,240,235,.7);transition:color .2s}
+.hdr-nav a:hover,.hdr-nav a[aria-current]{color:#F2F0EB}
+.hdr .hdr-cta{flex:none;display:inline-flex;align-items:center;height:36px;padding:0 18px;border-radius:999px;background:#F2F0EB;color:#0A0A08;font-weight:500;white-space:nowrap;transition:opacity .2s}
+.hdr .hdr-cta:hover{opacity:.88}
+.hdr-menu{flex:none;width:40px;height:36px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0;margin:0;border:0;background:none;color:inherit;cursor:pointer}
+.hdr-menu i{display:block;width:20px;height:1px;background:currentColor}
+.hdr a:focus-visible,.hdr button:focus-visible,.smenu a:focus-visible,.smenu button:focus-visible{outline:2px solid #DDA74F;outline-offset:3px}
+
+/* ----------------------------------------------------------- pill: плавающая капсула (основной) */
+.hdr{top:16px;display:flex;justify-content:center;padding:0 12px}
+.hdr-in{height:52px;max-width:860px;gap:28px;padding:0 8px 0 22px}
+.hdr-in::before{background:rgba(10,10,8,.55);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(242,240,235,.12);border-radius:999px}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.hdr-in::before{background:rgba(10,10,8,.85)}}
+/* Главная (класс hdr-solid на <html>): без размытия - под капсулой 3D-холст. Замер 27.10, по 3 прогона:
+   с размытием на телефоне ×4 один кадр 46 мс, без него ни одного кадра дольше 33 мс (отчёт 14). */
+html.hdr-solid:not([data-header="line"]) .hdr-in::before{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(10,10,8,.85)}
+.hdr-cta{margin-left:6px}
+.hdr-menu{margin-left:-20px}
+.hdr.is-hidden{transform:translateY(-84px)}
+
+/* ----------------------------------------------------------- line: на всю ширину, линия снизу */
+[data-header="line"] .hdr{top:0;display:block;padding:0}
+[data-header="line"] .hdr-in{height:72px;max-width:none;padding:0 40px;display:grid;grid-template-columns:1fr auto 1fr auto;gap:0 20px}
+[data-header="line"] .hdr-in::before{background:none;-webkit-backdrop-filter:none;backdrop-filter:none;border:0;border-bottom:1px solid rgba(242,240,235,.12);border-radius:0}
+[data-header="line"] .hdr-cta{justify-self:end;margin:0}
+[data-header="line"] .hdr-menu{margin:0}
+[data-header="line"] .hdr.is-hidden{transform:translateY(-100%)}
+
+/* ----------------------------------------------------------- rail: вертикальная панель слева */
+[data-header="rail"] .hdr{top:0;bottom:0;right:auto;width:64px;display:block;padding:0;transition:none}
+[data-header="rail"] .hdr.is-hidden{transform:none}
+[data-header="rail"] .hdr-in{height:100%;width:64px;max-width:none;flex-direction:column;justify-content:space-between;gap:0;padding:20px 0 24px}
+[data-header="rail"] .hdr-in::before{border-radius:0;border:0;border-right:1px solid rgba(242,240,235,.12)}
+[data-header="rail"] .hdr-nav{display:none}
+[data-header="rail"] .hdr-menu{order:-1;margin:0}
+[data-header="rail"] .hdr-logo img{height:18px}
+[data-header="rail"] .hdr-cta{position:fixed;top:16px;right:16px;margin:0}
+/* прячутся части по отдельности: перенос всей .hdr утащил бы и fixed-кнопку */
+[data-header="rail"] .hdr-in::before,[data-header="rail"] .hdr-logo,[data-header="rail"] .hdr-menu,[data-header="rail"] .hdr-cta{transition:transform .35s var(--ease)}
+[data-header="rail"] .hdr.is-hidden .hdr-in::before,[data-header="rail"] .hdr.is-hidden .hdr-logo,[data-header="rail"] .hdr.is-hidden .hdr-menu{transform:translateX(-72px)}
+[data-header="rail"] .hdr.is-hidden .hdr-cta{transform:translateY(-72px)}
+
+/* ----------------------------------------------------------- телефон: логотип, «Записаться», «Меню» */
+@media (max-width:860px){
+ .hdr-nav{display:none}
+ .hdr{padding:0 12px}
+ .hdr-in{width:100%;max-width:none;gap:0;padding:0 6px 0 18px}
+ .hdr-cta,[data-header] .hdr-cta{margin-left:auto}
+ .hdr-menu{margin-left:4px}
+ .hdr .hdr-cta{height:34px;padding:0 16px}
+ [data-header="line"] .hdr-in{height:60px;padding:0 12px 0 18px;display:flex}
+ /* rail на узком экране съедал бы 64 px ширины текста - там он ведёт себя как line */
+ [data-header="rail"] .hdr{bottom:auto;width:auto;right:0;transition:transform .35s var(--ease)}
+ [data-header="rail"] .hdr-in{height:60px;width:100%;flex-direction:row;padding:0 12px 0 18px}
+ [data-header="rail"] .hdr-in::before{border-right:0;border-bottom:1px solid rgba(242,240,235,.12)}
+ [data-header="rail"] .hdr-menu{order:0;margin-left:4px}
+ [data-header="rail"] .hdr-logo img{height:22px}
+ [data-header="rail"] .hdr-cta{position:static}
+ [data-header="rail"] .hdr.is-hidden{transform:translateY(-100%)}
+ [data-header="rail"] .hdr.is-hidden .hdr-in::before,[data-header="rail"] .hdr.is-hidden .hdr-logo,[data-header="rail"] .hdr.is-hidden .hdr-menu,[data-header="rail"] .hdr.is-hidden .hdr-cta{transform:none}
+}
+
+/* ----------------------------------------------------------- полноэкранное меню */
+.smenu{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;padding:104px 40px 32px;overflow-y:auto;overscroll-behavior:contain;
+ background:#0A0A08;color:#F2F0EB;font:400 14px/1.4 "Golos Text","Segoe UI",system-ui,sans-serif;opacity:0;transition:opacity .3s}
+.smenu[hidden]{display:none}
+.smenu.is-open{opacity:1}
+.smenu a{color:inherit;text-decoration:none}
+.smenu-close{position:absolute;top:22px;right:28px;width:44px;height:44px;padding:0;border:0;background:none;color:inherit;cursor:pointer}
+.smenu-close i{position:absolute;left:11px;top:21px;width:22px;height:1px;background:currentColor;transform:rotate(45deg)}
+.smenu-close i+i{transform:rotate(-45deg)}
+.smenu-nav ul{list-style:none;margin:0;padding:0}
+/* пункт выезжает снизу из-под маски строки, по очереди (--i - номер строки) */
+.smenu-nav li{overflow:hidden}
+.smenu-nav a{display:block;padding:1px 0;font:300 clamp(30px,4.4vw,56px)/1.16 "Unbounded","Arial Black",sans-serif;letter-spacing:-.01em}
+.smenu-nav a span{display:inline-block;transform:translateY(110%);transition:transform .6s cubic-bezier(.2,.7,.2,1),color .2s;transition-delay:calc(60ms + var(--i,0) * 45ms),0s}
+.smenu.is-open .smenu-nav a span{transform:none}
+.smenu-nav a:hover span{color:rgba(242,240,235,.7)}
+.smenu-nav a[aria-current] span{color:rgba(242,240,235,.55)}
+.smenu-foot{margin-top:auto;padding-top:32px;display:flex;flex-wrap:wrap;gap:8px 28px;font:400 12px/1.5 "JetBrains Mono",ui-monospace,Consolas,monospace;letter-spacing:.06em;color:rgba(242,240,235,.6)}
+.smenu-foot a:hover{color:#F2F0EB}
+@media (max-width:860px){
+ .smenu{padding:88px 18px 24px}
+ .smenu-close{top:16px;right:12px}
+ .smenu-nav a{font-size:clamp(26px,7.6vw,40px)}
+}
+
+/* ----------------------------------------------------------- без анимации */
+@media (prefers-reduced-motion:reduce){
+ .hdr,.hdr *,.hdr-in::before,.smenu,.smenu-nav a span{transition:none!important}
+}

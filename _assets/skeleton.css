@@ -1,0 +1,90 @@
+/* Серый каркас Атлетикс 2.0. Без дизайна, без цвета бренда — это рабочий
+   инструмент проверки смыслов и структуры, не макет. Стиль продолжает
+   каркас-главной-v0.1 (ШТАБ/06-сайт-и-конверсия), чтобы Алексею не пришлось
+   привыкать к новому визуальному языку черновика. */
+:root{
+  --bg:#ECECEA;--paper:#FAFAF8;--box:#DEDEDB;--box2:#CFCFCB;--ink:#1D1D1B;--mute:#6E6E69;--line:#C4C4BF;
+  --note:#8A5A12;--noteb:#F4E7CF;--accent:#1D1D1B;--money:#8A5A12;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121211;--paper:#1B1B19;--box:#262624;--box2:#30302D;--ink:#EDEDEA;--mute:#9A9A94;--line:#3A3A37;
+  --note:#E2B66A;--noteb:#2B2418;--accent:#EDEDEA;--money:#E2B66A;}}
+:root[data-theme="dark"]{
+  --bg:#121211;--paper:#1B1B19;--box:#262624;--box2:#30302D;--ink:#EDEDEA;--mute:#9A9A94;--line:#3A3A37;
+  --note:#E2B66A;--noteb:#2B2418;--accent:#EDEDEA;--money:#E2B66A;}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.mono{font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace}
+a{color:inherit}
+h1{font-size:clamp(30px,4.6vw,46px);line-height:1.1;letter-spacing:-.01em;margin:0 0 12px}
+h2{font-size:clamp(21px,2.6vw,28px);line-height:1.2;margin:0 0 10px;letter-spacing:-.005em}
+h3{font-size:16px;margin:0 0 6px}
+p{margin:0 0 10px;max-width:68ch}
+.mut{color:var(--mute)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+/* шапка и меню - общие для всего сайта: header.css (задача 14). Шапка фиксированная: отступ сверху
+   под неё и под полосу «черновой каркас», сама шапка - ниже полосы. */
+body{padding-top:100px}
+.draft-flag~.hdr{margin-top:21px}
+
+/* каркас-страницы */
+.ctrl{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+.ctrl button{font:inherit;font-size:13px;padding:7px 12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;cursor:pointer}
+.ctrl button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.docbar{font-size:12px;color:var(--mute);margin:18px 0 4px}
+
+.sec{position:relative;padding:40px 20px;border-bottom:1px dashed var(--line);max-width:1120px;margin:0 auto}
+.sec:last-of-type{border-bottom:0}
+.tag{display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);margin-bottom:14px}
+.note{display:block;margin-top:18px;background:var(--noteb);color:var(--note);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.5;max-width:68ch}
+.note b{color:var(--note)}
+body.clean .note{display:none}
+body.clean .tag{display:none}
+
+.ph{background:var(--box);border:1px dashed var(--box2);border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--mute);font-size:13px;padding:22px;min-height:120px}
+.btn{display:inline-block;padding:11px 18px;border-radius:999px;font-size:14px;border:1px solid var(--ink);color:var(--ink);text-decoration:none;white-space:nowrap;background:transparent;cursor:pointer}
+.btn.p{background:var(--ink);color:var(--paper)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px;background:var(--paper)}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g5{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media (max-width:820px){.g3,.g4,.g5{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.g2,.g3,.g4,.g5{grid-template-columns:1fr}}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--paper);min-width:0}
+.card .st{display:inline-block;font-size:11px;letter-spacing:.05em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:2px 8px;margin-bottom:8px;color:var(--mute)}
+.card .st.on{border-color:var(--ink);color:var(--ink)}
+.big{font-size:34px;font-weight:600;letter-spacing:-.02em;line-height:1}
+.chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13.5px}
+.chain b{font-weight:500;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--paper)}
+.chain em{font-style:normal;color:var(--mute)}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid var(--line)}
+th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--mute);font-weight:500}
+tr:last-child td{border-bottom:0}
+.form-ph{border:1px dashed var(--box2);border-radius:12px;padding:18px;background:var(--box);display:grid;gap:10px;max-width:420px}
+.form-ph .f{height:38px;border-radius:8px;background:var(--paper);border:1px solid var(--line)}
+.form-ph .fl{font-size:12px;color:var(--mute)}
+.faq-ph{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--paper)}
+.quote-ph{border-left:3px solid var(--ink);padding-left:16px;font-size:20px;line-height:1.3;max-width:34ch}
+
+/* подвал, общий для всех страниц */
+.site-ftr{background:var(--box);border-top:1px solid var(--line);padding:40px 20px 24px}
+.site-ftr .wrap{display:grid;gap:28px}
+.site-ftr .cta-row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding-bottom:24px;border-bottom:1px solid var(--line)}
+.site-ftr .cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+@media (max-width:760px){.site-ftr .cols{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.site-ftr .col h4{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);margin:0 0 10px}
+.site-ftr .col ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:13.5px}
+.site-ftr .col a{text-decoration:none}
+.site-ftr .col a:hover{text-decoration:underline}
+.site-ftr .legal{font-size:12px;color:var(--mute);padding-top:18px;border-top:1px solid var(--line);display:flex;gap:6px 16px;flex-wrap:wrap}
+
+/* метка черновика, видна на каждой странице, чтобы не спутать с продакшеном */
+.draft-flag{position:fixed;top:0;left:0;right:0;z-index:50;background:var(--money);color:var(--paper);font:500 11px/1 ui-monospace,Consolas,monospace;letter-spacing:.06em;text-align:center;padding:5px;text-transform:uppercase}
+@media (max-width:600px){.draft-flag{font-size:9.5px}}

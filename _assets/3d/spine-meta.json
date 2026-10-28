@@ -1,0 +1,68 @@
+{
+ "points": 40000,
+ "height": 2.0,
+ "y_min": -1.0,
+ "y_max": 1.0,
+ "front_axis": "+Z",
+ "labels": {
+  "neck": [
+   0.0,
+   0.838,
+   -0.016
+  ],
+  "lumbar": [
+   0.0,
+   -0.5249,
+   -0.0784
+  ],
+  "sacrum": [
+   0.0,
+   -0.8104,
+   -0.1702
+  ],
+  "thoracic": [
+   0.0,
+   0.1964,
+   -0.2434
+  ]
+ },
+ "parts_by_region": {
+  "neck": [
+   "Male_Skeletal_Atlas_Geo_bones back_0",
+   "Male_Skeletal_Axis_Geo_bones back_0",
+   "Male_Skeletal_C03_Geo_bones back_0",
+   "Male_Skeletal_C04_Geo_bones back_0",
+   "Male_Skeletal_C05_Geo_bones back_0",
+   "Male_Skeletal_C06_Geo_bones back_0",
+   "Male_Skeletal_C07_Geo_bones back_0"
+  ],
+  "thoracic": [
+   "Male_Skeletal_T01_Geo_bones back_0",
+   "Male_Skeletal_T02_Geo_bones back_0",
+   "Male_Skeletal_T03_Geo_bones back_0",
+   "Male_Skeletal_T04_Geo_bones back_0",
+   "Male_Skeletal_T05_Geo_bones back_0",
+   "Male_Skeletal_T06_Geo_bones back_0",
+   "Male_Skeletal_T07_Geo_bones back_0",
+   "Male_Skeletal_T08_Geo_bones back_0",
+   "Male_Skeletal_T09_Geo_bones back_0",
+   "Male_Skeletal_T10_Geo_bones back_0",
+   "Male_Skeletal_T11_Geo_bones back_0",
+   "Male_Skeletal_T12_Geo_bones back_0"
+  ],
+  "lumbar": [
+   "Male_Skeletal_L01_Geo_bones back_0",
+   "Male_Skeletal_L02_Geo_bones back_0",
+   "Male_Skeletal_L03_Geo_bones back_0",
+   "Male_Skeletal_L04_Geo_bones back_0",
+   "Male_Skeletal_L05_Geo_bones back_0"
+  ],
+  "sacrum": [
+   "Male_Skeletal_Sacrum_Geo_bones sacrum_0"
+  ],
+  "other": [
+   "Male_Skeletal_Intervertabral_Discs_Geo_discs_0"
+  ]
+ },
+ "source": "The human spinal column, 3D (@scratchi), CC BY 4.0, https://sketchfab.com/3d-models/the-human-spinal-column-bcd9eee09ce044ef98a69c315aa792e2"
+}
