@@ -113,14 +113,28 @@ function init() {
   async function human(parent, opt) {
     const inst = await initHuman({
       renderer, scene: parent, mobile, preset: 'зерно-8k', n: opt.n, refDist: 5,
-      modelUrl: '../_assets/3d/human.glb', samplesUrl: '../_assets/3d/human-samples.bin',
+      modelUrl: opt.clip ? '../_assets/3d/products-specialists.glb' : '../_assets/3d/human.glb',
+      samplesUrl: '../_assets/3d/human-samples.bin',
     });
     inst.actions.idle.time = opt.t0 || 0;
     inst.mixer.update(0); inst.model.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(inst.mesh);
-    const foot = inst.floors.idle, S = 1 / Math.max(0.01, box.max.y - foot);
+    let foot = inst.floors.idle;
+    const S = 1 / Math.max(0.01, box.max.y - foot);
+    // свой клип (chest_open, coach_notes): играет он один; пол - нижняя точка тела в его первом кадре
+    // (ноги в этих клипах неподвижны, см. build_human.py, раздел 6b)
+    if (opt.clip && inst.actions[opt.clip]) {
+      for (const a of Object.values(inst.actions)) a.stop();
+      const a = inst.actions[opt.clip]; a.play(); a.setEffectiveWeight(1); a.time = opt.t0 || 0;
+      (window.__clips = window.__clips || {})[opt.clip] = a;           // для автотестов
+      inst.mixer.update(0); inst.model.updateMatrixWorld(true);
+      inst.mesh.boundingBox = null;
+      foot = new THREE.Box3().setFromObject(inst.mesh).min.y;
+    }
     const [p0, ...more] = opt.at;
     inst.setTransform(S, foot, p0[0], p0[1], Math.cos(p0[2]), Math.sin(p0[2]));
+    const placement = new THREE.Matrix4().compose(new THREE.Vector3(p0[0], -foot * S, p0[1]), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), p0[2]), new THREE.Vector3(S, S, S));
+    const props = opt.props ? opt.props.map((k) => handProp(k, inst, parent)) : [];
     // копии: те же точки и тело, своя матрица
     const copies = more.map(([x, z, yaw]) => {
       const pl = new THREE.Matrix4().compose(new THREE.Vector3(x, -foot * S, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), new THREE.Vector3(S, S, S));
@@ -132,19 +146,115 @@ function init() {
     let on = true;
     return {
       inst,
-      dpr() { inst.setQuality({ n: inst.n }); },
+      dpr() { inst.setQuality({ n: inst.n }); for (const pr of props) pr.dpr(); },
       frame(dt, vis) {
-        if (!vis) { if (on) { inst.pause(); for (const c of copies) c.pts.visible = c.occ.visible = false; on = false; } return; }
+        if (!vis) { if (on) { inst.pause(); for (const c of copies) c.pts.visible = c.occ.visible = false; for (const pr of props) pr.pts.visible = false; on = false; } return; }
         if (!on) { inst.resume(); on = true; }
         if (!reduce) inst.mixer.update(dt);
         inst.model.updateMatrixWorld(true);
         inst.update();
         inst.occ.material.uniforms.uColor.value.copy(bg);
+        for (const pr of props) pr.update(placement);
         for (const c of copies) {
           c.pts.matrix.multiplyMatrices(c.pl, inst.mesh.matrixWorld); c.pts.matrixWorldNeedsUpdate = true;
           c.occ.matrix.copy(c.pts.matrix); c.occ.matrixWorldNeedsUpdate = true;
           c.pts.visible = inst.points.visible; c.occ.visible = inst.occ.visible;
         }
+      },
+    };
+  }
+  // -------------------------------------------------------------- блокнот и ручка тренера
+  // Точки на поверхности предмета, вид как у человека («зерно-8k»: свет в осях камеры, цвет #F2F0EB).
+  // Предмет держится в рамке ладони, которую каждый кадр строим по суставам кисти (кисть, основания
+  // среднего, указательного и мизинца, большой палец): не зависит от осей костей в экспорте.
+  // Рамка: y - вдоль кисти к пальцам, x - поперёк (к указательному), z - нормаль ладони (в сторону ладони).
+  const PROP_KEY = new THREE.Vector3(0.62, 0.38, 0.68).normalize();
+  const propMat = () => new THREE.ShaderMaterial({
+    glslVersion: THREE.GLSL3,
+    uniforms: { uDpr: { value: renderer.getPixelRatio() }, uKey: { value: PROP_KEY } },
+    vertexShader: `uniform float uDpr; uniform vec3 uKey; out vec3 vColor;
+      float hash(float n){ return fract(sin(n * 12.9898 + 78.233) * 43758.5453); }
+      void main(){
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vec3 N = normalize(normalMatrix * normal), V = normalize(-mv.xyz);
+        if (dot(N, V) < 0.0) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 0.0; vColor = vec3(0.0); return; }
+        gl_Position = projectionMatrix * mv;
+        float id = float(gl_VertexID);
+        gl_PointSize = clamp(mix(1.1, 1.8, hash(id + 17.0)) * 5.0 / max(-mv.z, 0.05), 0.8, 2.4) * uDpr;
+        float L = 1.25 * max(dot(N, uKey), 0.0) + 0.34 * (0.5 + 0.5 * N.y);
+        L = (1.0 - exp(-2.6 * L)) / (1.0 - exp(-2.6));
+        // бумага и пластик светлее кожи-точек: страница смотрит вверх, ключ в осях камеры её почти не берёт
+        vColor = vec3(0.888, 0.871, 0.831) * clamp(L, 0.62, 1.0);
+      }`,
+    fragmentShader: `in vec3 vColor; layout(location = 0) out vec4 outColor;
+      vec3 toSRGB(vec3 c){ return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c)); }
+      void main(){ vec2 q = gl_PointCoord - 0.5; if (dot(q, q) > 0.25) discard; outColor = vec4(toSRGB(vColor), 1.0); }`,
+    depthTest: true, depthWrite: true,
+  });
+  // точки на коробке w x h x d (м) с центром c и поворотом q в рамке ладони; dens - точек на м²
+  function boxPoints(out, w, h, d, c, q, dens) {
+    const faces = [[[1, 0, 0], h, d], [[-1, 0, 0], h, d], [[0, 1, 0], w, d], [[0, -1, 0], w, d], [[0, 0, 1], w, h], [[0, 0, -1], w, h]];
+    for (const [n, a, b] of faces) {
+      const cnt = Math.max(4, Math.round(a * b * dens)), nv = new THREE.Vector3(...n);
+      for (let i = 0; i < cnt; i++) {
+        const u = Math.random() - 0.5, v = Math.random() - 0.5;
+        const p = n[0] ? new THREE.Vector3(n[0] * w / 2, u * h, v * d)
+          : n[1] ? new THREE.Vector3(u * w, n[1] * h / 2, v * d) : new THREE.Vector3(u * w, v * h, n[2] * d / 2);
+        out.push(p.applyQuaternion(q).add(c), nv.clone().applyQuaternion(q));
+      }
+    }
+  }
+  function cylPoints(out, len, r, dens) {
+    const cnt = Math.round(2 * Math.PI * r * len * dens);
+    for (let i = 0; i < cnt; i++) {
+      const a = Math.random() * 2 * Math.PI, y = (Math.random() - 0.5) * len;
+      out.push(new THREE.Vector3(Math.cos(a) * r, y, Math.sin(a) * r), new THREE.Vector3(Math.cos(a), 0, Math.sin(a)));
+    }
+  }
+  function handProp(kind, inst, parent) {
+    const sd = kind === 'notebook' ? 'Left' : 'Right';
+    const bone = (n) => inst.model.getObjectByName('mixamorig' + sd + n);
+    const B = { hand: bone('Hand'), mid: bone('HandMiddle1'), idx: bone('HandIndex1'), pinky: bone('HandPinky1'), thumb: bone('HandThumb3') };
+    const arr = [], DENS = 24000;
+    if (kind === 'notebook') {
+      // открытый блокнот A5 (две страницы по 10,5 x 14,8 см, толщина 4 мм), лёгкий излом по корешку;
+      // лежит на ладони, корешок вдоль кисти
+      const fold = 10 * Math.PI / 180;
+      for (const sg of [-1, 1]) {
+        const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -sg * fold);
+        const c = new THREE.Vector3(sg * 0.0525 * Math.cos(fold), 0.05, 0.034 + 0.0525 * Math.sin(fold));
+        boxPoints(arr, 0.105, 0.148, 0.004, c, q, DENS);
+      }
+    } else {
+      // ручка: цилиндр 14 см, диаметр 9 мм
+      cylPoints(arr, 0.14, 0.0045, DENS * 1.6);
+    }
+    const n = arr.length / 2, pos = new Float32Array(n * 3), nrm = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) { arr[2 * i].toArray(pos, 3 * i); arr[2 * i + 1].toArray(nrm, 3 * i); }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
+    const mat = propMat();
+    const pts = new THREE.Points(geo, mat);
+    pts.frustumCulled = false; pts.matrixAutoUpdate = false; pts.renderOrder = (inst.points.renderOrder || 6) + 1;
+    parent.add(pts);
+    (window.__props = window.__props || []).push({ kind, pts });   // для автотестов
+    const P = {}, frame = new THREE.Matrix4(), off = new THREE.Matrix4(), X = new THREE.Vector3(), Y = new THREE.Vector3(), Z = new THREE.Vector3(), tv = new THREE.Vector3();
+    // ручка в рамке ладони: центр у основания указательного, ось наклонена к ладони и к мизинцу
+    if (kind === 'pen') off.compose(new THREE.Vector3(0.015, 0.05, 0.03),
+      new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(-0.25, 0.55, 0.8).normalize()), new THREE.Vector3(1, 1, 1));
+    return {
+      pts, count: n,
+      dpr() { mat.uniforms.uDpr.value = renderer.getPixelRatio(); },
+      update(placement) {
+        for (const k in B) { P[k] = P[k] || new THREE.Vector3(); B[k].getWorldPosition(P[k]); }
+        Y.subVectors(P.mid, P.hand).normalize();
+        X.subVectors(P.idx, P.pinky); X.addScaledVector(Y, -X.dot(Y)).normalize();
+        Z.crossVectors(X, Y).normalize();
+        if (Z.dot(tv.subVectors(P.thumb, P.hand)) < 0) { Z.negate(); X.negate(); }
+        frame.makeBasis(X, Y, Z).setPosition(tv.copy(P.hand).lerp(P.mid, 0.5));
+        pts.matrix.multiplyMatrices(placement, frame);
+        if (kind === 'pen') pts.matrix.multiply(off);
+        pts.matrixWorldNeedsUpdate = true; pts.visible = inst.points.visible;
       },
     };
   }
@@ -170,10 +280,13 @@ function init() {
   }
   const D = Math.PI / 180;
   // две фигуры: левая почти анфас, правая повёрнута к левой
+  // работа со специалистом: тренер слева, вполоборота к клиенту и к камере, coach_notes с блокнотом и
+  // ручкой; клиент справа, на три четверти лицом к тренеру, упражнение chest_open. Руки клиента в
+  // раскрытии (полуразмах ~0,45 роста) до тренера не доходят: зазор ~0,5 роста.
   const addDuo = () => addFigures('duo', [
-    { n: 8, t0: 0.0, at: [[-0.2, 0, 14 * D]] },
-    { n: 8, t0: 1.3, at: [[0.24, -0.06, -52 * D]] },
-  ], (a) => Math.min(a.h * 0.8, a.w / 0.9), 0.02);
+    { n: 8, t0: 0.0, clip: 'coach_notes', props: ['notebook', 'pen'], at: [[-0.50, -0.18, 50 * D]] },
+    { n: 8, t0: 0.0, clip: 'chest_open', at: [[0.48, 0.05, -40 * D]] },
+  ], (a) => Math.min(a.h * 0.72, a.w / 2.0), 0.02);
   // шесть фигур полукругом, лицом к центру, низкая плотность
   const ARC = [-80, -48, -16, 16, 48, 80].map((d) => { const r = 1.05, t = d * D; return [r * Math.sin(t), -r * Math.cos(t) + 0.55, -t]; });
   const addClass = () => addFigures('class', [
