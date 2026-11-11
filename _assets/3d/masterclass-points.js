@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { init as initHuman, loadHumanAssets } from './human-points.js';
+import { init as initHuman, loadHumanAssets } from './human-points.js?v=20261112-2';
 
 const SAMPLE_INTERVAL = 0.2;
 const ACTORS = 6;
@@ -14,7 +14,7 @@ const PROP_STYLES = {
 // ACW2: точки реквизита (позиции Int16 с шагом 0,1 мм и нормали Int8),
 // затем матрицы скиннинга шести фигур в порядке костей products-specialists.glb.
 async function loadWorkshop() {
-  const response = await fetch(new URL('./products-masterclass.bin', import.meta.url));
+  const response = await fetch(new URL('./products-masterclass.bin?v=20261112-2', import.meta.url));
   if (!response.ok || !response.body) throw new Error('Мастер-класс: HTTP ' + response.status);
   const raw = await new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
   const header = new DataView(raw);

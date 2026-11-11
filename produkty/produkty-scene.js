@@ -2,7 +2,7 @@
 // каждый привязан к своей области .stage[data-obj] и каждый кадр ставится по её положению на экране:
 //   spine - позвоночник из точек (createSpinePoints из spine-page.js, как на странице анализа);
 //   duo   - две фигуры из точек (human-points.js, поза idle), правая чуть повёрнута к левой;
-//   class - ведущий у доски и пять слушателей, точки с поверхности сцены Blender;
+//   masterclass - ведущий у доски и пять слушателей, позы из Blender;
 //   stat  - 3D-логотип СТАТЬ: SVG (_assets/img/stat-logo.svg) -> SVGLoader -> ExtrudeGeometry, матовый.
 // Рисуются только объекты, чья область на экране; нет ни одного - холст очищается и не рисуется.
 // В скрытой вкладке requestAnimationFrame не идёт. Lenis (produkty-page.js) крутится в этом же кадре.
@@ -11,8 +11,8 @@
 import * as THREE from 'three';
 import { SVGLoader } from '../_assets/vendor/three/loaders/SVGLoader.js';
 import { createSpinePoints } from '../_assets/3d/spine-page.js';
-import { init as initHuman } from '../_assets/3d/human-points.js';
-import { createMasterclassPoints } from '../_assets/3d/masterclass-points.js';
+import { init as initHuman } from '../_assets/3d/human-points.js?v=20261112-2';
+import { createMasterclassPoints } from '../_assets/3d/masterclass-points.js?v=20261112-2';
 
 const STAT_TURN = 12;                 // с на оборот логотипа
 const SPINE_TURN = 20;                // с на оборот позвоночника (как на странице анализа)
@@ -292,13 +292,14 @@ function init() {
     { n: 8, t0: 0.0, clip: 'chest_open', at: [[0.48, 0.05, -40 * D]] },
   ], (a) => Math.min(a.h * 0.72, a.w / 2.0), 0.02);
   async function addClass() {
-    const el = stage('class'); if (!el) return;
+    // Новый ключ не даёт старому скрипту рисовать фигуры поверх статичного кадра.
+    const el = stage('masterclass'); if (!el) return;
     const workshop = await createMasterclassPoints({ renderer, mobile, propMat });
     const g = new THREE.Group();
     g.add(workshop.group); scene.add(g);
     const s = spin(el);
     objs.push({
-      k: 'class', el, g,
+      k: 'masterclass', el, g,
       quality(dpr) { workshop.setPixelRatio(dpr); },
       frame(dt, a) {
         if (!s.drag) {
@@ -384,7 +385,7 @@ function init() {
   resize();
   requestAnimationFrame(frame);
 
-  const jobs = { spine: addSpine(), duo: addDuo(), class: addClass(), stat: addStat() };
+  const jobs = { spine: addSpine(), duo: addDuo(), masterclass: addClass(), stat: addStat() };
   for (const [k, p] of Object.entries(jobs)) p.then(() => { resize(); }, fallback(k));
   Promise.allSettled(Object.values(jobs)).then(() => { api.ready = true; });
 
