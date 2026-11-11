@@ -169,10 +169,14 @@ function init() {
   // среднего, указательного и мизинца, большой палец): не зависит от осей костей в экспорте.
   // Рамка: y - вдоль кисти к пальцам, x - поперёк (к указательному), z - нормаль ладони (в сторону ладони).
   const PROP_KEY = new THREE.Vector3(0.62, 0.38, 0.68).normalize();
-  const propMat = () => new THREE.ShaderMaterial({
+  const propMat = ({ tone = 1, size = 1, brass = false } = {}) => new THREE.ShaderMaterial({
     glslVersion: THREE.GLSL3,
-    uniforms: { uDpr: { value: renderer.getPixelRatio() }, uKey: { value: PROP_KEY } },
-    vertexShader: `uniform float uDpr; uniform vec3 uKey; out vec3 vColor;
+    uniforms: {
+      uDpr: { value: renderer.getPixelRatio() }, uKey: { value: PROP_KEY },
+      uTone: { value: tone }, uSize: { value: size },
+      uTint: { value: brass ? new THREE.Color('#DDA74F') : new THREE.Vector3(0.888, 0.871, 0.831) },
+    },
+    vertexShader: `uniform float uDpr, uTone, uSize; uniform vec3 uKey, uTint; out vec3 vColor;
       float hash(float n){ return fract(sin(n * 12.9898 + 78.233) * 43758.5453); }
       void main(){
         vec4 mv = modelViewMatrix * vec4(position, 1.0);
@@ -180,11 +184,11 @@ function init() {
         if (dot(N, V) < 0.0) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 0.0; vColor = vec3(0.0); return; }
         gl_Position = projectionMatrix * mv;
         float id = float(gl_VertexID);
-        gl_PointSize = clamp(mix(1.1, 1.8, hash(id + 17.0)) * 5.0 / max(-mv.z, 0.05), 0.8, 2.4) * uDpr;
+        gl_PointSize = clamp(mix(1.1, 1.8, hash(id + 17.0)) * uSize * 5.0 / max(-mv.z, 0.05), 0.8, 2.4) * uDpr;
         float L = 1.25 * max(dot(N, uKey), 0.0) + 0.34 * (0.5 + 0.5 * N.y);
         L = (1.0 - exp(-2.6 * L)) / (1.0 - exp(-2.6));
         // бумага и пластик светлее кожи-точек: страница смотрит вверх, ключ в осях камеры её почти не берёт
-        vColor = vec3(0.888, 0.871, 0.831) * clamp(L, 0.62, 1.0);
+        vColor = uTint * clamp(L, 0.62, 1.0) * uTone;
       }`,
     fragmentShader: `in vec3 vColor; layout(location = 0) out vec4 outColor;
       vec3 toSRGB(vec3 c){ return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c)); }
@@ -289,22 +293,22 @@ function init() {
   ], (a) => Math.min(a.h * 0.72, a.w / 2.0), 0.02);
   async function addClass() {
     const el = stage('class'); if (!el) return;
-    const workshop = await createMasterclassPoints();
+    const workshop = await createMasterclassPoints({ renderer, mobile, propMat });
     const g = new THREE.Group();
     g.add(workshop.group); scene.add(g);
     const s = spin(el);
     objs.push({
       k: 'class', el, g,
       quality(dpr) { workshop.setPixelRatio(dpr); },
-      frame(dt, a, theme) {
+      frame(dt, a) {
         if (!s.drag) {
           s.rot *= Math.pow(0.1, dt);
           s.tilt *= Math.pow(0.1, dt);
         }
         s.rot = THREE.MathUtils.clamp(s.rot, -0.27, 0.27);
         workshop.group.rotation.set(s.tilt * 0.24, s.rot, 0);
-        g.scale.setScalar(Math.min(a.w / 4.98, a.h / 3.62));
-        workshop.frame(reduce ? 0 : dt, theme);
+        g.scale.setScalar(Math.min(a.w / 4.64, a.h / 3.32));
+        workshop.frame(reduce ? 0 : dt, bg);
       },
     });
     el.classList.remove('fallback');

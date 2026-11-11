@@ -36,24 +36,30 @@ export const PRESETS = {
 const TW = 128;
 const BG = new THREE.Color(0x0A0A08);
 
+export function loadHumanAssets(modelUrl, samplesUrl) {
+  return Promise.all([
+    new GLTFLoader().loadAsync(modelUrl),
+    fetch(samplesUrl).then(r => { if (!r.ok) throw new Error('human-samples: HTTP ' + r.status); return r.arrayBuffer(); }),
+  ]);
+}
+
 export async function init(cfg) {
   const { renderer, scene } = cfg;
   const mobile = !!cfg.mobile;
-  const [gltf, samplesBuf] = await Promise.all([
-    new GLTFLoader().loadAsync(cfg.modelUrl),
-    fetch(cfg.samplesUrl).then(r => { if (!r.ok) throw new Error('human-samples: HTTP ' + r.status); return r.arrayBuffer(); }),
-  ]);
+  const [gltf, samplesBuf] = await (cfg.assets || loadHumanAssets(cfg.modelUrl, cfg.samplesUrl));
   const model = gltf.scene;
   model.updateMatrixWorld(true);
   let mesh = null;
   model.traverse(o => { if (o.isSkinnedMesh && !mesh) mesh = o; });
   if (!mesh) throw new Error('human.glb: нет SkinnedMesh');
   const skeleton = mesh.skeleton;
-  skeleton.computeBoneTexture();
-  const mixer = new THREE.AnimationMixer(model);
+  if (!skeleton.boneTexture) skeleton.computeBoneTexture();
+  const mixer = cfg.bakedPose ? null : new THREE.AnimationMixer(model);
   const actions = {};
-  for (const c of gltf.animations) actions[c.name] = mixer.clipAction(c);
-  if (!actions.walk || !actions.idle) throw new Error('human.glb: нет клипов walk/idle');
+  if (mixer) {
+    for (const c of gltf.animations) actions[c.name] = mixer.clipAction(c);
+    if (!actions.walk || !actions.idle) throw new Error('human.glb: нет клипов walk/idle');
+  }
 
   // ---------------- вершины сетки в текстуры
   const geo = mesh.geometry;
@@ -206,8 +212,7 @@ export async function init(cfg) {
   scene.add(points);
 
   // ---------------- пол клипов и касания стоп (офлайн-замер при загрузке, на CPU, один раз)
-  const soles = soleVertices(mesh);
-  const measured = measureClips({ model, mesh, mixer, actions, soles });
+  const measured = mixer ? measureClips({ model, mesh, mixer, actions, soles: soleVertices(mesh) }) : {};
 
   const placement = new THREE.Matrix4();
   const tmpM = new THREE.Matrix4(), tmpQ = new THREE.Quaternion(), tmpV = new THREE.Vector3(), tmpS = new THREE.Vector3(), YAX = new THREE.Vector3(0, 1, 0);
@@ -254,12 +259,17 @@ export async function init(cfg) {
     },
     pause() { paused = true; points.visible = occ.visible = false; },
     resume() { paused = false; },
-    /** Раз в кадр, после того как сцена обновила mixer и model.updateMatrixWorld(). */
-    update() {
+    /** После обновления mixer. Для сцены Blender можно передать готовые матрицы скиннинга. */
+    update(poseMatrices) {
       const on = !paused && alpha > 0.002;
       points.visible = on; occ.visible = on && occOpacity > 0.002;
       if (!on) return;
-      skeleton.update();
+      if (poseMatrices) {
+        skeleton.boneTexture.image.data.set(poseMatrices);
+        skeleton.boneTexture.needsUpdate = true;
+      } else {
+        skeleton.update();
+      }
       tmpM.multiplyMatrices(placement, mesh.matrixWorld);
       points.matrix.copy(tmpM); points.matrixWorldNeedsUpdate = true;
       occ.matrix.copy(tmpM); occ.matrixWorldNeedsUpdate = true;
@@ -272,7 +282,7 @@ export async function init(cfg) {
     dispose() {
       scene.remove(points); scene.remove(occ);
       for (const o of [pgeo, pmat, occGeo, occMat, skinRT, skinMat, tri, tPos0, tNrm0, tIdx, tWgt]) o.dispose();
-      mixer.stopAllAction();
+      mixer?.stopAllAction();
     },
   };
   inst.setQuality({ preset: cfg.preset, n: cfg.n, refDist: cfg.refDist });
