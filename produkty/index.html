@@ -102,6 +102,7 @@ html:not(.no-webgl):not(.reduce) .stage[data-hit]:active{cursor:grabbing}
 /* без WebGL (или объект не загрузился - .fallback): статичные картинки объектов */
 .static{display:none}
 html.no-webgl .static,.stage.fallback .static{display:block;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:100%;max-height:100%;width:auto;height:auto;pointer-events:none}
+#p-mk .stage.fallback .static{width:100%;height:100%;object-fit:contain}
 html.no-webgl .static.stat,.stage.fallback .static.stat{width:80%;height:auto;aspect-ratio:1553/313;background:var(--fg);
  -webkit-mask:url(../_assets/img/stat-logo.svg) center/contain no-repeat;mask:url(../_assets/img/stat-logo.svg) center/contain no-repeat}
 
@@ -148,6 +149,7 @@ html.lenis,html.lenis body{height:auto}
  .prod .wrap{grid-template-columns:minmax(0,1fr);gap:var(--sp-5)}
  /* объект над текстом: первый взгляд на продукт - объект и название */
  .stage{order:-1;height:46svh;margin:0 -18px}
+ #p-mk .stage{height:min(80vw,42svh)}
  .chain{grid-template-columns:minmax(0,1fr);gap:var(--sp-6)}
  .chain li:not(:last-child)::after{left:5px;top:11px;width:1px;height:calc(100% + var(--sp-6) - 11px)}
  .chain li{padding:0 0 0 var(--sp-6)}
@@ -254,7 +256,7 @@ html.reduce *{scroll-behavior:auto!important}
   </div>
 </section>
 
-<!-- 04 · мастер-класс для специалистов: фигуры полукругом -->
+<!-- 04 · мастер-класс для специалистов: ведущий у доски и слушатели полукругом -->
 <section class="prod" id="p-mk">
   <div class="wrap">
     <div class="col">
@@ -270,7 +272,7 @@ html.reduce *{scroll-behavior:auto!important}
       </dl>
       <a class="btn" href="../specialistam/">Подробнее</a>
     </div>
-    <div class="stage" data-obj="class" data-hit>
+    <div class="stage fallback" data-obj="class" data-hit role="img" aria-label="Преподаватель показывает измерения на доске. Пять слушателей сидят полукругом на стульях и пуфиках.">
       <img class="static" src="../_assets/img/produkty-class.png" alt="" loading="lazy">
     </div>
   </div>

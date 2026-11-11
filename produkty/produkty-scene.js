@@ -2,8 +2,7 @@
 // каждый привязан к своей области .stage[data-obj] и каждый кадр ставится по её положению на экране:
 //   spine - позвоночник из точек (createSpinePoints из spine-page.js, как на странице анализа);
 //   duo   - две фигуры из точек (human-points.js, поза idle), правая чуть повёрнута к левой;
-//   class - шесть фигур полукругом, idle, низкая плотность: два экземпляра человека, у каждого три
-//           копии (одна прорисовка скиннинга на три фигуры, у копий своя матрица);
+//   class - ведущий у доски и пять слушателей, точки с поверхности сцены Blender;
 //   stat  - 3D-логотип СТАТЬ: SVG (_assets/img/stat-logo.svg) -> SVGLoader -> ExtrudeGeometry, матовый.
 // Рисуются только объекты, чья область на экране; нет ни одного - холст очищается и не рисуется.
 // В скрытой вкладке requestAnimationFrame не идёт. Lenis (produkty-page.js) крутится в этом же кадре.
@@ -13,6 +12,7 @@ import * as THREE from 'three';
 import { SVGLoader } from '../_assets/vendor/three/loaders/SVGLoader.js';
 import { createSpinePoints } from '../_assets/3d/spine-page.js';
 import { init as initHuman } from '../_assets/3d/human-points.js';
+import { createMasterclassPoints } from '../_assets/3d/masterclass-points.js';
 
 const STAT_TURN = 12;                 // с на оборот логотипа
 const SPINE_TURN = 20;                // с на оборот позвоночника (как на странице анализа)
@@ -287,12 +287,28 @@ function init() {
     { n: 8, t0: 0.0, clip: 'coach_notes', props: ['notebook', 'pen'], at: [[-0.50, -0.18, 50 * D]] },
     { n: 8, t0: 0.0, clip: 'chest_open', at: [[0.48, 0.05, -40 * D]] },
   ], (a) => Math.min(a.h * 0.72, a.w / 2.0), 0.02);
-  // шесть фигур полукругом, лицом к центру, низкая плотность
-  const ARC = [-80, -48, -16, 16, 48, 80].map((d) => { const r = 1.05, t = d * D; return [r * Math.sin(t), -r * Math.cos(t) + 0.55, -t]; });
-  const addClass = () => addFigures('class', [
-    { n: mobile ? 2 : 3, t0: 0.0, at: [ARC[0], ARC[2], ARC[4]] },
-    { n: mobile ? 2 : 3, t0: 1.6, at: [ARC[1], ARC[3], ARC[5]] },
-  ], (a) => Math.min(a.h * 0.6, a.w / 3.0), 0.45);
+  async function addClass() {
+    const el = stage('class'); if (!el) return;
+    const workshop = await createMasterclassPoints();
+    const g = new THREE.Group();
+    g.add(workshop.group); scene.add(g);
+    const s = spin(el);
+    objs.push({
+      k: 'class', el, g,
+      quality(dpr) { workshop.setPixelRatio(dpr); },
+      frame(dt, a, theme) {
+        if (!s.drag) {
+          s.rot *= Math.pow(0.1, dt);
+          s.tilt *= Math.pow(0.1, dt);
+        }
+        s.rot = THREE.MathUtils.clamp(s.rot, -0.27, 0.27);
+        workshop.group.rotation.set(s.tilt * 0.24, s.rot, 0);
+        g.scale.setScalar(Math.min(a.w / 4.98, a.h / 3.62));
+        workshop.frame(reduce ? 0 : dt, theme);
+      },
+    });
+    el.classList.remove('fallback');
+  }
 
   // -------------------------------------------------------------- 3D-логотип СТАТЬ
   async function addStat() {
