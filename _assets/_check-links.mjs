@@ -24,7 +24,7 @@ for (const file of files) {
     if (href.startsWith('http') || href.startsWith('mailto') || href.startsWith('#') || href.includes('#')) continue;
     checked++;
     // resolve relative path against the file's directory
-    const parts = (dir + href).split('/').filter(Boolean);
+    const parts = (dir + href.split('?')[0]).split('/').filter(Boolean);
     const resolved = [];
     for (const p of parts) {
       if (p === '..') resolved.pop();

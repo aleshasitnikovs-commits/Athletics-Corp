@@ -10,13 +10,47 @@
 
   function init() {
     var hdr = document.getElementById('hdr'), btn = document.getElementById('menuBtn'), menu = document.getElementById('siteMenu');
-    if (!hdr || !btn || !menu) return;
+    if (!hdr || !btn || !menu || document.querySelector('.hdr-menu-fab')) return;
+
+    var mobile = matchMedia('(max-width: 860px), (pointer: coarse)');
+    var quick = btn.cloneNode(true);
+    quick.removeAttribute('id');
+    quick.className = 'hdr-menu-fab';
+    quick.setAttribute('aria-label', 'Открыть меню');
+    quick.hidden = true;
+    var lines = document.createElement('span');
+    lines.setAttribute('aria-hidden', 'true');
+    lines.append(...quick.childNodes);
+    quick.append(lines);
+    var logo = hdr.querySelector('.hdr-logo img');
+    if (logo) {
+      var icon = logo.cloneNode(false);
+      icon.alt = '';
+      quick.prepend(icon);
+    }
+    menu.before(quick);
+    // Полоса уведомлений создаётся site.js после разметки и меняет высоту.
+    requestAnimationFrame(function () {
+      var bar = document.getElementById('acBar');
+      if (!bar) return;
+      function placeQuick() { quick.style.setProperty('--ac-bar-height', bar.offsetHeight + 'px'); }
+      placeQuick();
+      if ('ResizeObserver' in window) new ResizeObserver(placeQuick).observe(bar);
+    });
 
     // ---------------------------------------------------------- прятанье при прокрутке
     // Вниз дальше 120 px - уезжает вверх; вверх на 10+ px подряд - возвращается; у верха всегда видна.
     // Положение берётся из событий Lenis (там, где он есть), иначе из обычной прокрутки.
     var lastY = scrollY, upRun = 0, hidden = false, menuOpen = false;
-    function setHidden(h) { if (h !== hidden) { hidden = h; hdr.classList.toggle('is-hidden', h); } }
+    function syncQuick() {
+      var hide = !mobile.matches || !hidden || menuOpen;
+      if (quick.hidden !== hide) quick.hidden = hide;
+    }
+    function setHidden(h) {
+      if (h !== hidden) { hidden = h; hdr.classList.toggle('is-hidden', h); hdr.inert = h; }
+      syncQuick();
+    }
+    mobile.addEventListener('change', syncQuick);
     function onY(y) {
       var dy = y - lastY; lastY = y;
       if (reduce || menuOpen || y <= 120) { upRun = 0; setHidden(false); return; }
@@ -38,12 +72,13 @@
     // ---------------------------------------------------------- меню
     var closeBtn = menu.querySelector('.smenu-close'), back = null, hideT = 0;
     function items() { return [].slice.call(menu.querySelectorAll('a[href], button')); }
-    function open() {
+    function open(e) {
       if (menuOpen) return;
-      menuOpen = true; back = document.activeElement; clearTimeout(hideT);
+      menuOpen = true; back = e.currentTarget; clearTimeout(hideT);
       menu.hidden = false; void menu.offsetWidth;          // кадр со скрытыми строками, затем выезд
       menu.classList.add('is-open'); setHidden(false);
       btn.setAttribute('aria-expanded', 'true');
+      quick.setAttribute('aria-expanded', 'true');
       document.body.style.overflow = 'hidden'; if (window.__lenis) window.__lenis.stop();
       closeBtn.focus({ preventScroll: true });
     }
@@ -51,11 +86,15 @@
       if (!menuOpen) return;
       menuOpen = false; menu.classList.remove('is-open');
       btn.setAttribute('aria-expanded', 'false');
+      quick.setAttribute('aria-expanded', 'false');
+      if (back === quick && mobile.matches && scrollY > 120) setHidden(true);
+      else syncQuick();
       document.body.style.overflow = ''; if (window.__lenis) window.__lenis.start();
       hideT = setTimeout(function () { menu.hidden = true; }, reduce ? 0 : 300);
-      (back && back.focus ? back : btn).focus({ preventScroll: true });
+      (back === quick && !quick.hidden ? quick : btn).focus({ preventScroll: true });
     }
     btn.addEventListener('click', open);
+    quick.addEventListener('click', open);
     closeBtn.addEventListener('click', close);
     menu.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', close); });
     addEventListener('keydown', function (e) {

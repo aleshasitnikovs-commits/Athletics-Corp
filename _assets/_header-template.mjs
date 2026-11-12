@@ -62,8 +62,8 @@ export function headerHtml(rel, active = '', extraClass = '') {
 
 // подключение в <head>: стили и скрипт (скрипт маленький, синхронный - вариант шапки ставится до отрисовки)
 export function headLinks(rel) {
-  return `<link rel="stylesheet" href="${rel}_assets/header.css">
-<script src="${rel}_assets/header.js"></script>`;
+  return `<link rel="stylesheet" href="${rel}_assets/header.css?v=20261112-5">
+<script src="${rel}_assets/header.js?v=20261112-5"></script>`;
 }
 
 // значок вкладки - тот же, что на главной (каркас-страницы были без него, браузер просил /favicon.ico и получал 404)
