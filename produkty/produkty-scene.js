@@ -13,6 +13,7 @@ import { SVGLoader } from '../_assets/vendor/three/loaders/SVGLoader.js';
 import { createSpinePoints } from '../_assets/3d/spine-page.js';
 import { init as initHuman } from '../_assets/3d/human-points.js?v=20261112-2';
 import { createMasterclassPoints } from '../_assets/3d/masterclass-points.js?v=20261112-2';
+import { NOTEBOOK_PAGES, PENCIL_TIP, palmFrame, constrainWriting } from '../_assets/3d/coach-writing.js?v=20261112-6';
 
 const STAT_TURN = 12;                 // с на оборот логотипа
 const SPINE_TURN = 20;                // с на оборот позвоночника (как на странице анализа)
@@ -154,6 +155,8 @@ function init() {
     inst.setTransform(S, foot, p0[0], p0[1], Math.cos(p0[2]), Math.sin(p0[2]));
     const placement = new THREE.Matrix4().compose(new THREE.Vector3(p0[0], -foot * S, p0[1]), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), p0[2]), new THREE.Vector3(S, S, S));
     const props = opt.props ? opt.props.map((k) => handProp(k, inst, parent)) : [];
+    const writing = opt.clip === 'coach_notes' && props.length
+      ? constrainWriting(inst.model, props[0].palm, props[1].palm, props[1].mount) : null;
     // копии: те же точки и тело, своя матрица
     const copies = more.map(([x, z, yaw]) => {
       const pl = new THREE.Matrix4().compose(new THREE.Vector3(x, -foot * S, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), new THREE.Vector3(S, S, S));
@@ -169,8 +172,10 @@ function init() {
       frame(dt, vis) {
         if (!vis) { if (on) { inst.pause(); for (const c of copies) c.pts.visible = c.occ.visible = false; for (const pr of props) pr.pts.visible = false; on = false; } return; }
         if (!on) { inst.resume(); on = true; }
+        writing?.restore();
         if (!reduce) inst.mixer.update(dt);
         inst.model.updateMatrixWorld(true);
+        writing?.apply(inst.actions.coach_notes.time);
         inst.update();
         inst.occ.material.uniforms.uColor.value.copy(bg);
         for (const pr of props) pr.update(placement);
@@ -227,56 +232,46 @@ function init() {
       }
     }
   }
-  function cylPoints(out, len, r, dens) {
-    const cnt = Math.round(2 * Math.PI * r * len * dens);
-    for (let i = 0; i < cnt; i++) {
-      const a = Math.random() * 2 * Math.PI, y = (Math.random() - 0.5) * len;
-      out.push(new THREE.Vector3(Math.cos(a) * r, y, Math.sin(a) * r), new THREE.Vector3(Math.cos(a), 0, Math.sin(a)));
+  function pencilPoints(out, dens) {
+    const radius = 0.0045, shoulder = PENCIL_TIP - 0.018;
+    for (const [start, end, endRadius] of [[-PENCIL_TIP, shoulder, radius], [shoulder, PENCIL_TIP, 0]]) {
+      const count = Math.round(Math.PI * (radius + endRadius) * (end - start) * dens);
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * 2 * Math.PI, t = Math.random();
+        const c = Math.cos(angle), s = Math.sin(angle), r = THREE.MathUtils.lerp(radius, endRadius, t);
+        out.push(new THREE.Vector3(c * r, THREE.MathUtils.lerp(start, end, t), s * r),
+          new THREE.Vector3(c, (radius - endRadius) / (end - start), s).normalize());
+      }
     }
+    out.push(new THREE.Vector3(0, PENCIL_TIP, 0), new THREE.Vector3(0, 1, 0));
   }
   function handProp(kind, inst, parent) {
-    const sd = kind === 'notebook' ? 'Left' : 'Right';
-    const bone = (n) => inst.model.getObjectByName('mixamorig' + sd + n);
-    const B = { hand: bone('Hand'), mid: bone('HandMiddle1'), idx: bone('HandIndex1'), pinky: bone('HandPinky1'), thumb: bone('HandThumb3') };
+    const palm = palmFrame(inst.model, kind === 'notebook' ? 'Left' : 'Right');
     const arr = [], DENS = 24000;
     if (kind === 'notebook') {
-      // открытый блокнот A5 (две страницы по 10,5 x 14,8 см, толщина 4 мм), лёгкий излом по корешку;
-      // лежит на ладони, корешок вдоль кисти
-      const fold = 10 * Math.PI / 180;
-      for (const sg of [-1, 1]) {
-        const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -sg * fold);
-        const c = new THREE.Vector3(sg * 0.0525 * Math.cos(fold), 0.05, 0.034 + 0.0525 * Math.sin(fold));
-        boxPoints(arr, 0.105, 0.148, 0.004, c, q, DENS);
-      }
+      for (const { width, height, thickness, center, rotation } of NOTEBOOK_PAGES)
+        boxPoints(arr, width, height, thickness, center, rotation, DENS);
     } else {
-      // ручка: цилиндр 14 см, диаметр 9 мм
-      cylPoints(arr, 0.14, 0.0045, DENS * 1.6);
+      pencilPoints(arr, DENS * 1.6);
     }
     const n = arr.length / 2, pos = new Float32Array(n * 3), nrm = new Float32Array(n * 3);
     for (let i = 0; i < n; i++) { arr[2 * i].toArray(pos, 3 * i); arr[2 * i + 1].toArray(nrm, 3 * i); }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
-    const mat = propMat();
+    const mat = kind === 'pen' ? propMat({ tone: 0.76 }) : propMat();
     const pts = new THREE.Points(geo, mat);
     pts.frustumCulled = false; pts.matrixAutoUpdate = false; pts.renderOrder = (inst.points.renderOrder || 6) + 1;
     parent.add(pts);
     (window.__props = window.__props || []).push({ kind, pts });   // для автотестов
-    const P = {}, frame = new THREE.Matrix4(), off = new THREE.Matrix4(), X = new THREE.Vector3(), Y = new THREE.Vector3(), Z = new THREE.Vector3(), tv = new THREE.Vector3();
-    // ручка в рамке ладони: центр у основания указательного, ось наклонена к ладони и к мизинцу
-    if (kind === 'pen') off.compose(new THREE.Vector3(0.015, 0.05, 0.03),
+    const mount = new THREE.Matrix4();
+    // Карандаш в рамке ладони: центр у основания указательного пальца.
+    if (kind === 'pen') mount.compose(new THREE.Vector3(0.015, 0.05, 0.03),
       new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(-0.25, 0.55, 0.8).normalize()), new THREE.Vector3(1, 1, 1));
     return {
-      pts, count: n,
+      pts, palm, mount,
       dpr() { mat.uniforms.uDpr.value = renderer.getPixelRatio(); },
       update(placement) {
-        for (const k in B) { P[k] = P[k] || new THREE.Vector3(); B[k].getWorldPosition(P[k]); }
-        Y.subVectors(P.mid, P.hand).normalize();
-        X.subVectors(P.idx, P.pinky); X.addScaledVector(Y, -X.dot(Y)).normalize();
-        Z.crossVectors(X, Y).normalize();
-        if (Z.dot(tv.subVectors(P.thumb, P.hand)) < 0) { Z.negate(); X.negate(); }
-        frame.makeBasis(X, Y, Z).setPosition(tv.copy(P.hand).lerp(P.mid, 0.5));
-        pts.matrix.multiplyMatrices(placement, frame);
-        if (kind === 'pen') pts.matrix.multiply(off);
+        pts.matrix.multiplyMatrices(placement, palm()).multiply(mount);
         pts.matrixWorldNeedsUpdate = true; pts.visible = inst.points.visible;
       },
     };
