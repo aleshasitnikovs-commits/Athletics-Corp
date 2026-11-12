@@ -1,5 +1,5 @@
-// Страница «Продукты»: один WebGL-холст на страницу (#scene, фиксирован под текстом) и четыре объекта,
-// каждый привязан к своей области .stage[data-obj] и каждый кадр ставится по её положению на экране:
+// Страница «Продукты»: один WebGL-рендерер и четыре области .stage[data-obj].
+// На компьютере холст общий, на телефоне кадр копируется в холст своего блока:
 //   spine - позвоночник из точек (createSpinePoints из spine-page.js, как на странице анализа);
 //   duo   - две фигуры из точек (human-points.js, поза idle), правая чуть повёрнута к левой;
 //   masterclass - ведущий у доски и пять слушателей, позы из Blender;
@@ -24,6 +24,7 @@ const root = document.documentElement;
 const reduce = root.classList.contains('reduce');
 const canvas = document.getElementById('scene');
 const phone = () => innerWidth < 860;
+const stageSurfaces = matchMedia('(max-width: 860px), (pointer: coarse)');
 // Без WebGL или при ошибке сцены: Lenis крутится сам, у областей - статичные картинки
 function lenisAlone() {
   const l = window.__lenis; if (!l || lenisAlone.on) return; lenisAlone.on = true;
@@ -37,7 +38,7 @@ function fail(e) {
 if (!root.classList.contains('no-webgl') && canvas) { try { init(); } catch (e) { fail(e); } }
 
 function init() {
-  const mobile = phone();
+  const mobile = stageSurfaces.matches;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: !mobile, alpha: true, powerPreference: 'high-performance' });
   renderer.setClearColor(0x000000, 0);
   const scene = new THREE.Scene();
@@ -48,7 +49,7 @@ function init() {
   scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8880, 2.1));
   const key = new THREE.DirectionalLight(0xffffff, 2.0); key.position.set(1.2, 1.6, 3); scene.add(key);
 
-  let W = 0, H = 0;
+  let W = 0, H = 0, bufferW = 0, bufferH = 0, bufferDpr = 0, local = false;
   const objs = [];
   const bg = new THREE.Vector3(...DARK);
 
@@ -56,22 +57,40 @@ function init() {
   // Объект в области: центр области -> точка плоскости z=0; возвращает размер области в мировых единицах.
   function place(group, el) {
     const r = el.getBoundingClientRect();
-    group.position.set(((r.left + r.right) / W - 1) * HALF * (W / H), (1 - (r.top + r.bottom) / H) * HALF, 0);
-    return { w: r.width / H * 2 * HALF, h: r.height / H * 2 * HALF, vis: r.bottom > 0 && r.top < H && r.height > 0 };
+    const viewport = local ? window.visualViewport : null;
+    const top = viewport?.offsetTop ?? 0;
+    const bottom = top + (viewport?.height ?? innerHeight);
+    const px = H / (2 * HALF);
+    if (local) group.position.set(0, 0, 0);
+    else group.position.set((r.left + r.width / 2 - W / 2) / px, (H / 2 - r.top - r.height / 2) / px, 0);
+    return { w: r.width / px, h: r.height / px, px, r, vis: r.bottom > top && r.top < bottom && r.width > 0 && r.height > 0 };
   }
   // поворот мышью или пальцем: по горизонтали - вокруг вертикали (с инерцией), по вертикали - наклон,
   // который после отпускания возвращается к нулю
   function spin(el) {
-    const s = { rot: 0, vx: 0, tilt: 0, drag: false, x: 0, y: 0, id: null };
+    const s = { rot: 0, vx: 0, tilt: 0, drag: false, x: 0, y: 0, id: null, touch: false };
     if (reduce) return s;
-    el.addEventListener('pointerdown', (e) => { s.drag = true; s.id = e.pointerId; s.x = e.clientX; s.y = e.clientY; s.vx = 0; el.setPointerCapture(e.pointerId); });
+    el.addEventListener('pointerdown', (e) => {
+      if (!e.isPrimary || s.id !== null) return;
+      s.id = e.pointerId; s.x = e.clientX; s.y = e.clientY; s.vx = 0;
+      s.touch = e.pointerType === 'touch';
+      s.drag = !s.touch;
+      if (s.drag) el.setPointerCapture(e.pointerId);
+    });
     el.addEventListener('pointermove', (e) => {
-      if (!s.drag || e.pointerId !== s.id) return;
+      if (e.pointerId !== s.id) return;
+      if (s.touch && !s.drag) {
+        const dx = Math.abs(e.clientX - s.x), dy = Math.abs(e.clientY - s.y);
+        if (Math.max(dx, dy) < 8) return;
+        if (dx <= 1.25 * dy) { s.id = null; return; }
+        s.drag = true;
+        el.setPointerCapture(e.pointerId);
+      }
       s.vx = (e.clientX - s.x) * 0.012; s.rot += s.vx;
-      s.tilt = Math.max(-0.5, Math.min(0.5, s.tilt + (e.clientY - s.y) * 0.005));
+      if (!s.touch) s.tilt = Math.max(-0.5, Math.min(0.5, s.tilt + (e.clientY - s.y) * 0.005));
       s.x = e.clientX; s.y = e.clientY;
     });
-    const up = () => { s.drag = false; s.id = null; };
+    const up = (e) => { if (s.id === e.pointerId) { s.drag = false; s.id = null; } };
     el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up); el.addEventListener('lostpointercapture', up);
     return s;
   }
@@ -265,7 +284,7 @@ function init() {
   // группа фигур: g - в центре области, inner - стопы на полу, наклон камеры сверху
   async function addFigures(k, figs, fit, tiltX) {
     const el = stage(k); if (!el) return;
-    const g = new THREE.Group(), inner = new THREE.Group(); g.add(inner); scene.add(g);
+    const g = new THREE.Group(), inner = new THREE.Group(); g.visible = false; g.add(inner); scene.add(g);
     inner.rotation.x = tiltX;
     const hs = await Promise.all(figs.map((f) => human(inner, f)));
     const s = spin(el);
@@ -312,7 +331,7 @@ function init() {
         workshop.frame(reduce ? 0 : dt, bg);
       },
     });
-    el.classList.remove('fallback');
+    if (!local) el.classList.remove('fallback');
   }
 
   // -------------------------------------------------------------- 3D-логотип СТАТЬ
@@ -340,7 +359,7 @@ function init() {
         mat.color.lerpColors(LOGO_DARK, LOGO_LIGHT, k);
         // область наведения для темы СТАТЬ (produkty-page.js): знак анфас в пикселях окна - не зависит
         // от угла поворота, иначе при неподвижной мыши тема мигала бы вместе с вращением
-        const px = H / (2 * HALF), r = el.getBoundingClientRect();
+        const { px, r } = a;
         window.__statHit = { cx: (r.left + r.right) / 2, cy: (r.top + r.bottom) / 2, hw: LW * sc / 2 * px, hh: LH * sc / 2 * px };
       },
       hide() { window.__statHit = null; },
@@ -348,13 +367,68 @@ function init() {
   }
 
   // -------------------------------------------------------------- размер, кадр
+  function sizeOutput(o, dpr) {
+    if (!o.output) {
+      const view = document.createElement('canvas');
+      view.className = 'stage-canvas';
+      view.setAttribute('aria-hidden', 'true');
+      const ctx = view.getContext('2d');
+      if (!ctx) { o.el.classList.add('fallback'); return; }
+      o.el.prepend(view);
+      o.output = { view, ctx };
+    }
+    const { view } = o.output;
+    const rect = o.el.getBoundingClientRect();
+    const width = Math.floor(rect.width * dpr), height = Math.floor(rect.height * dpr);
+    if (view.width !== width) view.width = width;
+    if (view.height !== height) view.height = height;
+  }
+
   function resize() {
-    W = innerWidth; H = innerHeight;
-    const dpr = Math.min(devicePixelRatio || 1, phone() ? 1.25 : 1.5);
-    renderer.setPixelRatio(dpr); renderer.setSize(W, H, false);
-    camera.aspect = W / H; camera.updateProjectionMatrix();
+    local = stageSurfaces.matches;
+    root.classList.toggle('products-local', local);
+    const rect = canvas.getBoundingClientRect();
+    W = rect.width || innerWidth; H = rect.height || innerHeight;
+    const dpr = Math.min(devicePixelRatio || 1, local ? 1.25 : 1.5);
+    let width = W, height = H;
+    if (local) {
+      width = height = 1;
+      for (const el of document.querySelectorAll('.stage[data-obj]')) {
+        const r = el.getBoundingClientRect();
+        width = Math.max(width, Math.ceil(r.width));
+        height = Math.max(height, Math.ceil(r.height));
+      }
+    }
+    if (bufferDpr !== dpr) renderer.setPixelRatio(dpr);
+    if (bufferW !== width || bufferH !== height || bufferDpr !== dpr) {
+      renderer.setSize(width, height, false);
+      bufferW = width; bufferH = height; bufferDpr = dpr;
+    }
+    if (!local) {
+      renderer.setViewport(0, 0, W, H);
+      camera.fov = 30; camera.aspect = W / H; camera.updateProjectionMatrix();
+    }
+    if (local) for (const o of objs) sizeOutput(o, dpr);
     for (const o of objs) if (o.quality) o.quality(dpr);
     dirty = true;
+  }
+
+  function drawInStage(o, a, dt, k) {
+    const { view, ctx } = o.output;
+    if (!view.width || !view.height) return false;
+    camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan(a.h / 10));
+    camera.aspect = view.width / view.height;
+    camera.updateProjectionMatrix();
+    o.g.visible = true;
+    o.frame(dt, a, k);
+    renderer.setViewport(0, 0, view.width / bufferDpr, view.height / bufferDpr);
+    renderer.render(scene, camera);
+    // WebGL считает строки снизу. Копия живёт внутри блока и движется с ним при свайпе.
+    ctx.clearRect(0, 0, view.width, view.height);
+    ctx.drawImage(canvas, 0, canvas.height - view.height, view.width, view.height, 0, 0, view.width, view.height);
+    o.g.visible = false;
+    o.el.classList.remove('fallback');
+    return true;
   }
   let last = performance.now(), tk = 0, blank = true, dirty = true, lastY = -1, frames = [], drawn = 0;
   const ease = (x) => x * x * (3 - 2 * x);
@@ -373,15 +447,29 @@ function init() {
     if (reduce && !dirty && y === lastY && was === tk) return;
     lastY = y; dirty = false;
     let any = false;
+    if (local) for (const o of objs) o.g.visible = false;
     for (const o of objs) {
       const a = place(o.g, o.el);
-      o.g.visible = a.vis;
-      if (a.vis) { any = true; o.frame(dt, a, k); } else if (o.hide) o.hide();
+      o.inView = a.vis && (!local || !!o.output);
+      if (!local) o.g.visible = o.inView;
+      if (o.inView) {
+        if (local) any = drawInStage(o, a, dt, k) || any;
+        else { any = true; o.frame(dt, a, k); }
+      } else if (o.hide) o.hide();
     }
-    if (any) { renderer.render(scene, camera); blank = false; drawn++; frames.push(now); if (frames.length > 121) frames.shift(); }
-    else if (!blank) { renderer.clear(); blank = true; }
+    if (any) {
+      if (!local) renderer.render(scene, camera);
+      blank = false; drawn++; frames.push(now); if (frames.length > 121) frames.shift();
+    } else if (!blank) {
+      if (!local) renderer.clear();
+      blank = true;
+    }
   }
   addEventListener('resize', resize);
+  stageSurfaces.addEventListener('change', resize);
+  const invalidate = () => { dirty = true; };
+  window.visualViewport?.addEventListener('resize', invalidate);
+  window.visualViewport?.addEventListener('scroll', invalidate);
   resize();
   requestAnimationFrame(frame);
 
@@ -391,7 +479,7 @@ function init() {
 
   // для автотестов
   const api = window.__scene = {
-    ready: false, objects: () => objs.map((o) => o.k), visible: () => objs.filter((o) => o.g.visible).map((o) => o.k),
+    ready: false, objects: () => objs.map((o) => o.k), visible: () => objs.filter((o) => o.inView).map((o) => o.k),
     drawn: () => drawn, blank: () => blank, theme: () => tk,
     fps() { if (frames.length < 2) return 0; return 1000 * (frames.length - 1) / (frames[frames.length - 1] - frames[0]); },
   };

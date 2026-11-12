@@ -61,9 +61,12 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--mark);outline-offse
 .hdr .hdr-cta{background:var(--fg);color:var(--bg)}
 .hdr-logo img{filter:brightness(var(--logo-b))}
 
-/* общий холст 3D - один на страницу, под текстом; жесты ловят только области объектов (.stage) */
+/* Один WebGL-холст. На телефоне кадры выводятся в холсты внутри своих блоков. */
 #scene{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;pointer-events:none}
+html.products-local #scene{height:100svh;visibility:hidden}
 html.no-webgl #scene{display:none}
+.stage-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+html:not(.products-local) .stage-canvas,html.no-webgl .stage-canvas{display:none}
 main{position:relative;z-index:3}
 
 .wrap{width:100%;max-width:var(--grid-max);margin:0 auto;padding:0 40px}
@@ -96,7 +99,7 @@ main{position:relative;z-index:3}
 .facts dt{font-family:var(--font-mono);font-size:var(--fs-mono-s);letter-spacing:.12em;text-transform:uppercase;color:var(--mute);padding-top:var(--sp-4);border-top:1px solid var(--line)}
 .facts dd{margin:var(--sp-2) 0 var(--sp-5);color:var(--soft)}
 .prod .btn{margin-top:var(--sp-3)}
-.stage{position:relative;height:min(78svh,760px);touch-action:pan-y}
+.stage{position:relative;height:min(78svh,760px);touch-action:pan-y pinch-zoom}
 html:not(.no-webgl):not(.reduce) .stage[data-hit]{cursor:grab}
 html:not(.no-webgl):not(.reduce) .stage[data-hit]:active{cursor:grabbing}
 /* без WebGL (или объект не загрузился - .fallback): статичные картинки объектов */
@@ -358,6 +361,6 @@ html.reduce *{scroll-behavior:auto!important}
 </script>
 <script src="../_assets/vendor/lenis.min.js"></script>
 <script src="produkty-page.js"></script>
-<script type="module" src="produkty-scene.js?v=20261112-2"></script>
+<script type="module" src="produkty-scene.js?v=20261112-3"></script>
 </body>
 </html>
