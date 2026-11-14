@@ -285,7 +285,7 @@ var HSP=new Float32Array(NH*4),HBI=new Uint16Array(NH*4),HBW=new Float32Array(NH
 var HW=new Float32Array(NH*3),HL=new Float32Array(NH),HYN=new Float32Array(NH);
 var model,mixer,acts={},meshes=[],S=1,FOOTY=0,feet=[];
 /* новый человек: модуль, пол стояния/ходьбы (FOOTY для каждого клипа), точки интро выключены */
-var HUM=null,FOOTY_I=0,FOOTY_W=0,mainOff=false,WLB=null;
+var HUM=null,FOOTY_I=0,FOOTY_W=0,mainOff=false;
 var FIGF=24,FIGP=null,LB=[null,null,null,null];
 
 function skin(out,outL,list,count,applyXf,xf){
@@ -407,14 +407,10 @@ resize();addEventListener('resize',function(){resize();if(reduce&&ready>=2)reque
 var tmpV=new THREE.Vector3(),ray=new THREE.Raycaster(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
 function lerp3(o,a,b,w){o[0]=a[0]+(b[0]-a[0])*w;o[1]=a[1]+(b[1]-a[1])*w;o[2]=a[2]+(b[2]-a[2])*w;return o}
 var XF={ca:1,sa:0,x:0,z:0},YAW=-70*D;XF.ca=Math.cos(YAW);XF.sa=Math.sin(YAW);
-/* «Беговая дорожка» (правка 15): человек идёт на месте, поле едет вдоль (DVX, DVZ). Раньше поле ехало
-   с постоянной скоростью 1.15, а опорная стопа клипа - с переменной и под углом в несколько градусов
-   (курс записи CMU; поправка курса из задачи 12 не была применена) - стопа в опоре скользила по полю
-   (замер: левая ~12,6 см за опору, правая ~6,4 см, рывки до 3 см за кадр). Теперь: (1) курс клипа
-   меряется при загрузке, человек доворачивается так, чтобы опорная стопа двигалась точно вдоль оси
-   дорожки; (2) поле каждый кадр сдвигается ровно на столько, на сколько сдвинулась опорная стопа. */
-var DVX=.94,DVZ=-.34,TOE=null,TOEP=[null,null],TOEMIN=[0,0];
-window.__walkFix=null;/* для автотестов и отчёта: курс клипа и поворот */
+/* Поле едет с постоянной скоростью, а сдвиг модели по фазе удерживает опорную стопу. */
+var DVX=.94,DVZ=-.34,TOE=null,TOEMIN=[0,0],WALKV=0,WOFS=null,YAW_ADJ=9*D;
+/* сдвиг человека вдоль дорожки по фазе клипа walk (ед. модели), см. walkCourse */
+function walkOfs(){if(!WOFS)return 0;var n=WOFS.length-1,u=(acts.walk.time/acts.walk.getClip().duration%1+1)%1*n,k=Math.floor(u),r=u-k;return WOFS[k]+(WOFS[Math.min(n,k+1)]-WOFS[k])*r}
 function toeBones(){if(TOE)return;TOE=[null,null];model.traverse(function(o){if(!o.isBone)return;if(/LeftToeBase$/.test(o.name))TOE[0]=o;if(/RightToeBase$/.test(o.name))TOE[1]=o})}
 /* вес опоры стопы по высоте носка над её минимумом (м): на полу 1, выше 2 см - 0 */
 function toeW(i,y){return 1-sm(.004,.02,(y-TOEMIN[i])*S)}
@@ -423,11 +419,21 @@ function walkCourse(){toeBones();if(!TOE[0]||!TOE[1])return;
  for(var f=0;f<=N;f++){acts.walk.time=f/N*dur;mixer.update(0);model.updateMatrixWorld(true);
   P.push(TOE.map(function(b){b.getWorldPosition(fw);return [fw.x,fw.y,fw.z]}))}
  for(var i=0;i<2;i++)TOEMIN[i]=Math.min.apply(null,P.map(function(c){return c[i][1]}));
- var dx=0,dz=0;for(var f=1;f<P.length;f++)for(var i=0;i<2;i++){var w=Math.min(toeW(i,P[f][i][1]),toeW(i,P[f-1][i][1]));dx+=w*(P[f][i][0]-P[f-1][i][0]);dz+=w*(P[f][i][2]-P[f-1][i][2])}
+ var dx=0,dz=0,ws=0;for(var f=1;f<P.length;f++)for(var i=0;i<2;i++){var w=Math.min(toeW(i,P[f][i][1]),toeW(i,P[f-1][i][1]));dx+=w*(P[f][i][0]-P[f-1][i][0]);dz+=w*(P[f][i][2]-P[f-1][i][2]);ws+=w}
+ /* средняя скорость опорной стопы за цикл (ед. модели в с): путь в опоре / время в опоре - с ней едет поле */
+ if(ws>0)WALKV=Math.hypot(dx,dz)/(ws*dur/N);
+ /* опорная стопа клипа едет неравномерно («подталкивание» таза в записи): при ровном поле она скользила бы
+    до 8 см за опору. WOFS[фаза] - сдвиг человека вдоль дорожки, при котором стопа стоит: ∫(V - скорость стопы)dt,
+    замкнут в цикл и без среднего. Заодно таз меньше ходит вперёд-назад относительно камеры (8 -> 5 см) */
+ var L=Math.hypot(dx,dz)||1,ux=dx/L,uz=dz/L,o=0;WOFS=[0];
+ for(var f=1;f<=N;f++){var nm=0,wm=0;for(var i=0;i<2;i++){var w=Math.min(toeW(i,P[f][i][1]),toeW(i,P[f-1][i][1]));nm+=w*((P[f][i][0]-P[f-1][i][0])*ux+(P[f][i][2]-P[f-1][i][2])*uz);wm+=w}
+  o+=WALKV*dur/N-(wm>.3?nm/wm:WALKV*dur/N);WOFS.push(o)}
+ var avg=0;for(var f=0;f<=N;f++){WOFS[f]-=o*f/N;avg+=WOFS[f]/(N+1)}for(var f=0;f<=N;f++)WOFS[f]-=avg;
  /* поворот R(Y): (x,z) -> (x cosY + z sinY, -x sinY + z cosY), т.е. угол a -> a - Y. Нужно a(клип) - Y = a(дорожка) */
  var was=YAW;YAW=Math.atan2(dz,dx)-Math.atan2(DVZ,DVX);while(YAW-was>Math.PI)YAW-=2*Math.PI;while(was-YAW>Math.PI)YAW+=2*Math.PI;
  if(Math.abs(YAW-was)>20*D)YAW=was;/* курс не похож на ходьбу вперёд - не трогаем */
- window.__walkFix={yawWasDeg:+(was/D).toFixed(2),yawDeg:+(YAW/D).toFixed(2),turnDeg:+((YAW-was)/D).toFixed(2)};
+ /* задача 20: человек довёрнут на YAW_ADJ к прежнему направлению; дорожка поворачивается вместе с ним */
+ var c=Math.cos(YAW_ADJ),s=Math.sin(YAW_ADJ),vx=DVX*c+DVZ*s,vz=-DVX*s+DVZ*c;YAW+=YAW_ADJ;DVX=vx;DVZ=vz;
  acts.walk.time=0;acts.idle.setEffectiveWeight(1);acts.walk.setEffectiveWeight(0);mixer.update(0);model.updateMatrixWorld(true)}
 var fw=new THREE.Vector3();
 /* Маска читаемости (пункт C8): раз в кадр берём панель глав 2-7 с наибольшей непрозрачностью
@@ -499,7 +505,7 @@ function frame(){
  if(!freezeWin)mixer.update(adt);
  model.updateMatrixWorld(true);
  if(HUM)FOOTY=FOOTY_I+(FOOTY_W-FOOTY_I)*walkW;
- var HX=0,baseX=HX*heroK,baseZ=mob?-.2*heroK:0,baseCA=Math.cos(YAW),baseSA=Math.sin(YAW);
+ var wo=walkOfs()*S*walkW,HX=0,baseX=HX*heroK+wo*DVX,baseZ=(mob?-.2*heroK:0)+wo*DVZ,baseCA=Math.cos(YAW),baseSA=Math.sin(YAW);
  /* глава 6: человек идёт по кругу - сцена-витрина, центр круга фиксирован в мире (как
     полукруг главы 5), не треадмил поля. Позиция и поворот смешиваются с обычной позой
     по ch6, чтобы вход/выход из главы были плавными. Круг укладывается в первые 82%
@@ -512,20 +518,11 @@ function frame(){
  /* точки интро (MAIN) нужны только до смены на точки модуля - дальше не скинятся */
  if(!HUM||!mainOff)skin(HW,HL,null,NH,true,XF);
  /* шаги */
- var dvx=DVX,dvz=DVZ,step=1.15*walkW*adt;
- if(HUM&&TOE&&TOE[0]&&TOE[1]){var mv=0,ws=0;
-  for(var i=0;i<2;i++){TOE[i].getWorldPosition(fw);var cur=[fw.x,fw.y,fw.z],pv=TOEP[i];
-   if(pv&&!freezeWin){var w=Math.min(toeW(i,cur[1]),toeW(i,pv[1])),ddx=(cur[0]-pv[0])*S,ddz=(cur[2]-pv[2])*S;
-    mv+=w*((ddx*XF.ca+ddz*XF.sa)*dvx+(-ddx*XF.sa+ddz*XF.ca)*dvz);ws+=w}
-   TOEP[i]=cur}
-  if(freezeWin)step=0;else if(ws>.3)step=Math.max(-.02,Math.min(.08,mv/ws))}
+ /* задача 20: поле едет с постоянной скоростью - средней скоростью шага клипа (WALKV, walkCourse).
+    Покадровый сдвиг на смещение опорной стопы давал неравномерный шаг поля (в 7 раз между кадрами) -
+    человек дёргался и «отъезжал» назад. Остаточное скольжение стопы в опоре - около 1 см */
+ var dvx=DVX,dvz=DVZ,step=freezeWin?0:(WALKV?WALKV*S:1.15)*walkW*adt;
  dist+=step;
- /* для автотестов: журнал ходьбы (window.__walkLog = [] включает) - время кадра, время клипа, стопы
-    в координатах поля (с учётом «беговой дорожки»): стопа в опоре там должна стоять на месте */
- if(window.__walkLog){if(!WLB){WLB=[];model.traverse(function(o){if(o.isBone&&/(Left|Right)ToeBase$/.test(o.name))WLB.push(o)})}
-  var rec={t:now,dt:dt,wt:acts.walk.time,ww:walkW,f:[]};
-  WLB.forEach(function(b){b.getWorldPosition(fw);var x=fw.x*S,z=fw.z*S,rx=x*XF.ca+z*XF.sa+XF.x,rz=-x*XF.sa+z*XF.ca+XF.z;rec.f.push([rx-dvx*dist,(fw.y-FOOTY)*S,rz-dvz*dist])});
-  window.__walkLog.push(rec)}
  /* новый человек: латунное кольцо ровно в момент касания - когда время цикла walk проходит
     заранее замеренную фазу касания; точка - нижняя вершина подошвы в этот момент */
  if(HUM&&walkW>.6&&!freezeWin){var wd=acts.walk.getClip().duration,p0=wPrev/wd,p1=acts.walk.time/wd;
