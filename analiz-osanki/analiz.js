@@ -67,6 +67,12 @@
   var FORMSPREE = "https://formspree.io/f/mlgvapod";   // адрес формы с живого сайта
   var form = document.getElementById("bookForm"), fStatus = document.getElementById("fStatus");
   var b = document.getElementById("fSubmit");
+  var format = document.getElementById("fFormat");
+  document.querySelectorAll("a[data-format]").forEach(function (link) {
+    link.addEventListener("click", function () {
+      format.value = link.dataset.format;
+    });
+  });
   function fErr(t) { fStatus.textContent = t; fStatus.classList.add("err"); }
   form.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -77,6 +83,12 @@
     var contact = document.getElementById("fContact").value.trim();
     var consentData = document.getElementById("fConsentData").checked;
     var consentAds = document.getElementById("fConsentAds").checked;
+    var option = format.selectedOptions[0];
+    var price = Number(option && option.dataset.priceRub);
+    if (!format.value || !Number.isFinite(price) || price <= 0) {
+      format.focus();
+      return fErr("Выберите формат анализа.");
+    }
     if (!name || !contact) return fErr("Заполните имя и телефон или Telegram.");
     if (!consentData) return fErr("Подтвердите согласие на обработку персональных данных.");
     var submitLabel = b.textContent;
@@ -85,8 +97,8 @@
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({
-        name: name, contact: contact, format: form.dataset.format,
-        price: Number(form.dataset.priceRub), currency: "RUB", consent_ads: consentAds ? "да" : "нет",
+        name: name, contact: contact, format: option.value,
+        price: price, currency: "RUB", consent_ads: consentAds ? "да" : "нет",
         page: "analiz-osanki", _subject: "Запись на анализ осанки, Атлетикс Корп",
       }),
     }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { r: r, d: d }; }); })
