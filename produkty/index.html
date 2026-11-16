@@ -91,14 +91,11 @@
      ландшафт), каркас produkty/, страницы analiz-osanki/ и specialistam/. Места, где нужен факт,
      помечены комментарием НУЖЕН ФАКТ - поиск по этой строке находит все. -->
 <script>
-/* Режим страницы до загрузки скриптов: без WebGL - статичные картинки объектов; reduced motion - без
-   вращения и с мгновенной сменой темы; hover - есть ли у устройства наведение (тема СТАТЬ по наведению
-   или по положению блока на экране). */
+/* Без WebGL показываем статичные объекты; при reduced motion тема меняется мгновенно. */
 (function(){var r=document.documentElement,c=document.createElement('canvas'),gl=null;
  try{gl=c.getContext('webgl2')}catch(e){}
  if(!gl)r.classList.add('no-webgl');
  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)r.classList.add('reduce');
- if(window.matchMedia&&matchMedia('(hover: hover) and (pointer: fine)').matches)r.classList.add('hover');
 })();
 </script>
 <style>
@@ -436,7 +433,7 @@ html.reduce *{scroll-behavior:auto!important}
 { "imports": { "three": "../_assets/vendor/three/three.module.min.js" } }
 </script>
 <script src="../_assets/vendor/lenis.min.js"></script>
-<script src="produkty-page.js"></script>
-<script type="module" src="produkty-scene.js?v=20261112-6"></script>
+<script src="produkty-page.js?v=20261116-visuals"></script>
+<script type="module" src="produkty-scene.js?v=20261116-visuals"></script>
 </body>
 </html>

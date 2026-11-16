@@ -28,44 +28,33 @@
   });
 
   // ---------------------------------------------------------------- тема СТАТЬ
-  // Компьютер (есть наведение): мышь над самим 3D-логотипом (знак анфас + запас HIT_PAD px) дольше
-  // 150 мс - светлая тема; увёл - обратно. Область логотипа каждый кадр отдаёт produkty-scene.js
-  // (window.__statHit); без WebGL - рамка статичной картинки логотипа. Проверка - при движении мыши
-  // и при прокрутке (логотип уезжает из-под неподвижной мыши).
-  // Телефон и планшет: светлая, пока блок пересекает середину экрана.
-  // Переход 0,6 с - в CSS (переменные на <html>); при reduced motion мгновенный. 3D-логотип и фон
-  // холста подхватывают тему в produkty-scene.js по тому же атрибуту.
-  var HIT_PAD = 24;
+  // СТАТЬ становится светлым, пока занимает середину видимой области экрана.
   var stat = document.getElementById("p-stat");
   var on = false;
-  function setTheme(v) {
-    if (v === on) return;
-    on = v;
-    if (v) root.setAttribute("data-theme", "stat"); else root.removeAttribute("data-theme");
-  }
-  function logoHit() {
-    if (window.__statHit) return window.__statHit;
-    var img = stat && stat.querySelector(".static.stat");
-    if (!img || getComputedStyle(img).display === "none") return null;
-    var r = img.getBoundingClientRect();
-    return { cx: (r.left + r.right) / 2, cy: (r.top + r.bottom) / 2, hw: r.width / 2, hh: r.height / 2 };
-  }
-  if (stat && root.classList.contains("hover")) {
-    var mx = -1, my = -1, over = false, enterT = 0;
-    var check = function () {
-      var h = logoHit();
-      var v = !!h && mx >= 0 && Math.abs(mx - h.cx) <= h.hw + HIT_PAD && Math.abs(my - h.cy) <= h.hh + HIT_PAD;
-      if (v === over) return;
-      over = v; clearTimeout(enterT);
-      if (v) enterT = setTimeout(function () { setTheme(true); }, 150); else setTheme(false);
-    };
-    addEventListener("pointermove", function (e) { if (e.pointerType === "mouse") { mx = e.clientX; my = e.clientY; check(); } }, { passive: true });
-    document.documentElement.addEventListener("mouseleave", function () { mx = my = -1; check(); });
-    addEventListener("scroll", check, { passive: true });
-    addEventListener("blur", function () { mx = my = -1; check(); });
-  } else if (stat && "IntersectionObserver" in window) {
-    new IntersectionObserver(function (es) { es.forEach(function (e) { setTheme(e.isIntersecting); }); },
-      { rootMargin: "-50% 0px -50% 0px" }).observe(stat);
+  if (stat) {
+    var viewport = window.visualViewport;
+    var themeFrame = 0;
+    function updateTheme() {
+      themeFrame = 0;
+      var rect = stat.getBoundingClientRect();
+      var center = viewport ? viewport.offsetTop + viewport.height / 2 : innerHeight / 2;
+      var isActive = rect.top <= center && rect.bottom > center;
+      if (isActive === on) return;
+      on = isActive;
+      if (on) root.dataset.theme = "stat";
+      else delete root.dataset.theme;
+    }
+    function scheduleTheme() {
+      if (!themeFrame) themeFrame = requestAnimationFrame(updateTheme);
+    }
+    addEventListener("scroll", scheduleTheme, { passive: true });
+    addEventListener("resize", scheduleTheme);
+    addEventListener("pageshow", scheduleTheme);
+    if (viewport) {
+      viewport.addEventListener("resize", scheduleTheme);
+      viewport.addEventListener("scroll", scheduleTheme);
+    }
+    updateTheme();
   }
 
   // для автотестов

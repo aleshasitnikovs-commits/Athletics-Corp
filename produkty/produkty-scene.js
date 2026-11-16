@@ -12,7 +12,7 @@ import * as THREE from 'three';
 import { SVGLoader } from '../_assets/vendor/three/loaders/SVGLoader.js';
 import { createSpinePoints } from '../_assets/3d/spine-page.js';
 import { init as initHuman } from '../_assets/3d/human-points.js?v=20261112-2';
-import { createMasterclassPoints } from '../_assets/3d/masterclass-points.js?v=20261112-2';
+import { createMasterclassPoints } from '../_assets/3d/masterclass-points.js?v=20261116-visuals';
 import { NOTEBOOK_PAGES, PENCIL_TIP, palmFrame, constrainWriting } from '../_assets/3d/coach-writing.js?v=20261112-6';
 
 const STAT_TURN = 12;                 // с на оборот логотипа
@@ -352,12 +352,7 @@ function init() {
         const sc = Math.min(a.w * 0.82 / LW, a.h * 0.5 / LH);
         mesh.scale.set(sc, -sc, sc);                        // SVG: ось y вниз
         mat.color.lerpColors(LOGO_DARK, LOGO_LIGHT, k);
-        // область наведения для темы СТАТЬ (produkty-page.js): знак анфас в пикселях окна - не зависит
-        // от угла поворота, иначе при неподвижной мыши тема мигала бы вместе с вращением
-        const { px, r } = a;
-        window.__statHit = { cx: (r.left + r.right) / 2, cy: (r.top + r.bottom) / 2, hw: LW * sc / 2 * px, hh: LH * sc / 2 * px };
       },
-      hide() { window.__statHit = null; },
     });
   }
 
