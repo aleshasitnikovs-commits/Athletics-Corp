@@ -54,3 +54,21 @@ html.no-webgl .dev-static{display:block}
  .ftr{padding:var(--sp-7) 18px var(--sp-8)}
  .center{padding:100px 18px var(--sp-7)}
 }
+
+/* Информационные страницы с одним маршрутом и короткими разделами. */
+.landing {
+  max-width: 1120px;
+  margin-inline: auto;
+  padding: clamp(115px,15vw,200px) clamp(18px,5vw,64px) clamp(64px,9vw,120px);
+}
+.landing h1 { max-width: 22ch; font-size: clamp(2rem,5vw,4rem); line-height: 1.12; overflow-wrap: anywhere }
+.landing-intro { margin-bottom: clamp(40px,7vw,88px) }
+.landing .lead { max-width: 58ch }
+.landing-sections { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 28px clamp(24px,6vw,76px) }
+.landing-sections section { border-top: 1px solid var(--line); padding-top: 20px }
+.landing-sections h2 { margin-bottom: 12px; font-size: clamp(1.1rem,2vw,1.5rem); line-height: 1.27 }
+.landing-sections p { color: var(--soft); line-height: 1.65; max-width: 52ch }
+.landing .btns { margin-top: clamp(32px,5vw,72px) }
+@media (max-width: 620px) {
+  .landing-sections { grid-template-columns: minmax(0,1fr) }
+}

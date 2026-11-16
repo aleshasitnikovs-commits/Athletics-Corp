@@ -3,9 +3,75 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Анализ осанки онлайн и в Москве: разбор за 30 минут | Атлетикс Корп</title>
-<meta name="description" content="Специалист разберёт вашу осанку по фото или вживую и объяснит, что менять в обычном дне. Онлайн 2 000 ₽, бесплатный первый взгляд по двум фото. Без диагнозов.">
+<title>Анализ осанки онлайн с разбором специалиста | Атлетикс Корп</title>
+<meta name="description" content="Анализ осанки по двум фото. Специалист объяснит, что видно на снимках, и предложит следующие шаги. Онлайн-разбор за 2 000 ₽, предварительный разбор бесплатно.">
 <link rel="canonical" href="https://athleticscorp.ru/analiz-osanki/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:site_name" content="Атлетикс Корп">
+<meta property="og:title" content="Анализ осанки онлайн · Атлетикс Корп">
+<meta property="og:description" content="Анализ осанки по двум фото. Специалист объяснит, что видно на снимках, и предложит следующие шаги. Онлайн-разбор за 2 000 ₽, предварительный разбор бесплатно.">
+<meta property="og:url" content="https://athleticscorp.ru/analiz-osanki/">
+<meta property="og:image" content="https://athleticscorp.ru/assets/share/analiz-osanki-v1.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Анализ осанки онлайн. Точечная модель позвоночника">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Анализ осанки онлайн · Атлетикс Корп">
+<meta name="twitter:description" content="Анализ осанки по двум фото. Специалист объяснит, что видно на снимках, и предложит следующие шаги. Онлайн-разбор за 2 000 ₽, предварительный разбор бесплатно.">
+<meta name="twitter:image" content="https://athleticscorp.ru/assets/share/analiz-osanki-v1.jpg">
+<meta name="twitter:image:alt" content="Анализ осанки онлайн. Точечная модель позвоночника">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://athleticscorp.ru/analiz-osanki/#webpage",
+      "url": "https://athleticscorp.ru/analiz-osanki/",
+      "name": "Анализ осанки онлайн с разбором специалиста | Атлетикс Корп",
+      "description": "Анализ осанки по двум фото. Специалист объяснит, что видно на снимках, и предложит следующие шаги. Онлайн-разбор за 2 000 ₽, предварительный разбор бесплатно.",
+      "inLanguage": "ru",
+      "isPartOf": {
+        "@id": "https://athleticscorp.ru/#website"
+      },
+      "publisher": {
+        "@id": "https://athleticscorp.ru/#organization"
+      },
+      "mainEntity": {
+        "@id": "https://athleticscorp.ru/analiz-osanki/#service"
+      }
+    },
+    {
+      "@type": "Service",
+      "@id": "https://athleticscorp.ru/analiz-osanki/#service",
+      "name": "Анализ осанки онлайн",
+      "description": "Анализ осанки по двум фото. Специалист объяснит, что видно на снимках, и предложит следующие шаги. Онлайн-разбор за 2 000 ₽, предварительный разбор бесплатно.",
+      "provider": {
+        "@id": "https://athleticscorp.ru/#organization"
+      },
+      "url": "https://athleticscorp.ru/analiz-osanki/",
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "Онлайн-разбор",
+          "price": 2000,
+          "priceCurrency": "RUB",
+          "url": "https://athleticscorp.ru/analiz-osanki/#zapis"
+        },
+        {
+          "@type": "Offer",
+          "name": "Предварительный разбор по двум фото",
+          "price": 0,
+          "priceCurrency": "RUB",
+          "url": "https://athleticscorp.ru/analiz-osanki/#s06"
+        }
+      ]
+    }
+  ]
+}
+</script>
 <link rel="icon" type="image/png" href="../_assets/img/favicon-ac-64.png">
 <link rel="stylesheet" href="../_assets/tokens.css">
 <link rel="stylesheet" href="../_assets/header.css?v=20261112-5">
@@ -72,7 +138,8 @@ h2{margin-bottom:var(--sp-5)}
 html.no-webgl .spine-hit,html.reduce .spine-hit{display:none}
 .spine-static{display:none}
 .spine-stage{display:none}
-html.no-webgl .spine-static{display:block;position:absolute;right:21%;top:calc(50% + 14px);transform:translate(50%,-50%);height:min(80vh,1000px);width:auto;opacity:.9;pointer-events:none}
+html.reduce #spine{display:none}
+html:is(.no-webgl,.reduce) .spine-static{display:block;position:absolute;right:21%;top:calc(50% + 14px);transform:translate(50%,-50%);height:min(80vh,1000px);width:auto;opacity:.9;pointer-events:none}
 
 /* 02 */
 .list{list-style:none;padding:0;margin:var(--sp-6) 0 0;max-width:640px}
@@ -181,9 +248,10 @@ html.lenis,html.lenis body{height:auto}
  /* 01: позвоночник над заголовком по центру (~38% высоты экрана), текст ниже - виден без прокрутки.
     Вариант «за заголовком справа, яркость 40%» сравнивался 26.10 и отклонён: точки шли сквозь буквы
     заголовка (скриншоты в _отчёты/скрины/анализ-осанки-2/). */
- #s01{padding-top:calc(72px + 44svh + 8px)}
- #s01 .spine-hit{top:72px;bottom:auto;height:44svh}
- html.no-webgl .spine-static{right:50%;top:calc(72px + 3svh);transform:translateX(50%);height:38svh}
+ #s01{padding-top:calc(80px + 33svh)}
+ #s01 .spine-hit{top:72px;bottom:auto;height:33svh}
+ html:is(.no-webgl,.reduce) .spine-static{right:50%;top:calc(72px + 3svh);transform:translateX(50%);height:27svh}
+ #s01 h1{font-size:clamp(29px,8.8vw,36px)}
  .cards{grid-template-columns:minmax(0,1fr)}
  .person{grid-template-columns:minmax(0,1fr)}
  .photo-ph{max-width:220px}
@@ -192,33 +260,6 @@ html.lenis,html.lenis body{height:auto}
 }
 html.reduce *{scroll-behavior:auto!important}
 </style>
-<!-- SEO: услуга с ценами и частые вопросы. Цены очного формата и выезда - НУЖЕН ФАКТ (см. экран 06). -->
-<script type="application/ld+json">
-{
- "@context":"https://schema.org",
- "@graph":[
-  {"@type":"Service","@id":"https://athleticscorp.ru/analiz-osanki/#service",
-   "name":"Анализ осанки и движения",
-   "serviceType":"Немедицинский анализ осанки и движения",
-   "description":"Специалист разберёт вашу осанку по фото или вживую и объяснит, что менять в обычном дне. Без диагнозов.",
-   "provider":{"@type":"Organization","name":"Атлетикс Корп","url":"https://athleticscorp.ru/"},
-   "areaServed":[{"@type":"Country","name":"Россия"},{"@type":"City","name":"Москва"}],
-   "offers":[
-    {"@type":"Offer","name":"Первый взгляд по двум фото","price":"0","priceCurrency":"RUB"},
-    {"@type":"Offer","name":"Онлайн-разбор","price":"2000","priceCurrency":"RUB"}
-   ]},
-  {"@type":"FAQPage","@id":"https://athleticscorp.ru/analiz-osanki/#faq",
-   "mainEntity":[
-    {"@type":"Question","name":"Нужно ли, если ничего не болит?","acceptedAnswer":{"@type":"Answer","text":"Разбор нужен, чтобы понять, как ваше тело привыкло двигаться, и решить, что с этим делать дальше. Боль для этого не обязательна."}},
-    {"@type":"Question","name":"Что будет с моими фото? Кто их видит и когда они удаляются?","acceptedAnswer":{"@type":"Answer","text":"Фото передаются напрямую специалисту. Без рассылок."}},
-    {"@type":"Question","name":"Чем это отличается от остеопата или тренера?","acceptedAnswer":{"@type":"Answer","text":"Мы не ставим диагнозов и не лечим. Это не тренировка и не массаж. Разбор показывает, как вы стоите, сидите и двигаетесь, и что менять в обычном дне."}},
-    {"@type":"Question","name":"Как сделать фото, если снимаю сам?","acceptedAnswer":{"@type":"Answer","text":"Поставьте телефон на стол или книги, объектив на уровне пупка. Два снимка: спереди или сзади и сбоку. Облегающая одежда, ноги на ширине плеч, руки свободно опущены, стойте естественно."}},
-    {"@type":"Question","name":"Онлайн так же точно, как вживую?","acceptedAnswer":{"@type":"Answer","text":"Онлайн разбор идёт по двум фото по инструкции: система отмечает опорные точки и считает углы, специалист объясняет результат по видеосвязи."}},
-    {"@type":"Question","name":"Что делать после разбора?","acceptedAnswer":{"@type":"Answer","text":"Можно продолжить со специалистом или вернуться через несколько месяцев и сравнить замеры."}}
-   ]}
- ]
-}
-</script>
 </head>
 <body>
 
@@ -270,12 +311,12 @@ html.reduce *{scroll-behavior:auto!important}
 <section class="scr" id="s01" data-stage="01">
   <div class="wrap">
     <div class="col">
-      <span class="kicker">Анализ осанки и движения · онлайн и в Москве</span>
-      <h1>Посмотрим, как вы стоите, сидите и двигаетесь. И объясним, что менять в обычном дне</h1>
-      <p class="lead">Специалист разбирает вашу осанку по фото или вживую и простыми словами говорит, откуда сутулость или усталость в спине и с чего начать. Без диагнозов и лечения.</p>
+      <span class="kicker">Анализ осанки и движения · онлайн</span>
+      <h1>Анализ осанки с разбором специалиста</h1>
+      <p class="lead">По двум фото измерим положение головы, плеч и таза. Специалист объяснит, что видно на снимках, и предложит следующие шаги с учётом ваших привычек.</p>
       <div class="btns">
-        <a class="btn" href="#zapis">Записаться на разбор · 2 000 ₽</a>
-        <button class="btn ghost" type="button" data-lite>Сначала бесплатно по 2 фото</button>
+        <a class="btn" href="#zapis">Оставить заявку · 2 000 ₽</a>
+        <button class="btn ghost" type="button" data-lite>Бесплатный разбор по фото</button>
       </div>
     </div>
   </div>
@@ -320,7 +361,7 @@ html.reduce *{scroll-behavior:auto!important}
       <h2 class="rv">Как проходит разбор</h2>
       <div class="spine-stage" data-stage-box></div>
       <ol class="steps">
-        <li><b>Фото или встреча.</b> Присылаете два снимка по инструкции или приходите в Москве.</li>
+        <li><b>Фото.</b> Присылаете два снимка по инструкции.</li>
         <li><b>Измерение.</b> Система отмечает опорные точки и считает углы: как стоят голова, плечи, таз, колени.</li>
         <li><b>Разговор 30 минут.</b> Специалист показывает, что видно, и объясняет, как это связано с вашим днём.</li>
         <li><b>План.</b> Что поменять в привычках, 3–4 упражнения и что пока не трогать. Отчёт приходит в течение суток.</li>
@@ -357,7 +398,7 @@ html.reduce *{scroll-behavior:auto!important}
         <span class="price">2 000 ₽</span>
         <h3>Онлайн-разбор</h3>
         <p>Видеосвязь, отчёт и план. Из любого города.</p>
-        <div class="go"><a class="btn" href="#zapis" data-format="online">Записаться · 2 000 ₽</a></div>
+        <div class="go"><a class="btn" href="#zapis" data-format="online">Оставить заявку · 2 000 ₽</a></div>
       </div>
       <!-- НУЖЕН ФАКТ: очный формат 5 000 ₽ на Красносельской: со слов Всеволода 28.09, на живом сайте его нет. Подтвердить. Выезд 15 000 ₽ показываем? -->
       <div class="card" hidden><!-- СКРЫТО К ЗАПУСКУ (задача 19): цена не подтверждена, см. НУЖЕН ФАКТ выше -->
@@ -403,11 +444,11 @@ html.reduce *{scroll-behavior:auto!important}
     <div class="faq">
       <details><summary>Нужно ли, если ничего не болит?</summary><p>Разбор нужен, чтобы понять, как ваше тело привыкло двигаться, и решить, что с этим делать дальше. Боль для этого не обязательна.</p></details>
       <!-- НУЖЕН ФАКТ: политика хранения фото: кто видит, где хранятся, когда удаляются. -->
-      <details><summary>Что будет с моими фото? Кто их видит и когда они удаляются?</summary><p>Фото передаются напрямую специалисту. Без рассылок.</p></details>
+      <details><summary>Что будет с моими фото? Кто их видит и когда они удаляются?</summary><p>Мы используем снимки для разбора осанки. Цель обработки, срок удаления и порядок отзыва описаны в <a href="../consent-photo/">согласии на обработку фото</a>.</p></details>
       <details><summary>Чем это отличается от остеопата или тренера?</summary><p>Мы не ставим диагнозов и не лечим. Это не тренировка и не массаж. Разбор показывает, как вы стоите, сидите и двигаетесь, и что менять в обычном дне.</p></details>
       <details><summary>Как сделать фото, если снимаю сам?</summary><p>Поставьте телефон на стол или книги, объектив на уровне пупка. Два снимка: спереди или сзади и сбоку. Облегающая одежда, ноги на ширине плеч, руки свободно опущены, стойте естественно.</p></details>
       <!-- НУЖЕН ФАКТ: насколько онлайн-разбор точнее или менее точен, чем очный. -->
-      <details><summary>Онлайн так же точно, как вживую?</summary><p>Онлайн разбор идёт по двум фото по инструкции: система отмечает опорные точки и считает углы, специалист объясняет результат по видеосвязи.</p></details>
+      <details><summary>Что можно увидеть по фото?</summary><p>На двух снимках можно оценить положение тела в момент съёмки. Система отмечает точки и считает углы. Специалист объясняет измерения с учётом ваших привычек.</p></details>
       <details><summary>Что делать после разбора?</summary><p>Можно продолжить со специалистом или вернуться через несколько месяцев и сравнить замеры.</p></details>
     </div>
   </div>
@@ -420,7 +461,7 @@ html.reduce *{scroll-behavior:auto!important}
   <div class="wrap">
     <span class="eyebrow">10 · запись</span>
     <h2 class="rv">Записаться на разбор</h2>
-    <p class="txt">Имя и телефон или Telegram. Ответим в течение часа в рабочее время и подберём удобное время.</p>
+    <p class="txt">Оставьте имя и телефон или Telegram. Ответим в течение часа в рабочее время и подберём удобное время.</p>
     <form class="form" id="bookForm" novalidate>
       <div class="field"><label for="fName">Имя</label><input id="fName" name="name" type="text" autocomplete="name" required></div>
       <div class="field"><label for="fContact">Телефон или Telegram</label><input id="fContact" name="contact" type="text" autocomplete="tel" required></div>
@@ -428,7 +469,7 @@ html.reduce *{scroll-behavior:auto!important}
       <label class="check"><input type="checkbox" id="fConsentData" required><span>Я согласен(на) на <a href="../personal-data-policy/" target="_blank" rel="noopener">обработку персональных данных</a></span></label>
       <label class="check"><input type="checkbox" id="fConsentAds"><span>Я согласен(на) на <a href="../advertising-consent/" target="_blank" rel="noopener">получение рекламных сообщений</a></span></label>
       <div class="btns">
-        <button class="btn" type="submit" id="fSubmit">Записаться · 2 000 ₽</button>
+        <button class="btn" type="submit" id="fSubmit">Отправить заявку</button>
         <button class="btn ghost" type="button" data-lite>Бесплатно по 2 фото</button>
       </div>
       <p class="status" id="fStatus" role="status"></p>
@@ -443,7 +484,7 @@ html.reduce *{scroll-behavior:auto!important}
     <h2 class="rv">После разбора</h2>
     <p class="txt">Можно продолжить со специалистом или вернуться через несколько месяцев и сравнить замеры. Анализ один из продуктов Атлетикс Корп.</p>
     <div class="next">
-      <a class="btn ghost" href="../specialistam/">Работа со специалистами</a>
+      <a class="btn ghost" href="../produkty/#p-spec">Работа со специалистами</a>
       <a class="btn ghost" href="../produkty/">Все продукты</a>
     </div>
   </div>
@@ -494,7 +535,7 @@ html.reduce *{scroll-behavior:auto!important}
       <div class="field"><label for="liteContact">Телефон или Telegram</label><input id="liteContact" type="text" autocomplete="tel" required></div>
       <label class="check"><input type="checkbox" id="liteConsent" required><span>Я согласен(на) на обработку фотографий в соответствии с <a href="../consent-photo/" target="_blank" rel="noopener">Согласием на обработку фотографий для скрининга осанки</a></span></label>
       <div class="btns"><button class="btn" type="submit" id="liteSubmit">Отправить фото на разбор</button></div>
-      <p class="status" id="liteStatus" role="status">Фото передаются напрямую специалисту. Без рассылок.</p>
+      <p class="status" id="liteStatus" role="status">Мы используем снимки для разбора осанки.</p>
       <p class="status">Или на почту: <a href="mailto:ac@athleticscorp.ru" style="text-decoration:underline;text-underline-offset:.2em">ac@athleticscorp.ru</a></p>
     </form>
   </div>
@@ -507,7 +548,7 @@ html.reduce *{scroll-behavior:auto!important}
 <script src="../_assets/vendor/ScrollTrigger.min.js"></script>
 <script src="../_assets/vendor/SplitText.min.js"></script>
 <script src="../_assets/vendor/lenis.min.js"></script>
-<script src="analiz.js"></script>
+<script src="analiz.js?v=20261116"></script>
 <script type="module" src="../_assets/3d/spine-page.js"></script>
 </body>
 </html>

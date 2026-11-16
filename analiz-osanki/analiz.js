@@ -81,6 +81,7 @@
     if (!name || !contact) return fErr("Заполните имя и телефон или Telegram.");
     if (!consentData) return fErr("Подтвердите согласие на обработку персональных данных.");
     var b = document.getElementById("fSubmit");
+    var submitLabel = b.textContent;
     b.disabled = true; b.textContent = "Отправляем…";
     fetch(FORMSPREE, {
       method: "POST",
@@ -100,7 +101,7 @@
         throw new Error("formspree " + x.r.status);
       })
       .catch(function () {
-        b.disabled = false; b.textContent = "Записаться · 2 000 ₽";
+        b.disabled = false; b.textContent = submitLabel;
         fErr("Не получилось отправить. Напишите напрямую: ac@athleticscorp.ru");
       });
   });
