@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Атлетикс Корп | Технологии анализа осанки и движения</title>
-<meta name="description" content="Разрабатываем инструменты для анализа осанки и движения. Специалисты объясняют результаты, помогают применять рекомендации и обучают коллег.">
+<title>Атлетикс Корп | Технологии и продукты для движения человека</title>
+<meta name="description" content="Разрабатываем технологии анализа осанки и движения, работаем с людьми и организациями, создаём новые продукты и обучаем специалистов.">
 <link rel="canonical" href="https://athleticscorp.ru/">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:site_name" content="Атлетикс Корп">
 <meta property="og:title" content="Атлетикс Корп · Технологии движения">
-<meta property="og:description" content="Разрабатываем инструменты для анализа осанки и движения. Специалисты объясняют результаты, помогают применять рекомендации и обучают коллег.">
+<meta property="og:description" content="Разрабатываем технологии анализа осанки и движения, работаем с людьми и организациями, создаём новые продукты и обучаем специалистов.">
 <meta property="og:url" content="https://athleticscorp.ru/">
 <meta property="og:image" content="https://athleticscorp.ru/assets/share/athletics-corp-v1.jpg">
 <meta property="og:image:type" content="image/jpeg">
@@ -19,7 +19,7 @@
 <meta property="og:image:alt" content="Атлетикс Корп. Человек из точек в движении">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Атлетикс Корп · Технологии движения">
-<meta name="twitter:description" content="Разрабатываем инструменты для анализа осанки и движения. Специалисты объясняют результаты, помогают применять рекомендации и обучают коллег.">
+<meta name="twitter:description" content="Разрабатываем технологии анализа осанки и движения, работаем с людьми и организациями, создаём новые продукты и обучаем специалистов.">
 <meta name="twitter:image" content="https://athleticscorp.ru/assets/share/athletics-corp-v1.jpg">
 <meta name="twitter:image:alt" content="Атлетикс Корп. Человек из точек в движении">
 <script type="application/ld+json">
@@ -50,8 +50,8 @@
       "@type": "WebPage",
       "@id": "https://athleticscorp.ru/#webpage",
       "url": "https://athleticscorp.ru/",
-      "name": "Атлетикс Корп | Технологии анализа осанки и движения",
-      "description": "Разрабатываем инструменты для анализа осанки и движения. Специалисты объясняют результаты, помогают применять рекомендации и обучают коллег.",
+      "name": "Атлетикс Корп | Технологии и продукты для движения человека",
+      "description": "Разрабатываем технологии анализа осанки и движения, работаем с людьми и организациями, создаём новые продукты и обучаем специалистов.",
       "inLanguage": "ru",
       "isPartOf": {
         "@id": "https://athleticscorp.ru/#website"
@@ -63,163 +63,15 @@
   ]
 }
 </script>
-<script>
-/* Этап 0, п.3: WebGL проверяется до первой отрисовки. Нет контекста -> html.no-webgl
-   (холст не нужен) и html.story-static (главы обычными секциями друг за другом, без
-   фиксированных панелей и скролл-сцен). hero-scene.js при падении ставит те же классы. */
-(function(){var d=document.documentElement,ok=false;
- try{var c=document.createElement('canvas');ok=!!(c.getContext('webgl2')||c.getContext('webgl'))}catch(e){}
- /* п.4: prefers-reduced-motion -> тоже статичная раскладка глав (весь текст сразу, без
-    скролл-анимаций); холст при этом остаётся, но рисует один неподвижный кадр. */
- var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
- if(!ok)d.classList.add('no-webgl','story-static');else if(rm)d.classList.add('story-static');
- /* Интро (задача 15): шапка и заголовок ждут конца интро (класс intro-hold - только прозрачность,
-    текст в HTML с самого начала, для поиска он есть). Сцена снимает класс, когда логотип ушёл в
-    человека, - проявление 0,8 с. Сразу (без перехода) - при прокрутке, клике, касании, любой
-    клавише во время интро, если через 3 с после загрузки сцена не готова, при падении сцены.
-    Без WebGL и при reduced motion класса нет. Повторный заход в той же вкладке (sessionStorage):
-    класса нет, интро короткое (window.__introShort, начинается с ухода логотипа в человека). */
- var seen=false;try{seen=sessionStorage.getItem('ac-intro')==='1';sessionStorage.setItem('ac-intro','1')}catch(e){}
- window.__introShort=seen;
- window.__reveal=function(now){if(!d.classList.contains('intro-hold'))return;
-  if(now){d.classList.add('intro-now');requestAnimationFrame(function(){requestAnimationFrame(function(){d.classList.remove('intro-now')})})}
-  d.classList.remove('intro-hold');window.__revealedAt=performance.now()};
- if(ok&&!rm&&!seen){d.classList.add('intro-hold');
-  var go=function(){window.__reveal(true)};
-  ['wheel','touchstart','pointerdown','keydown','scroll'].forEach(function(t){addEventListener(t,go,{passive:true,capture:true,once:true})});
-  /* 3 с от начала загрузки страницы (performance.now() идёт с навигации), а не от этой строки */
-  setTimeout(function(){if(!(window.__intro&&window.__intro.ready))go()},Math.max(0,3000-performance.now()))}
-})();
-</script>
 <!-- favicon: костяной знак на тёмной плашке (чисто белый знак пропал бы на светлой панели вкладок) -->
 <link rel="icon" type="image/png" href="_assets/img/favicon-ac-64.png">
 <link rel="stylesheet" href="_assets/tokens.css">
 <link rel="stylesheet" href="_assets/header.css?v=20261112-5">
 <script src="_assets/header.js?v=20261112-5"></script>
 <script src="_assets/site.js"></script>
-<style>
-/* Прелоадер и первый экран "Поле наблюдений" v7 — перенесено почти без изменений из
-   ШТАБ/06-сайт-и-конверсия/передача-в-vs-code/прототип-исходники/head3.html.
-   Шрифты теперь из tokens.css (самостоятельный хостинг), Google Fonts-ссылка убрана. */
-:root{--bg:#0A0A08;--fg:#F2F0EB;--soft:#C9C6BE;--mute:#86847C;--brass:#DDA74F;
---display:"Unbounded","Arial Black",sans-serif;--body:"Golos Text","Segoe UI",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,Consolas,monospace;color-scheme:dark}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 var(--body);-webkit-tap-highlight-color:transparent}
-a{color:inherit;text-decoration:none}
-button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
-a:focus-visible,button:focus-visible{outline:2px solid var(--brass);outline-offset:4px}
-#cv{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;pointer-events:none}
-.grain{position:fixed;inset:-50%;width:200%;height:200%;pointer-events:none;z-index:3;opacity:.07;
- background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
- animation:gr 1s steps(4) infinite}
-@keyframes gr{0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}100%{transform:translate(0,0)}}
-.vig{position:fixed;inset:0;pointer-events:none;z-index:2;background:radial-gradient(120% 90% at 50% 45%,transparent 55%,rgba(0,0,0,.65) 100%)}
-/* Прелоадера («калибровка», «Пропустить») нет (убран 27.10, задача 14). Шапка и заголовок до конца
-   интро прозрачны (html.intro-hold, ставит скрипт в <head>), затем проявляются за 0,8 с. В статичной
-   раскладке (без WebGL, reduced motion, падение сцены) класс не действует - текст виден сразу. */
-#hdr{transition:transform .35s cubic-bezier(.25,.46,.45,.94),opacity .8s ease}
-#hero .h1,#hero .down{transition:opacity .8s ease}
-html.intro-hold:not(.story-static) #hdr,html.intro-hold:not(.story-static) #hero .h1,html.intro-hold:not(.story-static) #hero .down{opacity:0;pointer-events:none}
-html.intro-now #hdr,html.intro-now #hero .h1,html.intro-now #hero .down{transition:none}
-html.story-static #hero .h1,html.story-static #hero .down{opacity:1!important;translate:none!important}
-html.story-static #hero .h1,html.story-static #hero a{pointer-events:auto!important}
-/* Шапка и меню - общие: _assets/header.css и header.js. */
-/* Слои первого экрана (этап 0): #cv 1, .vig 2, .grain 3, #hero 4, панели глав 5,
-   мобильное меню 7, шапка 8. #hero раньше был z-index:0 — под холстом, виньеткой и зерном.
-   #hero — прямой потомок body, родители своего stacking context не создают. */
-#hero{position:fixed;inset:0;z-index:4;pointer-events:none}
-/* Этап 0, п.6: сам #hero пропускает события сквозь пустое место, но заголовок и ссылка
-   ловят их (H1 раньше наследовал pointer-events:none - текст не выделялся, а
-   elementFromPoint в его центре проваливался насквозь). Когда заголовок ушёл по скроллу
-   (класс off из scroll-story.js), невидимые ссылка и H1 не перехватывают клики глав. */
-#hero .h1,#hero a{pointer-events:auto}
-#hero.off .h1,#hero.off a{pointer-events:none}
-/* Правка 16.10 (чистка): заголовок одним размером, обе строки — не надстрочная мелочь
-   плюс гигант. Первая строка --fg (основной смысл), вторая --soft (продолжение мысли),
-   снизу слева, без uppercase. */
-.h1{position:absolute;left:40px;right:40px;bottom:120px;margin:0;font-weight:inherit;text-align:left}
-.h1 .s,.h1 .b{display:block;font:200 clamp(40px,5.6vw,96px)/1.08 var(--display);letter-spacing:-.01em}
-.h1 .s{color:var(--fg)}
-.h1 .b{color:var(--soft)}
-/* "Как устроена компания" — тихая ссылка по центру снизу, без вертикальной палочки
-   (та читалась как глюк у края); стрелка-шеврон под текстом вместо линии. */
-.down{position:absolute;left:0;right:0;bottom:38px;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:14px;color:var(--soft);text-align:center}
-.down:hover{color:var(--fg)}
-.down i{display:block;width:7px;height:7px;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:rotate(45deg);animation:dn 1.8s ease-in-out infinite}
-@keyframes dn{0%,100%{transform:rotate(45deg) translate(0,0);opacity:.45}50%{transform:rotate(45deg) translate(3px,3px);opacity:1}}
-.on{pointer-events:auto}.off{pointer-events:none}
-@media (max-width:860px){
- .h1{left:18px;right:18px;bottom:calc(96px + env(safe-area-inset-bottom))}
- .down{bottom:calc(20px + env(safe-area-inset-bottom));font-size:13px}
-}
-@media (max-height:520px) and (orientation:landscape){
- .h1{bottom:60px}.down{bottom:14px}}
-body.nogl{background:radial-gradient(80% 60% at 50% 70%,#1a1915,#0A0A08)}
-
-/* Стыковка с реальным контентом ниже первого экрана: канвас/виньетка/зерно — фон с
-   z-index 1-3, заголовок первого экрана 4, контентные блоки идут поверх них (z-index 5)
-   ниже первого экрана, шапка (z-index 8) всегда поверх всего.
-   Правка 16.10 (чистка, пункт B): был виден шов между холстом (~#111110 из-за прозрачного
-   clear + альфа-смешения точек) и страницей/шапкой (#0A0A08/#090907) — два разных чёрных.
-   Один цвет везде: рендерер теперь чистит холст непрозрачным #0A0A08 (было прозрачным,
-   R.setClearColor в hero-scene.js), #content тоже сплошной #0A0A08 без полупрозрачной
-   подложки (было rgba(9,9,7,.8) — компромисс ради главы 15.10, чтобы поле точек слабо
-   просвечивало сквозь старые статичные блоки; теперь это не нужно, блоки 8-10 всё равно
-   показываются только после главы 7, когда холст уже визуально "кончился" по сюжету). */
-#hero-spacer{height:100vh}
-.story-anchor{position:relative;top:50%;display:block;height:0}
-#content{position:relative;z-index:5;background:var(--bg)}
-
-/* ===== Иммерсивная история, главы 2-3 (15.10). Один холст на весь скролл, главы 1-3
-   сделаны, 4 и дальше пока статичные блоки ниже — переведём на тот же механизм следующими
-   связками. Триггеры (.story-trigger) — невидимые распорки высотой под главу, камера и
-   текст читают прогресс скролла по ним через GSAP ScrollTrigger (_assets/3d/scroll-story.js). */
-.story-trigger{height:90vh}
-.chapter-panel{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:40px;opacity:0;pointer-events:none}
-.chapter-text{max-width:900px}
-/* Правка 16.10 (чистка, пункт C8): прямоугольные подложки с видимой границей убраны -
-   читаемость теперь даёт гашение точек поля в 3D-шейдере (maskRect/maskOn в hero-scene.js,
-   считается по экранному прямоугольнику .chapter-text каждый кадр) плюс мягкая тень текста
-   здесь, без рамки и без жёсткого края. */
-.ch2-text{text-align:center}
-.ch2-text .bridge-line{font-family:var(--display);font-weight:200;font-size:clamp(2rem,5vw,4rem);line-height:1.2;letter-spacing:-.01em;margin:0;
- text-shadow:0 2px 24px rgba(10,10,8,.9),0 0 3px rgba(10,10,8,.9)}
-.ch2-desc{max-width:46ch;margin:8px auto 0;color:var(--soft);font-size:15px;line-height:1.55;text-shadow:0 2px 16px rgba(10,10,8,.9)}
-.ch3-text h2{font-family:var(--display);font-weight:200;font-size:clamp(1.75rem,3.6vw,3rem);margin:0 0 16px;color:var(--fg);text-shadow:0 2px 24px rgba(10,10,8,.9),0 0 3px rgba(10,10,8,.9)}
-.ch3-text p{color:var(--soft);font-size:16px;line-height:1.6;max-width:56ch;margin:0;text-shadow:0 2px 16px rgba(10,10,8,.9)}
-@media (max-width:860px){
- .chapter-panel{padding:22px}
- .ch2-text .bridge-line{font-size:7.5vw}
- .ch2-desc{font-size:14px}
- #ch4panel{align-items:flex-end;padding-bottom:64px}
-}
-/* Этап 0, п.3: статичная раскладка истории (html.story-static) - без WebGL, если сцена
-   упала, или GSAP не загрузился. Первый экран и главы идут обычными секциями друг за
-   другом, распорки скролл-сцен убраны, весь текст виден сразу (opacity из scroll-story
-   перекрыта !important на случай, если класс появился уже после его работы). */
-/* Lenis (плавная прокрутка колесом, _assets/vendor/lenis.min.js) - минимум его CSS. */
-html.lenis,html.lenis body{height:auto}
-.lenis:not(.lenis-autoToggle).lenis-stopped{overflow:clip}
-.lenis.lenis-smooth iframe{pointer-events:none}
-html.no-webgl #cv{display:none}
-html.story-static #hero{position:relative;min-height:100vh;min-height:100svh;opacity:1!important}
-html.story-static .story-trigger,html.story-static .story-buffer{display:none}
-html.story-static .chapter-panel{position:relative;inset:auto;z-index:5;opacity:1!important;pointer-events:auto;
- background:var(--bg);padding:88px 40px;align-items:flex-start;justify-content:center}
-@media (max-width:860px){html.story-static .chapter-panel{padding:64px 18px}}
-/* Этап 0, п.4: без бесконечных анимаций при prefers-reduced-motion. */
-@media (prefers-reduced-motion:reduce){
- .grain{animation:none}
- .down i{animation:none;opacity:1}
-}
-</style>
+<link rel="stylesheet" href="_assets/home.css?v=20261117">
 </head>
 <body>
-<canvas id="cv" aria-hidden="true"></canvas>
-<div class="vig"></div><div class="grain"></div>
-
-
-
 <!-- header:start - шаблон _assets/_header-template.mjs, правки там, затем node _assets/_header-apply.mjs -->
 <header id="hdr" class="hdr">
   <div class="hdr-in">
@@ -255,192 +107,182 @@ html.story-static .chapter-panel{position:relative;inset:auto;z-index:5;opacity:
 </div>
 <!-- header:end -->
 
-<section id="hero">
-  <h1 class="h1"><span class="s">Понимать человека.</span> <span class="b">Через движение.</span></h1>
-  <a class="down" href="#ch2read">Как устроена компания <i></i></a>
-</section>
-
-<!-- Главы 2-3: текст глав, фиксированные панели поверх холста, видимость и камера ведутся
-     прогрессом скролла по невидимым распоркам ниже (scroll-story.js). -->
-<section class="chapter-panel" id="ch2panel">
-  <div class="chapter-text ch2-text">
-    <p class="bridge-line">Каждый шаг рассказывает о человеке.<br>Мы научились это читать.</p>
-    <p class="ch2-desc">Атлетикс Корп разрабатывает технологии для анализа осанки и движения. Специалисты объясняют результаты, помогают применять рекомендации и обучают коллег.</p>
-  </div>
-</section>
-<section class="chapter-panel" id="ch3panel">
-  <div class="chapter-text ch3-text">
-    <h2>Осанка только вход. Объект один: человек через движение.</h2>
-    <p>Мы работаем с движением человека. Наблюдаем, измеряем, понимаем, выбираем решение и смотрим на реакцию. Каждый следующий цикл точнее предыдущего.</p>
-  </div>
-</section>
-<section class="chapter-panel" id="ch4panel">
-  <div class="chapter-text ch3-text">
-    <h2>Движение одновременно рассказывает о человеке и меняет его состояние</h2>
-  </div>
-</section>
-<section class="chapter-panel" id="ch5panel">
-  <div class="chapter-text ch3-text">
-    <h2>Движение шире тренировки</h2>
-    <div class="chips" style="margin-top:16px">
-      <span>осанка</span><span>моторный контроль</span><span>походка</span><span>дыхание</span><span>сенсомоторика</span><span>мышечный тонус</span><span>повседневная активность</span><span>спортивная нагрузка</span><span>восстановление</span><span>двигательные привычки</span><span>движение во сне</span>
+<main class="home">
+  <section class="home-hero home-wrap" id="hero" aria-labelledby="home-title">
+    <div class="home-hero-copy">
+      <p class="home-kicker">Атлетикс Корп · HealthTech</p>
+      <h1 id="home-title">Технологии и продукты для понимания движения человека</h1>
+      <p class="home-lead">Разрабатываем технологии анализа осанки и движения, применяем их в работе с людьми и организациями, создаём новые продукты и обучаем специалистов.</p>
+      <div class="home-hero-actions">
+        <div class="home-actions">
+          <a class="home-button is-primary" href="partneram/">Обсудить партнёрство</a>
+          <a class="home-button" href="investoram/">Инвесторам</a>
+        </div>
+        <a class="home-link" href="produkty/">Посмотреть продукты и услуги <span aria-hidden="true">↗</span></a>
+      </div>
     </div>
-  </div>
-</section>
-<section class="chapter-panel" id="ch6panel">
-  <div class="chapter-text ch3-text">
-    <h2>Как мы работаем: петля, которая с каждым циклом точнее</h2>
-    <ol class="chain">
-      <li><b>наблюдать</b></li>
-      <li><b>измерять</b></li>
-      <li><b>понимать</b></li>
-      <li><b>объяснять</b></li>
-      <li><b>выбирать решение</b></li>
-      <li><b>воздействовать</b></li>
-      <li><b>измерять реакцию</b></li>
-      <li><b>уточнять модель</b></li>
-      <li><b>следующий цикл точнее</b></li>
-    </ol>
-    <div class="products">
-      <span data-status="ready">Анализ осанки и движения <i>работает</i></span>
-      <span data-status="ready">Работа со специалистами <i>работает</i></span>
-      <span data-status="ready">Мастер-класс для специалистов <i>работает</i></span>
-      <span data-status="dev">СТАТЬ <i>в разработке</i></span>
-      <span data-status="testing">SportTech <i>в тестировании</i></span>
+    <figure class="home-motion">
+      <div class="home-scene">
+        <img src="_assets/img/home-walk-poster.png" alt="" width="390" height="458" fetchpriority="high">
+        <canvas id="cv" aria-hidden="true"></canvas>
+      </div>
+      <figcaption>Понимать человека. Через движение.</figcaption>
+    </figure>
+  </section>
+
+  <section class="home-section" id="ch2read" aria-labelledby="home-company">
+    <div class="home-wrap">
+      <p class="home-kicker">01 / Компания</p>
+      <div class="home-intro">
+        <h2 id="home-company">Помогаем людям лучше понимать, как они двигаются</h2>
+        <p>В движении проходят обычные дела: дорога на работу, тренировка, прогулка. Мы хотим, чтобы люди дольше сохраняли самостоятельность и могли выбирать подходящую для себя нагрузку.</p>
+      </div>
+      <ol class="home-system">
+        <li><span>01</span><h3>Технологии</h3><p>Разрабатываем инструменты: например, программа помогает отмечать ориентиры на снимках и измерять углы.</p></li>
+        <li><span>02</span><h3>Методология</h3><p>Используем единые правила съёмки и измерений, чтобы можно было сопоставлять наблюдения.</p></li>
+        <li><span>03</span><h3>Практика</h3><p>Специалисты объясняют результаты и обсуждают, как применить их в жизни и тренировках.</p></li>
+      </ol>
+      <a class="home-link" href="kompaniya/">О компании <span aria-hidden="true">↗</span></a>
     </div>
-  </div>
-</section>
-<section class="chapter-panel" id="ch7panel">
-  <div class="chapter-text ch3-text">
-    <h2>Структурированная база наблюдений и повторных измерений</h2>
-    <div class="nums7">
-      <div><span id="ch7n1" class="ch7num" data-to="1000" data-suffix="+">1&nbsp;000+</span><i>стандартизированных анализов</i></div>
-      <div><span id="ch7n2" class="ch7num" data-to="300" data-suffix="+">300+</span><i>повторных измерений и тестирований</i></div>
-      <div><span id="ch7n3" class="ch7num" data-to="85" data-suffix="%" data-approx="1">≈85%</span><i>анализа алгоритмизировано</i></div>
+  </section>
+
+  <section class="home-section" id="today" aria-labelledby="home-today">
+    <div class="home-wrap">
+      <p class="home-kicker">02 / Действующие направления</p>
+      <h2 id="home-today">Что мы делаем сегодня</h2>
+      <div class="home-cards">
+        <article class="home-card">
+          <p class="home-kicker">Для себя</p>
+          <h3>Анализ осанки и движения</h3>
+          <p>Специалист измеряет положение тела, объясняет наблюдения и обсуждает, что делать дальше. Есть онлайн, очный и выездной форматы.</p>
+          <a class="home-link" href="analiz-osanki/">Форматы анализа <span aria-hidden="true">↗</span></a>
+        </article>
+        <article class="home-card">
+          <p class="home-kicker">Для себя</p>
+          <h3>Работа со специалистом</h3>
+          <p>Помогаем перенести рекомендации из анализа в упражнения и повседневные привычки.</p>
+          <a class="home-link" href="produkty/#p-spec">О работе со специалистом <span aria-hidden="true">↗</span></a>
+        </article>
+        <article class="home-card">
+          <p class="home-kicker">Для специалистов</p>
+          <h3>Практический мастер-класс</h3>
+          <p>Разбираем, как наблюдать за положением тела и движением и использовать эти наблюдения в работе с клиентами.</p>
+          <a class="home-link" href="specialistam/">О мастер-классе <span aria-hidden="true">↗</span></a>
+        </article>
+      </div>
+      <p class="home-side-route">Представляете студию или организацию? <a class="home-link" href="biznes/">Посмотреть решения для бизнеса <span aria-hidden="true">↗</span></a></p>
     </div>
-  </div>
-</section>
+  </section>
 
-<div id="hero-spacer" class="story-trigger" data-chapter="1" style="height:100vh"></div>
-<!-- #ch2read: цель ссылки "Как устроена компания" - середина диапазона главы 2, где её текст
-     уже виден полностью (было: начало распорки, где ещё виден заголовок первого экрана и
-     клик визуально ничего не менял). -->
-<div id="ch2start" class="story-trigger" data-chapter="2"><span id="ch2read" class="story-anchor"></span></div>
-<div class="story-trigger" data-chapter="3"></div>
-<div class="story-trigger" data-chapter="4" style="height:120vh"></div>
-<div class="story-trigger" data-chapter="5" style="height:160vh"></div>
-<div class="story-trigger" data-chapter="6" style="height:180vh"></div>
-<div class="story-trigger" data-chapter="7" style="height:140vh"></div>
-<!-- Буфер перед стартом старого статичного контента (баг 16.10: текст главы ещё не успевал
-     погаснуть, а следующий блок уже въезжал поверх и резал заголовок). Чистка 16.10 (пункт
-     D15): глава 7 теперь гаснет на 82% своего диапазона (fadeOutEnd в scroll-story.js), не
-     к самому концу — запас уже есть внутри главы, буфер сократили со 100vh до 30vh. -->
-<div class="story-buffer" style="height:30vh"></div>
-
-<div id="content">
-<style>
-  .block{ padding:var(--sp-9) 0; border-bottom:1px solid var(--line); }
-  .block:last-of-type{ border-bottom:none; }
-  .bridge{ min-height:70vh; display:flex; align-items:center; }
-  .bridge-line{ font-family:var(--font-display); font-weight:200; font-size:clamp(2.25rem,5.5vw,4.5rem); line-height:1.15; letter-spacing:-.01em; max-width:18ch; margin:0; }
-  .lead{ font-size:var(--fs-text-l); max-width:640px; }
-  .cards3{ display:grid; grid-template-columns:repeat(3,1fr); gap:var(--sp-4); }
-  .cards5{ display:grid; grid-template-columns:repeat(5,1fr); gap:var(--sp-4); }
-  @media (max-width:860px){ .cards3,.cards5{ grid-template-columns:1fr 1fr; } }
-  .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:var(--sp-4); }
-  /* Чистка 16.10, пункт C11: было 12px/--mute, почти нечитаемо на тёмном. 15px/14px на
-     телефоне, --soft; активный чип глав 5 теперь не латунной заливкой (латунь только
-     логотип и измерения), а --fg текстом с тонкой рамкой --fg. */
-  .chips span{ font-size:15px; border:1px solid var(--line); border-radius:999px; padding:5px 12px; color:var(--soft); transition:color .25s,border-color .25s,background .25s; }
-  @media (max-width:860px){ .chips span{ font-size:14px; } }
-  #ch5panel .chips span.active{ color:var(--fg); background:transparent; border-color:var(--fg); }
-  /* Пункт C13: цифры данных были ~14px без подписи - крупно (измерение, латунь уместна),
-     подпись снизу под каждой (источник: ШТАБ/11-фундамент/база-смыслов, раздел про данные).
-     Цифры на 16.10 отмечены в ШТАБ как неподтверждённые финально - см. отчёт 03-чистка.md. */
-  .nums7{ display:flex; flex-wrap:wrap; gap:36px; margin-top:20px; }
-  .nums7 div{ display:flex; flex-direction:column; gap:6px; }
-  .ch7num{ font-family:var(--display); font-weight:200; font-size:clamp(40px,5vw,72px); line-height:1; color:var(--brass); white-space:nowrap; }
-  .nums7 i{ font-style:normal; font-size:13px; color:var(--soft); line-height:1.35; max-width:180px; }
-  /* Пункт C12: было 9 шагов строкой с висячими стрелками на переносе - список с номерами
-     01-09 в две колонки, без стрелок. Активный шаг - цвет --fg (не латунь), номер вместе с ним. */
-  .chain{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px 28px; margin:var(--sp-4) 0 0; padding:0; list-style:none; counter-reset:step; max-width:560px; }
-  @media (max-width:560px){ .chain{ grid-template-columns:1fr; } }
-  .chain li{ display:flex; align-items:baseline; gap:8px; font-size:14px; counter-increment:step; }
-  .chain li::before{ content:counter(step,decimal-leading-zero); font-family:var(--mono); font-size:11px; color:var(--mute); flex:none; }
-  .chain li:has(b.active)::before{ color:var(--fg); }
-  .chain b{ font-weight:500; color:var(--soft); transition:color .25s; }
-  .chain b.active{ color:var(--fg); font-weight:600; }
-  /* Пункт C12: статус продукта теперь словом рядом с названием, не только непрозрачностью
-     (СТАТЬ при opacity:.55 почти не читалась). Активный - --fg рамка, не латунная заливка. */
-  .products{ display:flex; flex-wrap:wrap; gap:8px; margin-top:var(--sp-4); }
-  .products span{ font-size:14px; border:1px solid var(--line); border-radius:999px; padding:5px 12px; color:var(--soft); transition:color .25s,border-color .25s,background .25s; }
-  .products span i{ font-style:normal; font-size:11px; color:var(--mute); margin-left:6px; }
-  .products span[data-status="dev"] i,.products span[data-status="testing"] i{ color:var(--brass); }
-  .products span.active{ color:var(--fg); background:transparent; border-color:var(--fg); }
-  .big{ font-family:var(--font-display); font-weight:200; font-size:2.25rem; }
-  .ftr{ padding:var(--sp-7) 0; display:flex; gap:var(--sp-4); flex-wrap:wrap; justify-content:space-between; font-size:13px; color:var(--mute); }
-  .ftr-legal{ display:flex; gap:var(--sp-4); flex-wrap:wrap; }
-  .ftr-legal a{ color:var(--mute); text-decoration:underline; text-decoration-color:var(--line); text-underline-offset:.2em; }
-  .ftr-legal a:hover{ color:var(--soft); text-decoration-color:var(--soft); }
-  /* Пункт D16: карточки этих двух блоков были в каркасном стиле (рамка-бокс .ds-card из
-     общей дизайн-системы) - здесь убрана рамка/фон, заголовок блока - те же пропорции, что
-     у заголовков глав (clamp, вес 200). .ds-card в остальных местах сайта не трогали. */
-  .block-plain h2{ font-weight:200!important; font-size:clamp(1.75rem,3.6vw,3rem)!important; }
-  .card-plain{ border:none!important; background:none!important; padding:0!important; }
-  .card-plain h3{ color:var(--fg); }
-  .card-plain p{ color:var(--soft); }
-  /* Пункт E18: grid-колонки по умолчанию не сжимаются уже содержимого (min-content) - на
-     узком экране длинное слово в карточке раздвигало колонку шире вьюпорта, горизонтальный
-     скролл всей страницы. minmax(0,1fr) разрешает колонке сжиматься, текст переносится. */
-  .cards3,.cards5{ grid-template-columns:repeat(3,minmax(0,1fr)); }
-  .cards5{ grid-template-columns:repeat(5,minmax(0,1fr)); }
-  @media (max-width:860px){ .cards3,.cards5{ grid-template-columns:minmax(0,1fr) minmax(0,1fr); } }
-</style>
-
-<!-- Блок-мост, "Осанка только вход", "почему движение", "движение шире тренировки",
-     "петля"+"продукты" и "данные" теперь главы 2-7 (фиксированные панели + сцены выше),
-     ведутся скроллом. Правка 15-16.10: один холст, без разрыва на статичные блоки. -->
-
-<section class="block block-plain">
-  <div class="ds-wrap">
-    <h2 style="margin-bottom:var(--sp-5)">Наука отдельно, рынок отдельно, работают вместе</h2>
-    <div class="cards3" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
-      <div class="ds-card card-plain"><h3>Институт Физической Адаптации Человека</h3><p>наука → методология → стандарты → образование</p></div>
-      <div class="ds-card card-plain"><h3>Атлетикс Корп</h3><p>знание → технология → продукт → рынок → новые данные</p></div>
+  <section class="home-section" id="method" aria-labelledby="home-method">
+    <div class="home-wrap">
+      <p class="home-kicker">03 / Наш подход в действии</p>
+      <h2 id="home-method">Как измерения превращаются в понятные рекомендации</h2>
+      <div class="home-method">
+        <ol class="home-steps">
+          <li><h3>Делаем снимки по инструкции</h3><p>Одинаковые условия помогают сопоставлять снимки.</p></li>
+          <li><h3>Измеряем положение тела</h3><p>Отмечаем ориентиры и смотрим, как они расположены относительно друг друга.</p></li>
+          <li><h3>Объясняем, что увидели</h3><p>Специалист учитывает цели и привычки человека и обсуждает с ним следующие шаги.</p></li>
+          <li><h3>При необходимости оцениваем повторно</h3><p>Сопоставляем измерения, сделанные в одинаковых условиях.</p></li>
+        </ol>
+        <figure class="home-example">
+          <svg viewBox="0 0 340 194" role="img" aria-labelledby="home-example-title">
+            <title id="home-example-title">Условная схема сравнения высоты двух ориентиров плечевого пояса</title>
+            <path d="M37 110H305 M170 35V163" fill="none" stroke="#F2F0EB" stroke-opacity=".35" stroke-dasharray="4 6"/>
+            <path d="M68 128L272 94 M68 128V110 M272 94V110" fill="none" stroke="#DDA74F" stroke-width="1.5"/>
+            <circle cx="68" cy="128" r="5" fill="#DDA74F"/>
+            <circle cx="272" cy="94" r="5" fill="#DDA74F"/>
+            <text x="37" y="153" fill="#F2F0EB">Точка 01</text>
+            <text x="238" y="76" fill="#F2F0EB">Точка 02</text>
+          </svg>
+          <figcaption><span class="home-kicker">Схема измерения</span><p>Например, сравниваем высоту двух ориентиров плечевого пояса. На снимке видно положение тела в момент съёмки. Причины боли и то, как человек движется в жизни, по одному фото определить нельзя.</p></figcaption>
+        </figure>
+      </div>
+      <a class="home-link" href="podhod/">Подробнее о подходе <span aria-hidden="true">↗</span></a>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="block block-plain" style="border-bottom:none">
-  <div class="ds-wrap">
-    <h2 style="margin-bottom:var(--sp-5)">С чего начать именно вам</h2>
-    <div class="cards5">
-      <div class="ds-card card-plain"><h3 style="font-size:1.1rem">Для себя</h3><p style="font-size:13px;margin:6px 0 10px">Сначала понять своё состояние.</p><a class="ds-link" href="analiz-osanki/">Консультация</a></div>
-      <div class="ds-card card-plain"><h3 style="font-size:1.1rem">Для бизнеса</h3><p style="font-size:13px;margin:6px 0 10px">Для студий и команд.</p><a class="ds-link" href="biznes/">Обсудить пилот</a></div>
-      <div class="ds-card card-plain"><h3 style="font-size:1.1rem">Партнёрам</h3><p style="font-size:13px;margin:6px 0 10px">Дистрибуция, наука.</p><a class="ds-link" href="partneram/">Обсудить</a></div>
-      <div class="ds-card card-plain"><h3 style="font-size:1.1rem">Инвесторам</h3><p style="font-size:13px;margin:6px 0 10px">Продукты и данные.</p><a class="ds-link" href="investoram/">Инвесторам</a></div>
-      <div class="ds-card card-plain"><h3 style="font-size:1.1rem">Карьера</h3><p style="font-size:13px;margin:6px 0 10px">Задачи с рынка будущего.</p><a class="ds-link" href="karera/">Связаться с командой</a></div>
+  <section class="home-section" id="technology" aria-labelledby="home-tech">
+    <div class="home-wrap">
+      <p class="home-kicker">04 / Новые продукты</p>
+      <div class="home-intro">
+        <h2 id="home-tech">Что мы разрабатываем</h2>
+        <p>Опыт измерений и работы с людьми помогает нам понять, какие инструменты полезны в быту и в спорте.</p>
+      </div>
+      <div class="home-cards home-cards-two">
+        <article class="home-card home-tech">
+          <h3>СТАТЬ</h3>
+          <p class="home-status">На завершающей стадии разработки</p>
+          <p>Устройство для обратной связи о положении тела.</p>
+        </article>
+        <article class="home-card home-tech">
+          <h3>SportTech</h3>
+          <p class="home-status">В разработке</p>
+          <p>Направление технологий анализа движения для спорта.</p>
+        </article>
+      </div>
+      <p class="home-side-route"><a class="home-link" href="partneram/">Обсудить сотрудничество по разработкам <span aria-hidden="true">↗</span></a></p>
     </div>
-    <p style="margin-top:var(--sp-5)"><a class="ds-link" href="specialistam/">Специалистам: о мастер-классе</a></p>
-  </div>
-</section>
+  </section>
 
-<section class="block" style="border-bottom:none;padding-top:0">
-  <div class="ds-wrap">
-    <p class="lead">Мы хотим, чтобы человек как можно дольше оставался живым, функциональным и самостоятельным. Движение остаётся одним из главных инструментов для этого.</p>
-  </div>
-</section>
+  <section class="home-section" id="collaboration" aria-labelledby="home-collaboration">
+    <div class="home-wrap">
+      <p class="home-kicker">05 / Студии и организации</p>
+      <div class="home-intro">
+        <h2 id="home-collaboration">Как мы работаем со студиями и организациями</h2>
+        <div>
+          <p>Со студиями обсуждаем, как встроить анализ осанки и движения в работу с их клиентами. С организациями подбираем формат оценки под задачу команды.</p>
+          <a class="home-link" href="biznes/">Решения для бизнеса <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<footer class="ds-wrap ftr">
+  <section class="home-section" id="institute" aria-labelledby="home-institute">
+    <div class="home-wrap">
+      <p class="home-kicker">06 / Институт и команда</p>
+      <h2 id="home-institute">Кто стоит за методом и продуктами</h2>
+      <div class="home-cards home-cards-two">
+        <article class="home-card">
+          <h3>Институт физической адаптации человека</h3>
+          <p>Наш научно-методологический партнёр. Его направления: исследования, методология и образование.</p>
+        </article>
+        <article class="home-card">
+          <h3>Атлетикс Корп</h3>
+          <p>Разрабатываем технологии и продукты, применяем их в работе с людьми и организациями и обучаем специалистов.</p>
+          <a class="home-link" href="kompaniya/">О компании <span aria-hidden="true">↗</span></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section home-contact" id="contact" aria-labelledby="home-contact">
+    <div class="home-wrap">
+      <p class="home-kicker">07 / Контакты</p>
+      <div class="home-intro">
+        <h2 id="home-contact">Обсудим вашу задачу</h2>
+        <div>
+          <p>Если хотите обсудить совместную работу или пока не знаете, с чего начать, напишите нам и коротко расскажите о своей задаче.</p>
+          <a class="home-button is-primary" href="mailto:ac@athleticscorp.ru">ac@athleticscorp.ru</a>
+        </div>
+      </div>
+      <nav class="home-routes" aria-label="Направления сайта">
+        <a href="analiz-osanki/">Для себя <span aria-hidden="true">↗</span></a>
+        <a href="specialistam/">Специалистам <span aria-hidden="true">↗</span></a>
+        <a href="biznes/">Для бизнеса <span aria-hidden="true">↗</span></a>
+        <a href="partneram/">Партнёрам <span aria-hidden="true">↗</span></a>
+        <a href="investoram/">Инвесторам <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer class="home-wrap home-footer">
   <span>© 2026 Атлетикс Корп</span>
   <span>Анализ немедицинский, не заменяет консультацию врача</span>
   <span class="ftr-legal"><a href="privacy-policy/">Политика конфиденциальности</a><a href="personal-data-policy/">Согласие на обработку данных</a><a href="oferta/">Публичная оферта</a></span>
 </footer>
-</div>
 
-<!-- Three.js 0.186 (свежий, был r128) — ES-модуль, локально из npm, без сборщика.
-     importmap говорит браузеру, куда резолвить голый спецификатор "three" внутри
-     hero-scene.js и GLTFLoader.js (так эти файлы написаны самим Three.js). -->
 <script type="importmap">
 {
   "imports": {
@@ -448,19 +290,15 @@ html.story-static .chapter-panel{position:relative;inset:auto;z-index:5;opacity:
   }
 }
 </script>
-<script src="_assets/vendor/gsap.min.js"></script>
-<script src="_assets/vendor/ScrollTrigger.min.js"></script>
-<script src="_assets/vendor/SplitText.min.js"></script>
-<script src="_assets/vendor/lenis.min.js"></script>
 <script>
-// Человек меняется одной строкой: сейчас временный Xbot, когда будет готова новая модель —
-// поменять только MODEL_URL, остальной код сцены трогать не нужно.
 var MODEL_URL = "_assets/3d/xbot.glb";
 var LOGO_SRC = "_assets/3d/logo-white-mask.png";
 var LOGO_FILL_SRC = "_assets/img/logo-ac-negative.svg";
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  import('./_assets/3d/hero-scene.js?v=20261117').catch(function () {
+    document.documentElement.classList.add('no-webgl','story-static');
+  });
+}
 </script>
-<script src="_assets/3d/scroll-story.js"></script>
-<!-- onerror: модуль сцены или его импорт (Three.js) не загрузился -> статичная раскладка -->
-<script type="module" src="_assets/3d/hero-scene.js" onerror="document.documentElement.classList.add('no-webgl','story-static');document.dispatchEvent(new Event('story:static'))"></script>
 </body>
 </html>

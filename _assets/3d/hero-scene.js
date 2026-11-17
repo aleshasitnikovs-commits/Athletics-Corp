@@ -136,8 +136,9 @@ function rnd(i){var x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)}
 var D=Math.PI/180;
 
 /* ---------- сцена ---------- */
-var cv=document.getElementById('cv'),R;try{R=new THREE.WebGLRenderer({canvas:cv,antialias:false,alpha:true,powerPreference:'high-performance'});
+var cv=document.getElementById('cv'),embedded=cv.parentElement.classList.contains('home-scene'),R;try{R=new THREE.WebGLRenderer({canvas:cv,antialias:false,alpha:true,powerPreference:'high-performance'});
 }catch(err){fail(err);return}
+cv.addEventListener('webglcontextlost',function(){fail()});
 R.setPixelRatio(Math.min(mob?1.5:2,devicePixelRatio||1));R.setClearColor(0x0A0A08,1);
 var scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(32,1,.05,80);
 /* Правка 16.10 (чистка, пункт C8+C9): читаемость текста глав теперь не прямоугольной
@@ -401,9 +402,17 @@ var END=10,HERO0=8.0,REVEAL_T=7.6,SHORT_T=6.0,t0=0,last=0,dist=0,lastT=0;
 var LOGO_HOLD0=4.5,LOGO_HOLD=.5;
 function sceneT(Tr){return Tr<LOGO_HOLD0?Tr:Tr<LOGO_HOLD0+LOGO_HOLD?LOGO_HOLD0:Tr-LOGO_HOLD}
 var mx=0,my=0,tmx=0,tmy=0,mouseOn=0,MW=new THREE.Vector3(9,0,9);
-addEventListener('pointermove',function(e){tmx=e.clientX/innerWidth*2-1;tmy=-(e.clientY/innerHeight*2-1);mouseOn=1});
-function resize(){var w=innerWidth,h=innerHeight;R.setSize(w,h,false);cam.aspect=w/h;cam.fov=w<h?44:32;cam.updateProjectionMatrix()}
-resize();addEventListener('resize',function(){resize();if(reduce&&ready>=2)requestAnimationFrame(loop)});
+if(!embedded)addEventListener('pointermove',function(e){tmx=e.clientX/innerWidth*2-1;tmy=-(e.clientY/innerHeight*2-1);mouseOn=1});
+function resize(){
+ var w=embedded?cv.clientWidth:innerWidth,h=embedded?cv.clientHeight:innerHeight;
+ if(!w||!h)return;
+ R.setSize(w,h,false);cam.aspect=w/h;
+ cam.fov=embedded?(mob?24:32):(w<h?44:32);cam.updateProjectionMatrix()
+}
+function onResize(){resize();if(reduce)wake()}
+resize();
+if(embedded&&'ResizeObserver' in window)new ResizeObserver(onResize).observe(cv);
+else addEventListener('resize',onResize);
 var tmpV=new THREE.Vector3(),ray=new THREE.Raycaster(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
 function lerp3(o,a,b,w){o[0]=a[0]+(b[0]-a[0])*w;o[1]=a[1]+(b[1]-a[1])*w;o[2]=a[2]+(b[2]-a[2])*w;return o}
 var XF={ca:1,sa:0,x:0,z:0},YAW=-70*D;XF.ca=Math.cos(YAW);XF.sa=Math.sin(YAW);
@@ -468,11 +477,21 @@ var HP=makeHumanPoints({sm:sm,cl:cl,wave:wave,mob:mob,XW:XW,Z0:Z0,Z1:Z1,ZD:ZD,NH
    интро (камера на месте, поле не волнуется: tm заморожено), перерисовка только на resize. */
 /* п.5: во скрытой вкладке цикл останавливается (новый кадр не заказывается), по
    visibilitychange возобновляется - running не даёт запустить второй параллельный цикл. */
-var running=false;
+var running=false,onScreen=true;
+function wake(){
+ if(running||dead||!onScreen||document.hidden||ready<2)return;
+ last=performance.now();running=true;requestAnimationFrame(loop)
+}
 function loop(){
- if(dead){running=false;return}
- if(!reduce&&!document.hidden){running=true;requestAnimationFrame(loop)}else running=false;
+ if(dead||!onScreen||document.hidden){running=false;return}
  try{frame()}catch(e){fail(e)}
+ if(!dead&&!reduce)requestAnimationFrame(loop);else running=false
+}
+if(embedded&&'IntersectionObserver' in window){
+ new IntersectionObserver(function(entries){
+  onScreen=entries[0].isIntersecting;
+  if(onScreen)wake()
+ }).observe(cv)
 }
 function frame(){
  var now=performance.now(),Tr=INTRO.freeze!=null?INTRO.freeze:(now-t0)/1000,T=sceneT(Tr),dt=Math.min(.05,Math.max(0,(now-last)/1000));last=now;
@@ -650,7 +669,7 @@ function frame(){
  var c0=[0,3.6,7.6],t0v=[0,0,-1],
      cL=mob?[0,1.2,6.2]:[0,1.08,5.0],tL=mob?[0,1.3,0]:[0,1.22,0],
      cH=mob?[0,1.2,6.2]:[0,1.1,4.6],tH=[0,.95,0],
-     cE=mob?[0,1.05,5.9]:[0,1.1,6.1],tE=mob?[0,.2,0]:[0,1.0,0];
+     cE=mob?[0,1.05,5.9]:[0,1.1,6.1],tE=mob?[0,embedded ? .86 : .2,0]:[0,1.0,0];
  var a=sm(1.0,3.0,T),b=sm(4.6,6.3,T),cc=[0,0,0],tt=[0,0,0];
  lerp3(cc,c0,cL,a);lerp3(tt,t0v,tL,a);lerp3(cc,cc,cH,b);lerp3(tt,tt,tH,b);lerp3(cc,cc,cE,heroK);lerp3(tt,tt,tE,heroK);
  var drift=(1-heroK);cc[0]+=Math.sin(tm*.23)*.12*drift;cc[1]+=Math.sin(tm*.31)*.05*drift;
@@ -691,13 +710,20 @@ function frame(){
  cam.position.set(cc[0],cc[1],cc[2]);cam.lookAt(tt[0],tt[1],tt[2]);
  updateMask();
  R.render(scene,cam);
+ if(embedded&&!cv.classList.contains('is-ready'))cv.classList.add('is-ready');
 
  /* Шапка и заголовок здесь не ведутся: видны с первой отрисовки по CSS (этап 0, п.2), уход
     заголовка при скролле в главу 2 - scroll-story.js. */
 }
-var ready=0;function go(){if(++ready<2)return;t0=performance.now();INTRO.ready=true;last=t0;if(reduce)t0-=(END+LOGO_HOLD)*1000;else if(window.__introShort)t0-=(SHORT_T+LOGO_HOLD)*1000;requestAnimationFrame(loop)}
-document.addEventListener('visibilitychange',function(){
- if(document.hidden||running||dead||reduce||ready<2)return;
- last=performance.now();running=true;requestAnimationFrame(loop)});
-loadLogo(go);loadModel(go);loadFill();
+var ready=0;
+function go(){
+ if(++ready<2)return;
+ t0=performance.now();INTRO.ready=true;
+ if(embedded||reduce)t0-=(END+LOGO_HOLD)*1000;
+ else if(window.__introShort)t0-=(SHORT_T+LOGO_HOLD)*1000;
+ wake()
+}
+document.addEventListener('visibilitychange',wake);
+if(embedded)go();else{loadLogo(go);loadFill()}
+loadModel(go);
 }catch(e){fail(e)}})();
