@@ -69,7 +69,15 @@
 <link rel="stylesheet" href="_assets/header.css?v=20261112-5">
 <script src="_assets/header.js?v=20261112-5"></script>
 <script src="_assets/site.js"></script>
-<link rel="stylesheet" href="_assets/home.css?v=20261117">
+<link rel="stylesheet" href="_assets/home.css?v=20261117-2">
+<script>
+try {
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches && !sessionStorage.getItem('ac-home-intro')) {
+    document.documentElement.classList.add('home-intro-active');
+    setTimeout(function () { document.documentElement.classList.remove('home-intro-active'); }, 1800);
+  }
+} catch (_) {}
+</script>
 </head>
 <body>
 <!-- header:start - шаблон _assets/_header-template.mjs, правки там, затем node _assets/_header-apply.mjs -->
@@ -107,7 +115,13 @@
 </div>
 <!-- header:end -->
 
+<div class="home-prelude" aria-hidden="true">
+  <img src="_assets/img/logo-ac-light@3x.png" width="213" height="106" alt="">
+  <canvas width="460" height="250"></canvas>
+</div>
 <main class="home">
+ <div class="home-opening">
+  <div class="home-visuals" aria-hidden="true"><div class="home-stage"></div></div>
   <section class="home-hero home-wrap" id="hero" aria-labelledby="home-title">
     <div class="home-hero-copy">
       <p class="home-kicker">Атлетикс Корп · HealthTech</p>
@@ -130,40 +144,44 @@
     </figure>
   </section>
 
-  <section class="home-section" id="ch2read" aria-labelledby="home-company">
+  <section class="home-section home-company" id="ch2read" aria-labelledby="home-company">
     <div class="home-wrap">
-      <p class="home-kicker">01 / Компания</p>
+      <p class="home-kicker">Компания</p>
       <div class="home-intro">
         <h2 id="home-company">Помогаем людям лучше понимать, как они двигаются</h2>
         <p>В движении проходят обычные дела: дорога на работу, тренировка, прогулка. Мы хотим, чтобы люди дольше сохраняли самостоятельность и могли выбирать подходящую для себя нагрузку.</p>
       </div>
       <ol class="home-system">
-        <li><span>01</span><h3>Технологии</h3><p>Разрабатываем инструменты: например, программа помогает отмечать ориентиры на снимках и измерять углы.</p></li>
-        <li><span>02</span><h3>Методология</h3><p>Используем единые правила съёмки и измерений, чтобы можно было сопоставлять наблюдения.</p></li>
-        <li><span>03</span><h3>Практика</h3><p>Специалисты объясняют результаты и обсуждают, как применить их в жизни и тренировках.</p></li>
+        <li><h3>Технологии</h3><p>Разрабатываем инструменты: например, программа помогает отмечать ориентиры на снимках и измерять углы.</p></li>
+        <li><h3>Методология</h3><p>Используем единые правила съёмки и измерений, чтобы можно было сопоставлять наблюдения.</p></li>
+        <li><h3>Практика</h3><p>Специалисты объясняют результаты и обсуждают, как применить их в жизни и тренировках.</p></li>
       </ol>
       <a class="home-link" href="kompaniya/">О компании <span aria-hidden="true">↗</span></a>
     </div>
   </section>
+ </div>
 
   <section class="home-section" id="today" aria-labelledby="home-today">
     <div class="home-wrap">
-      <p class="home-kicker">02 / Действующие направления</p>
+      <p class="home-kicker">Услуги и обучение</p>
       <h2 id="home-today">Что мы делаем сегодня</h2>
       <div class="home-cards">
         <article class="home-card">
+          <div class="home-shot home-shot-spine" data-home-motion aria-hidden="true"><img src="_assets/img/spine-static.png" alt="" loading="lazy" decoding="async"></div>
           <p class="home-kicker">Для себя</p>
           <h3>Анализ осанки и движения</h3>
           <p>Специалист измеряет положение тела, объясняет наблюдения и обсуждает, что делать дальше. Есть онлайн, очный и выездной форматы.</p>
           <a class="home-link" href="analiz-osanki/">Форматы анализа <span aria-hidden="true">↗</span></a>
         </article>
         <article class="home-card">
+          <div class="home-shot home-shot-duo" data-home-motion aria-hidden="true"><img src="_assets/img/produkty-duo.png" alt="" loading="lazy" decoding="async"></div>
           <p class="home-kicker">Для себя</p>
           <h3>Работа со специалистом</h3>
           <p>Помогаем перенести рекомендации из анализа в упражнения и повседневные привычки.</p>
           <a class="home-link" href="produkty/#p-spec">О работе со специалистом <span aria-hidden="true">↗</span></a>
         </article>
         <article class="home-card">
+          <div class="home-shot home-shot-class" data-home-motion aria-hidden="true"><img src="_assets/img/produkty-class.png" alt="" loading="lazy" decoding="async"></div>
           <p class="home-kicker">Для специалистов</p>
           <h3>Практический мастер-класс</h3>
           <p>Разбираем, как наблюдать за положением тела и движением и использовать эти наблюдения в работе с клиентами.</p>
@@ -176,7 +194,7 @@
 
   <section class="home-section" id="method" aria-labelledby="home-method">
     <div class="home-wrap">
-      <p class="home-kicker">03 / Наш подход в действии</p>
+      <p class="home-kicker">Метод</p>
       <h2 id="home-method">Как измерения превращаются в понятные рекомендации</h2>
       <div class="home-method">
         <ol class="home-steps">
@@ -185,13 +203,13 @@
           <li><h3>Объясняем, что увидели</h3><p>Специалист учитывает цели и привычки человека и обсуждает с ним следующие шаги.</p></li>
           <li><h3>При необходимости оцениваем повторно</h3><p>Сопоставляем измерения, сделанные в одинаковых условиях.</p></li>
         </ol>
-        <figure class="home-example">
+        <figure class="home-example" data-home-motion>
           <svg viewBox="0 0 340 194" role="img" aria-labelledby="home-example-title">
             <title id="home-example-title">Условная схема сравнения высоты двух ориентиров плечевого пояса</title>
             <path d="M37 110H305 M170 35V163" fill="none" stroke="#F2F0EB" stroke-opacity=".35" stroke-dasharray="4 6"/>
-            <path d="M68 128L272 94 M68 128V110 M272 94V110" fill="none" stroke="#DDA74F" stroke-width="1.5"/>
-            <circle cx="68" cy="128" r="5" fill="#DDA74F"/>
-            <circle cx="272" cy="94" r="5" fill="#DDA74F"/>
+            <path class="home-measure-line" pathLength="1" d="M68 128L272 94 M68 128V110 M272 94V110" fill="none" stroke="#DDA74F" stroke-width="1.5"/>
+            <circle class="home-measure-point" cx="68" cy="128" r="5" fill="#DDA74F"/>
+            <circle class="home-measure-point" cx="272" cy="94" r="5" fill="#DDA74F"/>
             <text x="37" y="153" fill="#F2F0EB">Точка 01</text>
             <text x="238" y="76" fill="#F2F0EB">Точка 02</text>
           </svg>
@@ -204,18 +222,20 @@
 
   <section class="home-section" id="technology" aria-labelledby="home-tech">
     <div class="home-wrap">
-      <p class="home-kicker">04 / Новые продукты</p>
+      <p class="home-kicker">Новые продукты</p>
       <div class="home-intro">
         <h2 id="home-tech">Что мы разрабатываем</h2>
         <p>Опыт измерений и работы с людьми помогает нам понять, какие инструменты полезны в быту и в спорте.</p>
       </div>
       <div class="home-cards home-cards-two">
         <article class="home-card home-tech">
+          <div class="home-tech-visual home-tech-stat" data-home-motion aria-hidden="true"></div>
           <h3>СТАТЬ</h3>
           <p class="home-status">На завершающей стадии разработки</p>
           <p>Устройство для обратной связи о положении тела.</p>
         </article>
         <article class="home-card home-tech">
+          <div class="home-tech-visual home-tech-sport" data-home-motion aria-hidden="true"><span></span><span></span><span></span></div>
           <h3>SportTech</h3>
           <p class="home-status">В разработке</p>
           <p>Направление технологий анализа движения для спорта.</p>
@@ -227,7 +247,7 @@
 
   <section class="home-section" id="collaboration" aria-labelledby="home-collaboration">
     <div class="home-wrap">
-      <p class="home-kicker">05 / Студии и организации</p>
+      <p class="home-kicker">Студии и организации</p>
       <div class="home-intro">
         <h2 id="home-collaboration">Как мы работаем со студиями и организациями</h2>
         <div>
@@ -235,19 +255,26 @@
           <a class="home-link" href="biznes/">Решения для бизнеса <span aria-hidden="true">↗</span></a>
         </div>
       </div>
+      <div class="home-handoff" data-home-motion>
+        <span>Студия работает с клиентом</span>
+        <i aria-hidden="true"></i>
+        <span>Атлетикс Корп помогает с анализом</span>
+      </div>
     </div>
   </section>
 
   <section class="home-section" id="institute" aria-labelledby="home-institute">
     <div class="home-wrap">
-      <p class="home-kicker">06 / Институт и команда</p>
+      <p class="home-kicker">Институт и команда</p>
       <h2 id="home-institute">Кто стоит за методом и продуктами</h2>
       <div class="home-cards home-cards-two">
         <article class="home-card">
+          <div class="home-institute-mark" data-home-motion aria-hidden="true">ИФАЧ</div>
           <h3>Институт физической адаптации человека</h3>
           <p>Наш научно-методологический партнёр. Его направления: исследования, методология и образование.</p>
         </article>
         <article class="home-card">
+          <div class="home-institute-mark" data-home-motion aria-hidden="true"><img src="_assets/img/logo-ac-light@3x.png" width="213" height="106" loading="lazy" alt=""></div>
           <h3>Атлетикс Корп</h3>
           <p>Разрабатываем технологии и продукты, применяем их в работе с людьми и организациями и обучаем специалистов.</p>
           <a class="home-link" href="kompaniya/">О компании <span aria-hidden="true">↗</span></a>
@@ -257,8 +284,9 @@
   </section>
 
   <section class="home-section home-contact" id="contact" aria-labelledby="home-contact">
+    <div class="home-contact-mark" aria-hidden="true" data-home-motion></div>
     <div class="home-wrap">
-      <p class="home-kicker">07 / Контакты</p>
+      <p class="home-kicker">Контакты</p>
       <div class="home-intro">
         <h2 id="home-contact">Обсудим вашу задачу</h2>
         <div>
@@ -290,15 +318,6 @@
   }
 }
 </script>
-<script>
-var MODEL_URL = "_assets/3d/xbot.glb";
-var LOGO_SRC = "_assets/3d/logo-white-mask.png";
-var LOGO_FILL_SRC = "_assets/img/logo-ac-negative.svg";
-if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  import('./_assets/3d/hero-scene.js?v=20261117').catch(function () {
-    document.documentElement.classList.add('no-webgl','story-static');
-  });
-}
-</script>
+<script type="module" src="_assets/home-motion.js?v=20261117-2"></script>
 </body>
 </html>

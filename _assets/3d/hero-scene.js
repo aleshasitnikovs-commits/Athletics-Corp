@@ -403,11 +403,16 @@ var LOGO_HOLD0=4.5,LOGO_HOLD=.5;
 function sceneT(Tr){return Tr<LOGO_HOLD0?Tr:Tr<LOGO_HOLD0+LOGO_HOLD?LOGO_HOLD0:Tr-LOGO_HOLD}
 var mx=0,my=0,tmx=0,tmy=0,mouseOn=0,MW=new THREE.Vector3(9,0,9);
 if(!embedded)addEventListener('pointermove',function(e){tmx=e.clientX/innerWidth*2-1;tmy=-(e.clientY/innerHeight*2-1);mouseOn=1});
+var panoramic=false, observation=0;
 function resize(){
  var w=embedded?cv.clientWidth:innerWidth,h=embedded?cv.clientHeight:innerHeight;
  if(!w||!h)return;
  R.setSize(w,h,false);cam.aspect=w/h;
- cam.fov=embedded?(mob?24:32):(w<h?44:32);cam.updateProjectionMatrix()
+ panoramic=embedded&&!!cv.closest('.home-stage');
+ if(embedded)cam.fov=panoramic?28:24;
+ else cam.fov=w<h?44:32;
+ if(panoramic)cam.setViewOffset(w,h,-Math.round(w*.26),0,w,h);
+ else cam.clearViewOffset();
 }
 function onResize(){resize();if(reduce)wake()}
 resize();
@@ -489,9 +494,9 @@ function loop(){
 }
 if(embedded&&'IntersectionObserver' in window){
  new IntersectionObserver(function(entries){
-  onScreen=entries[0].isIntersecting;
+  onScreen=entries[0].intersectionRatio>=.001;
   if(onScreen)wake()
- }).observe(cv)
+ },{threshold:.001}).observe(cv)
 }
 function frame(){
  var now=performance.now(),Tr=INTRO.freeze!=null?INTRO.freeze:(now-t0)/1000,T=sceneT(Tr),dt=Math.min(.05,Math.max(0,(now-last)/1000));last=now;
@@ -509,6 +514,10 @@ function frame(){
  if(!reduce&&window.CH){ch2=(window.CH.ch2||0)*heroK;ch3=(window.CH.ch3||0)*heroK;ch4=(window.CH.ch4||0)*heroK;
   ch5=(window.CH.ch5||0)*heroK;ch6=(window.CH.ch6||0)*heroK;ch7=(window.CH.ch7||0)*heroK}
 
+ if(panoramic){
+  observation+=(ch3-observation)*(1-Math.exp(-7*dt));
+  ch3=observation
+ }
  /* глава 3: "точки на мгновение застывают в чёткий силуэт-снимок, потом оттаивают" —
     окно внутри главы 3, где поза перестаёт обновляться (mixer не тикает), плюс яркость/
     размер точек человека на это время приподняты (freezeK, применяется ниже по точкам). */
@@ -669,7 +678,7 @@ function frame(){
  var c0=[0,3.6,7.6],t0v=[0,0,-1],
      cL=mob?[0,1.2,6.2]:[0,1.08,5.0],tL=mob?[0,1.3,0]:[0,1.22,0],
      cH=mob?[0,1.2,6.2]:[0,1.1,4.6],tH=[0,.95,0],
-     cE=mob?[0,1.05,5.9]:[0,1.1,6.1],tE=mob?[0,embedded ? .86 : .2,0]:[0,1.0,0];
+     cE=mob?[0,1.05,5.9]:[0,1.1,6.1],tE=embedded?[0,.93,0]:(mob?[0,.2,0]:[0,1.0,0]);
  var a=sm(1.0,3.0,T),b=sm(4.6,6.3,T),cc=[0,0,0],tt=[0,0,0];
  lerp3(cc,c0,cL,a);lerp3(tt,t0v,tL,a);lerp3(cc,cc,cH,b);lerp3(tt,tt,tH,b);lerp3(cc,cc,cE,heroK);lerp3(tt,tt,tE,heroK);
  var drift=(1-heroK);cc[0]+=Math.sin(tm*.23)*.12*drift;cc[1]+=Math.sin(tm*.31)*.05*drift;

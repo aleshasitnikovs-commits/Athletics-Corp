@@ -36,8 +36,7 @@ body { margin: 0; background: var(--c-black); color: var(--c-bone); }
 html:not(.no-webgl) .home-scene canvas.is-ready { opacity: 1; }
 .home-system { list-style: none; margin: clamp(24px, 5vw, 66px) 0 16px; padding: 0; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: clamp(16px,3vw,44px); }
 .home-system li { border-top: 1px solid var(--rule); padding-top: 16px; }
-.home-system span { color: var(--quiet); font: 400 .75rem var(--font-mono); }
-.home-system h3 { margin-block: 12px 8px; }
+.home-system h3 { margin-bottom: 8px; }
 .home-system p, .home-card p, .home-steps p, .home-example p { color: var(--quiet); }
 .home-cards { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; margin-top: clamp(24px,4vw,48px); }
 .home-cards-two { grid-template-columns: repeat(2,minmax(0,1fr)); }
@@ -88,4 +87,204 @@ html:not(.no-webgl) .home-scene canvas.is-ready { opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
   .home-scene canvas { visibility: hidden; }
+}
+
+
+/* Прелюдия работает поверх уже доступной страницы и не ждёт загрузки WebGL. */
+.home-prelude {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: var(--c-black);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .38s ease, visibility .38s;
+}
+.home-intro-active .home-prelude { opacity: 1; visibility: visible; }
+.home-prelude img, .home-prelude canvas { grid-area: 1 / 1; }
+.home-prelude img { width: clamp(72px, 10vw, 112px); height: auto; opacity: .7; }
+.home-prelude canvas { width: min(100%, 490px); height: auto; }
+.home-prelude.has-particles img { opacity: 0; }
+
+/* Общий ракурс первого экрана и компании. Прокрутка секций остаётся нативной. */
+.home-opening { position: relative; isolation: isolate; }
+.home-visuals { position: absolute; z-index: -1; inset: 0; pointer-events: none; }
+.home-stage { position: sticky; top: 0; height: 100svh; }
+.home-opening.home-panoramic .home-stage .home-scene {
+  position: absolute;
+  inset: 0;
+  height: auto;
+}
+.home-panoramic .home-stage .home-scene::after {
+  background:
+    linear-gradient(90deg, var(--c-black) 0%, rgba(10,10,8,.89) 28%, rgba(10,10,8,.24) 59%, transparent 81%),
+    linear-gradient(0deg, var(--c-black), transparent 22%, transparent 90%, rgba(10,10,8,.2));
+}
+.home-panoramic .home-stage img { width: 47%; inset: 0 0 0 auto; mask-image: radial-gradient(ellipse 65% 51%, #000 62%, transparent 100%); }
+.home-panoramic .home-hero {
+  min-height: 100svh;
+  grid-template-columns: minmax(0, 1.72fr) minmax(0, 1fr);
+  align-items: center;
+}
+.home-panoramic .home-hero h1 {
+  font-size: clamp(2.5rem, 4.48vw, 5.25rem);
+  line-height: 1.09;
+  text-wrap: balance;
+}
+.home-panoramic .home-motion {
+  justify-content: flex-end;
+  padding-bottom: clamp(0px, 2vh, 18px);
+}
+.home-panoramic .home-company {
+  display: flex;
+  align-items: flex-end;
+  min-height: clamp(620px, 92svh, 950px);
+  background: linear-gradient(0deg, var(--c-black) 2%, rgba(10,10,8,.97) 27%, rgba(10,10,8,.83) 39%, rgba(10,10,8,.17) 78%, transparent);
+  border-top: 0;
+}
+.home-panoramic .home-company .home-intro {
+  display: block;
+  max-width: 60%;
+}
+.home-company .home-intro h2 { max-width: 20ch; }
+.home-panoramic .home-company .home-intro p { margin-top: 22px; }
+
+/* Для услуг используем кадры из собственных сцен сайта. */
+.home #today .home-cards { gap: clamp(12px, 2.7vw, 42px); }
+.home #today .home-card {
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  padding: 0 0 clamp(19px, 2.6vw, 36px);
+}
+.home-shot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1.42;
+  overflow: hidden;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--rule);
+  background: radial-gradient(ellipse at 50% 97%, rgba(242,240,235,.06), transparent 73%);
+}
+.home-shot img { position: absolute; inset: 0; margin: auto; width: 82%; height: 87%; object-fit: contain; }
+.home-shot-spine img { width: 37%; height: 80%; transform: rotate(-8deg); }
+.home-shot-class img { width: 94%; }
+.home-shot.has-entered img { animation: home-shot-enter .9s cubic-bezier(.19,.64,.27,1) both; }
+.home-shot-spine.has-entered img { animation-name: home-spine-enter; }
+@keyframes home-shot-enter {
+  from { opacity: .42; transform: translateY(12px) scale(.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes home-spine-enter {
+  from { opacity: .42; transform: translateY(12px) rotate(-15deg); }
+  to { opacity: 1; transform: rotate(-8deg); }
+}
+
+/* Разметка замера появляется после входа схемы в кадр. */
+.home #method { background: radial-gradient(ellipse at 76% 45%, rgba(242,240,235,.045), transparent 55%); }
+.home-example svg {
+  max-height: none;
+  min-height: clamp(180px, 22vw, 315px);
+  background: radial-gradient(ellipse, rgba(242,240,235,.045), transparent 72%);
+}
+.home-example.has-entered .home-measure-line {
+  animation: home-trace .85s .14s ease-out both;
+  stroke-dasharray: 1;
+}
+.home-example.has-entered .home-measure-point { animation: home-point .65s ease-out both; }
+@keyframes home-trace { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes home-point { from { opacity: .18; } to { opacity: 1; } }
+
+/* Собственная айдентика проектов и отдельный ритм у блока партнёров. */
+.home #technology .home-cards, .home #institute .home-cards { gap: clamp(20px, 4vw, 58px); }
+.home-tech, .home #institute .home-card { border: 0; border-block: 1px solid var(--rule); padding-inline: 0; }
+.home-tech-visual {
+  position: relative;
+  width: 100%;
+  height: clamp(110px, 15vw, 225px);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.home-tech-stat::before {
+  content: "";
+  width: min(76%, 420px);
+  height: 100%;
+  background: var(--c-bone);
+  mask: url(img/stat-logo.svg) center / contain no-repeat;
+}
+.home-tech-stat.has-entered::before { animation: home-mark-in 1s ease-out both; }
+.home-tech-sport span {
+  grid-area: 1 / 1;
+  width: min(75%, 410px);
+  aspect-ratio: 4.5;
+  border: 1px dotted rgba(242,240,235,.56);
+  border-radius: 50%;
+  rotate: -13deg;
+}
+.home-tech-sport span:nth-child(2) { width: 56%; rotate: -18deg; }
+.home-tech-sport span:nth-child(3) { width: 40%; rotate: -23deg; }
+.home-tech-sport.has-entered span { animation: home-orbit 1s cubic-bezier(.22,.64,.27,1) both; }
+.home-tech-sport.has-entered span:nth-child(2) { animation-delay: .13s; }
+.home-tech-sport.has-entered span:nth-child(3) { animation-delay: .26s; }
+@keyframes home-orbit { from { opacity: .18; transform: scale(.72) rotate(-7deg); } to { opacity: 1; transform: none; } }
+@keyframes home-mark-in { from { opacity: .42; transform: scale(.96); } to { opacity: 1; transform: none; } }
+.home-handoff {
+  display: grid;
+  grid-template-columns: auto minmax(32px, 1fr) auto;
+  align-items: center;
+  gap: clamp(12px, 3vw, 50px);
+  margin-top: clamp(36px, 7vw, 98px);
+  padding-block: clamp(18px, 3vw, 40px);
+  border-block: 1px solid var(--rule);
+  font-size: clamp(.9rem, 1.8vw, 1.45rem);
+}
+.home-handoff i { position: relative; height: 1px; background: var(--rule); }
+.home-handoff i::before { content: ""; position: absolute; inset: 0; background: var(--quiet); }
+.home-handoff.has-entered i::before { animation: home-connect .9s ease-out both; transform-origin: left; }
+@keyframes home-connect { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.home-institute-mark {
+  height: clamp(66px, 9vw, 120px);
+  display: flex;
+  align-items: center;
+  color: var(--c-bone);
+  font: 250 clamp(2rem, 6vw, 5.5rem)/1 var(--font-display);
+  letter-spacing: -.04em;
+}
+.home-institute-mark img { width: clamp(76px, 10vw, 148px); height: auto; }
+.home-institute-mark.has-entered { animation: home-mark-in 1s ease-out both; transform-origin: left center; }
+
+/* Финальный знак растворён в фоне и не перекрывает текст. */
+.home-contact { position: relative; isolation: isolate; overflow: clip; min-height: min(620px, 80svh); display: grid; align-items: center; }
+.home-contact .home-intro h2 { font-size: clamp(2.2rem, 5.6vw, 5.5rem); }
+.home-contact-mark {
+  position: absolute;
+  z-index: -1;
+  inset: 12% -10% 6% 42%;
+  background: radial-gradient(circle, rgba(242,240,235,.22) 0 1px, transparent 1.3px) 0 0 / 6px 6px;
+  mask: url(img/logo-ac-solid.svg) center / contain no-repeat;
+  opacity: .46;
+}
+.home-contact-mark.has-entered { animation: home-contact-in 1.2s ease-out both; }
+@keyframes home-contact-in { from { opacity: .12; transform: translateX(10px) scale(.98); } to { opacity: .46; transform: none; } }
+
+@media (max-width: 860px) {
+  .home-motion .home-scene { margin-inline: calc(-1 * clamp(20px, 5vw, 76px)); }
+  .home-shot { max-height: 310px; aspect-ratio: 1.65; }
+  .home #today .home-cards { gap: 36px; }
+  .home-contact { min-height: auto; }
+}
+@media (max-width: 620px) {
+  .home #technology .home-cards, .home #institute .home-cards { gap: 24px; }
+  .home-handoff { grid-template-columns: minmax(0, 1fr) minmax(20px, .3fr) minmax(0, 1fr); }
+  .home-contact-mark { inset: 12% -38% 8% 30%; opacity: .3; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-prelude { display: none; }
+  .home [data-home-motion], .home [data-home-motion] *, .home [data-home-motion]::before, .home [data-home-motion] *::before { animation: none !important; }
 }
