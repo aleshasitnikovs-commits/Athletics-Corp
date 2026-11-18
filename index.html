@@ -69,7 +69,7 @@
 <link rel="stylesheet" href="_assets/header.css?v=20261112-5">
 <script src="_assets/header.js?v=20261112-5"></script>
 <script src="_assets/site.js"></script>
-<link rel="stylesheet" href="_assets/home.css?v=20261118-2">
+<link rel="stylesheet" href="_assets/home.css?v=20261118-3">
 <script>
 (function () {
   const root = document.documentElement;
@@ -287,9 +287,14 @@
     <div class="home-wrap">
       <p class="home-kicker">Институт и команда</p>
       <h2 id="home-institute">Кто стоит за методом и продуктами</h2>
+      <svg width="0" height="0" aria-hidden="true" class="home-logo-filters">
+        <filter id="ifach-paper-to-alpha" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+          <feColorMatrix type="matrix" values="0 0 0 0 .949  0 0 0 0 .941  0 0 0 0 .922  -.4252 -1.4304 -.1444 0 1.78"/>
+        </filter>
+      </svg>
       <div class="home-cards home-cards-two">
         <article class="home-card">
-          <div class="home-institute-mark" data-home-motion aria-hidden="true">ИФАЧ</div>
+          <div class="home-institute-mark" data-home-motion aria-hidden="true"><img class="home-ifach-logo" src="_assets/img/logo-ifach-original.jpg" width="1024" height="1024" loading="lazy" alt=""></div>
           <h3>Институт физической адаптации человека</h3>
           <p>Наш научно-методологический партнёр. Его направления: исследования, методология и образование.</p>
         </article>

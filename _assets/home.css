@@ -261,6 +261,12 @@ html:not(.no-webgl) .home-scene canvas.is-ready { opacity: 1; }
   letter-spacing: -.04em;
 }
 .home-institute-mark img { width: clamp(76px, 10vw, 148px); height: auto; }
+.home-logo-filters { position: absolute; pointer-events: none; }
+.home-institute-mark .home-ifach-logo {
+  width: clamp(108px, 13vw, 188px);
+  transform: translateX(-20%);
+  filter: url(#ifach-paper-to-alpha);
+}
 .home-institute-mark.has-entered { animation: home-mark-in 1s ease-out both; transform-origin: left center; }
 
 /* Финальный знак растворён в фоне и не перекрывает текст. */
