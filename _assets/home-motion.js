@@ -1,3 +1,5 @@
+import {prepareSectionWaves} from './home-waves.js?v=20261118-2';
+
 const root = document.documentElement;
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const desktop = matchMedia('(min-width: 861px)');
@@ -48,6 +50,7 @@ function prepareObservation() {
 arrangeScene();
 desktop.addEventListener('change', arrangeScene);
 if (!reduceMotion.matches) {
+  prepareSectionWaves(reduceMotion);
   prepareSectionMotion();
   prepareObservation();
   import('./3d/hero-scene.js?v=20261118').catch(() => {

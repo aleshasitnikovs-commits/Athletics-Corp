@@ -292,3 +292,46 @@ html:not(.no-webgl) .home-scene canvas.is-ready { opacity: 1; }
   .home-hero-copy > *, .home-motion figcaption, .home-scene::after { transition: none; }
   .home [data-home-motion], .home [data-home-motion] *, .home [data-home-motion]::before, .home [data-home-motion] *::before { animation: none !important; }
 }
+
+
+/* Волна рисуется за началом блока, а текст и ссылки остаются в обычном потоке. */
+.home-wave-entering > .home-wrap {
+  --wave-gutter: clamp(20px, 5vw, 76px);
+  position: relative;
+  isolation: isolate;
+}
+.home-wave {
+  position: absolute;
+  z-index: -1;
+  inset: -36px auto auto calc(-1 * var(--wave-gutter));
+  width: calc(100% + 2 * var(--wave-gutter));
+  height: clamp(126px, 17vw, 220px);
+  pointer-events: none;
+}
+.home-wave-entering > .home-wrap > :is(.home-kicker, h2, .home-intro) {
+  animation: home-wave-title .77s cubic-bezier(.23,.68,.26,1) both;
+}
+.home-wave-entering > .home-wrap > :is(.home-system, .home-cards, .home-method, .home-handoff, .home-routes) {
+  animation: home-wave-content .8s .10s cubic-bezier(.23,.68,.26,1) both;
+}
+@keyframes home-wave-title {
+  from { opacity: .57; transform: translateY(13px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes home-wave-content {
+  from { opacity: .72; transform: translateY(9px); }
+  to { opacity: 1; transform: none; }
+}
+.home-wave-entering > .home-wrap:focus-within > :not(.home-wave) { animation: none; }
+
+@media (max-width: 620px) {
+  .home-wave { top: -20px; }
+  @keyframes home-wave-title {
+    from { opacity: .66; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-wave { display: none; }
+  .home-wave-entering > .home-wrap > :not(.home-wave) { animation: none; }
+}
