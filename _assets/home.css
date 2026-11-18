@@ -175,17 +175,49 @@ html:not(.no-webgl) .home-scene canvas.is-ready { opacity: 1; }
   background: radial-gradient(ellipse at 50% 97%, rgba(242,240,235,.06), transparent 73%);
 }
 .home-shot img { position: absolute; inset: 0; margin: auto; width: 82%; height: 87%; object-fit: contain; }
-.home-shot-spine img { width: 37%; height: 80%; transform: rotate(-8deg); }
 .home-shot-class img { width: 94%; }
-.home-shot.has-entered img { animation: home-shot-enter .9s cubic-bezier(.19,.64,.27,1) both; }
-.home-shot-spine.has-entered img { animation-name: home-spine-enter; }
+.home-shot.has-entered img, .home-shot-session.has-entered span {
+  animation: home-shot-enter .9s cubic-bezier(.19,.64,.27,1) both;
+}
+.home-shot-session span {
+  font: 230 clamp(1.9rem, 4vw, 3.8rem)/1.12 var(--font-display);
+  letter-spacing: -.06em;
+}
 @keyframes home-shot-enter {
   from { opacity: .42; transform: translateY(12px) scale(.97); }
   to { opacity: 1; transform: none; }
 }
-@keyframes home-spine-enter {
-  from { opacity: .42; transform: translateY(12px) rotate(-15deg); }
-  to { opacity: 1; transform: rotate(-8deg); }
+.home-service-list {
+  display: grid;
+  gap: 14px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+.home-service-list li + li { padding-top: 14px; border-top: 1px solid var(--rule); }
+.home-service-list h4 {
+  margin: 0 0 6px;
+  font: 570 1.04rem/1.35 var(--font-text);
+}
+.home-service-list .home-link { margin-top: 6px; }
+.home-service-list [id] { scroll-margin-top: 95px; }
+
+@media (min-width: 861px) {
+  .home #today .home-cards {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+  .home-service-group:first-child { grid-row: span 2; }
+  .home-service-group:first-child .home-shot { max-height: 250px; }
+  .home #today .home-service-group:not(:first-child) {
+    display: grid;
+    grid-template-columns: minmax(0, .42fr) minmax(0, .58fr);
+    gap: 16px;
+  }
+  .home-service-group:not(:first-child) h3 { grid-column: 1 / -1; }
+  .home-service-group:not(:first-child) .home-shot { margin: 0; border: 0; }
+  .home-shot-session span { font-size: clamp(1rem, 2.4vw, 2.25rem); }
 }
 
 /* Разметка замера появляется после входа схемы в кадр. */
