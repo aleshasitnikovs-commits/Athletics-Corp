@@ -90,24 +90,28 @@ html:not(.no-webgl) .home-scene canvas.is-ready { opacity: 1; }
 }
 
 
-/* Прелюдия работает поверх уже доступной страницы и не ждёт загрузки WebGL. */
-.home-prelude {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: grid;
-  place-items: center;
-  background: var(--c-black);
-  pointer-events: none;
+/* Исходная 3D-сцена открывается на весь экран. Текст остаётся в обычном потоке. */
+#hdr, .home-hero-copy > *, .home-motion figcaption, #acBar {
+  transition: opacity .8s ease, transform .35s var(--ease);
+}
+.home-intro-active :is(#hdr, #acBar, .home-hero-copy > *, .home-motion figcaption) {
   opacity: 0;
   visibility: hidden;
-  transition: opacity .38s ease, visibility .38s;
 }
-.home-intro-active .home-prelude { opacity: 1; visibility: visible; }
-.home-prelude img, .home-prelude canvas { grid-area: 1 / 1; }
-.home-prelude img { width: clamp(72px, 10vw, 112px); height: auto; opacity: .7; }
-.home-prelude canvas { width: min(100%, 490px); height: auto; }
-.home-prelude.has-particles img { opacity: 0; }
+.home-intro-skip :is(#hdr, #acBar, .home-hero-copy > *, .home-motion figcaption) { transition: none; }
+.home-intro-active .home-scene img { visibility: hidden; }
+.home-intro-active .home-scene::after { opacity: 0; }
+.home-scene::after { transition: opacity .8s ease; }
+
+@media (max-width: 860px) {
+  .home-intro-active .home-motion .home-scene { overflow: visible; isolation: auto; }
+  .home-intro-active .home-motion canvas {
+    position: fixed;
+    width: 100%;
+    height: 100svh;
+    z-index: 2;
+  }
+}
 
 /* Общий ракурс первого экрана и компании. Прокрутка секций остаётся нативной. */
 .home-opening { position: relative; isolation: isolate; }
@@ -285,6 +289,6 @@ html:not(.no-webgl) .home-scene canvas.is-ready { opacity: 1; }
   .home-contact-mark { inset: 12% -38% 8% 30%; opacity: .3; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .home-prelude { display: none; }
+  .home-hero-copy > *, .home-motion figcaption, .home-scene::after { transition: none; }
   .home [data-home-motion], .home [data-home-motion] *, .home [data-home-motion]::before, .home [data-home-motion] *::before { animation: none !important; }
 }

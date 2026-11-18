@@ -69,14 +69,38 @@
 <link rel="stylesheet" href="_assets/header.css?v=20261112-5">
 <script src="_assets/header.js?v=20261112-5"></script>
 <script src="_assets/site.js"></script>
-<link rel="stylesheet" href="_assets/home.css?v=20261117-2">
+<link rel="stylesheet" href="_assets/home.css?v=20261118">
 <script>
-try {
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches && !sessionStorage.getItem('ac-home-intro')) {
-    document.documentElement.classList.add('home-intro-active');
-    setTimeout(function () { document.documentElement.classList.remove('home-intro-active'); }, 1800);
-  }
-} catch (_) {}
+(function () {
+  const root = document.documentElement;
+  const events = ['pointerdown', 'touchstart', 'wheel', 'keydown', 'scroll'];
+  let startupTimeout;
+  function skip() { window.__reveal(true); }
+  window.__reveal = function (immediate) {
+    if (!root.classList.contains('home-intro-active')) return;
+    clearTimeout(startupTimeout);
+    for (const event of events) removeEventListener(event, skip, true);
+    if (immediate) {
+      root.classList.add('home-intro-skip');
+      requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('home-intro-skip')));
+    }
+    root.classList.remove('home-intro-active');
+  };
+
+  if (location.hash || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  try {
+    if (sessionStorage.getItem('ac-home-intro')) return;
+    const context = document.createElement('canvas').getContext('webgl2');
+    if (!context) return;
+    context.getExtension('WEBGL_lose_context')?.loseContext();
+    sessionStorage.setItem('ac-home-intro', '1');
+  } catch (_) { return; }
+  root.classList.add('home-intro-active');
+  for (const event of events) addEventListener(event, skip, {capture: true, passive: true});
+  startupTimeout = setTimeout(function () {
+    if (!document.getElementById('cv')?.classList.contains('is-ready')) skip();
+  }, 3000);
+})();
 </script>
 </head>
 <body>
@@ -115,10 +139,6 @@ try {
 </div>
 <!-- header:end -->
 
-<div class="home-prelude" aria-hidden="true">
-  <img src="_assets/img/logo-ac-light@3x.png" width="213" height="106" alt="">
-  <canvas width="460" height="250"></canvas>
-</div>
 <main class="home">
  <div class="home-opening">
   <div class="home-visuals" aria-hidden="true"><div class="home-stage"></div></div>
@@ -318,6 +338,6 @@ try {
   }
 }
 </script>
-<script type="module" src="_assets/home-motion.js?v=20261117-2"></script>
+<script type="module" src="_assets/home-motion.js?v=20261118"></script>
 </body>
 </html>

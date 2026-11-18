@@ -271,7 +271,7 @@ function loadFill(){var img=new Image();img.onload=function(){try{
    ' float e=(1.-smoothstep(v-.05,v+.05,t))*(1.-.45*smoothstep(0.,.5,dis)*g);',
    ' gl_FragColor=vec4(col,m*k*e);}'].join('\n')}));
  m.position.set(0,LCY,0);m.renderOrder=8;m.frustumCulled=false;m.visible=false;scene.add(m);FILL={mesh:m,u:U};
- }catch(e){console.warn('сплошной логотип выключен',e)}};img.src=LOGO_FILL_SRC}
+ }catch(e){console.warn('сплошной логотип выключен',e)} };img.src=embedded?new URL('../img/logo-ac-negative.svg',import.meta.url).href:LOGO_FILL_SRC}
 /* плавные кривые: smootherstep по отрезку (ease-in-out, нулевые 1-я и 2-я производные на концах) */
 function ease(a,b,x){var t=cl((x-a)/(b-a));return t*t*t*(t*(t*6-15)+10)}
 /* после переходов точек логотипа: рост и уплотнение при сборке, гашение под заливкой, возврат при распаде.
@@ -364,7 +364,7 @@ function loadLogo(done){var img=new Image();img.onerror=function(){fail(new Erro
  for(var k=0;k<NH;k++){var p=Math.floor(rnd(k*13.37+.5)*nf),px=F[p*2]+rnd(k*2.2),py=F[p*2+1]+rnd(k*4.4);
   LP[k*3]=(px/600-.5)*LW;LP[k*3+1]=LCY+(144.5-py)/600*LW;LP[k*3+2]=(rnd(k*6.6)-.5)*.03}
  for(var r=0;r<RL;r++)for(var j=0;j<RP;j++){var q=r*RP+j,e=(j===0||j===RP-1);RAIL.P[q*3]=(r/(RL-1)-.5)*LW*1.18;RAIL.P[q*3+1]=LCY-LH*.7+j/(RP-1)*LH*1.4;RAIL.P[q*3+2]=-.08;RAIL.B[q]=e?1:.5;RAIL.S[q]=e?2.4:1.15}
- done()}catch(e){fail(e)}};img.src=LOGO_SRC}
+ done()}catch(e){fail(e)}};img.src=embedded?new URL('./logo-white-mask.png',import.meta.url).href:LOGO_SRC}
 
 /* ---------- глава 5: 11 фигур полукругом ---------- */
 /* Было "фигуры вдали" на первом экране (убраны правкой 15.10) — переиспользую тот же пул
@@ -404,15 +404,27 @@ function sceneT(Tr){return Tr<LOGO_HOLD0?Tr:Tr<LOGO_HOLD0+LOGO_HOLD?LOGO_HOLD0:T
 var mx=0,my=0,tmx=0,tmy=0,mouseOn=0,MW=new THREE.Vector3(9,0,9);
 if(!embedded)addEventListener('pointermove',function(e){tmx=e.clientX/innerWidth*2-1;tmy=-(e.clientY/innerHeight*2-1);mouseOn=1});
 var panoramic=false, observation=0;
+var width=0, height=0, fullscreenIntro=false, startedHomeIntro=false, cameraBlend=1;
+function homeIntroActive(){
+ return embedded&&document.documentElement.classList.contains('home-intro-active')
+}
+function setProjection(){
+ var originalFov=width<height?44:32;
+ var heroFov=panoramic?28:24;
+ cam.fov=embedded?originalFov+(heroFov-originalFov)*cameraBlend:originalFov;
+ cam.aspect=width/height;
+ if(panoramic)cam.setViewOffset(width,height,-width*.26*cameraBlend,0,width,height);
+ else cam.clearViewOffset()
+}
 function resize(){
- var w=embedded?cv.clientWidth:innerWidth,h=embedded?cv.clientHeight:innerHeight;
- if(!w||!h)return;
- R.setSize(w,h,false);cam.aspect=w/h;
+ width=embedded?cv.clientWidth:innerWidth;
+ height=embedded?cv.clientHeight:innerHeight;
+ if(!width||!height)return;
+ R.setSize(width,height,false);
+ fullscreenIntro=homeIntroActive();
  panoramic=embedded&&!!cv.closest('.home-stage');
- if(embedded)cam.fov=panoramic?28:24;
- else cam.fov=w<h?44:32;
- if(panoramic)cam.setViewOffset(w,h,-Math.round(w*.26),0,w,h);
- else cam.clearViewOffset();
+ if(!panoramic||!startedHomeIntro)cameraBlend=fullscreenIntro?0:1;
+ setProjection()
 }
 function onResize(){resize();if(reduce)wake()}
 resize();
@@ -500,12 +512,22 @@ if(embedded&&'IntersectionObserver' in window){
 }
 function frame(){
  var now=performance.now(),Tr=INTRO.freeze!=null?INTRO.freeze:(now-t0)/1000,T=sceneT(Tr),dt=Math.min(.05,Math.max(0,(now-last)/1000));last=now;
+ if(startedHomeIntro&&T<REVEAL_T&&!homeIntroActive()){
+  Tr=END+LOGO_HOLD;
+  t0=now-Tr*1000;
+  T=END
+ }
  if(T<lastT-.5){RIP.length=0;dist=0}lastT=T;
  var tm=reduce?12:now/1000;
  mx+=(tmx-mx)*.05;my+=(tmy-my)*.05;
  var heroK=sm(HERO0,HERO0+1.6,T);
  /* шапка и заголовок: проявляются, когда логотип ушёл в человека (человек собран к 7.4) */
  if(T>=REVEAL_T&&window.__reveal)window.__reveal(false);
+ if(embedded&&fullscreenIntro!==homeIntroActive())resize();
+ if(panoramic&&startedHomeIntro){
+  var nextBlend=sm(REVEAL_T,END,T);
+  if(nextBlend!==cameraBlend){cameraBlend=nextBlend;setProjection()}
+ }
 
  /* главы 2-7: прогресс скролла, умноженный на heroK - так главы не могут "обогнать"
     интро, даже если прокрутить очень быстро сразу после загрузки. При reduce-motion
@@ -728,11 +750,12 @@ var ready=0;
 function go(){
  if(++ready<2)return;
  t0=performance.now();INTRO.ready=true;
- if(embedded||reduce)t0-=(END+LOGO_HOLD)*1000;
+ startedHomeIntro=homeIntroActive();
+ if(reduce||(embedded&&!startedHomeIntro))t0-=(END+LOGO_HOLD)*1000;
  else if(window.__introShort)t0-=(SHORT_T+LOGO_HOLD)*1000;
  wake()
 }
 document.addEventListener('visibilitychange',wake);
-if(embedded)go();else{loadLogo(go);loadFill()}
+if(embedded&&!homeIntroActive())go();else{loadLogo(go);loadFill()}
 loadModel(go);
 }catch(e){fail(e)}})();
