@@ -49,6 +49,7 @@
     }
     addEventListener("scroll", scheduleTheme, { passive: true });
     addEventListener("resize", scheduleTheme);
+    addEventListener("catalog:layout", scheduleTheme);
     addEventListener("pageshow", scheduleTheme);
     if (viewport) {
       viewport.addEventListener("resize", scheduleTheme);

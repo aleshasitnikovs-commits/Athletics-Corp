@@ -111,14 +111,15 @@ export async function init(cfg) {
   occGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(nV * 3), 3));
   occGeo.setAttribute('vid', new THREE.BufferAttribute(vidx, 1));
   occGeo.setIndex(geo.index);
+  const crop = { value: cfg.portrait ? new THREE.Vector2(1.245, .145) : new THREE.Vector2(-1000, 1) };
   const occMat = new THREE.ShaderMaterial({
     glslVersion: THREE.GLSL3,
-    uniforms: { tPos: { value: skinRT.textures[0] }, uColor: { value: new THREE.Vector3(BG.r, BG.g, BG.b) }, uOpacity: { value: 1 } },
-    vertexShader: `precision highp float; precision highp sampler2D; uniform sampler2D tPos; in float vid;
+    uniforms: { tPos: { value: skinRT.textures[0] }, uColor: { value: new THREE.Vector3(BG.r, BG.g, BG.b) }, uOpacity: { value: 1 }, uCrop: crop },
+    vertexShader: `precision highp float; precision highp sampler2D; uniform sampler2D tPos; in float vid; out float modelHeight;
       void main(){ int k = int(vid); vec3 p = texelFetch(tPos, ivec2(k % ${TW}, k / ${TW}), 0).xyz;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0); }`,
-    fragmentShader: `uniform vec3 uColor; uniform float uOpacity; layout(location = 0) out vec4 outColor;
-      void main(){ outColor = vec4(uColor, uOpacity); }`,
+        modelHeight = p.y; gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0); }`,
+    fragmentShader: `uniform vec3 uColor; uniform float uOpacity; uniform vec2 uCrop; in float modelHeight; layout(location = 0) out vec4 outColor;
+      void main(){ float f = smoothstep(uCrop.x, uCrop.x + uCrop.y, modelHeight); if (f < 0.01) discard; outColor = vec4(uColor, uOpacity * f); }`,
     transparent: true, depthTest: true, depthWrite: true,
     polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 2,
   });
@@ -152,7 +153,7 @@ export async function init(cfg) {
       uDpr: { value: renderer.getPixelRatio() }, uRefDist: { value: cfg.refDist || 6.1 }, uBand: { value: 0.25 }, uBand0: { value: 0 },
       uKey: { value: keyDir }, uFill: { value: 0.2 }, uKeyGain: { value: 1 }, uExposure: { value: 1 },
       uJitter: { value: new THREE.Vector3() }, uAlbedo: { value: new THREE.Vector3(0.888, 0.871, 0.831) },
-      uAlpha: { value: 1 }, uTm: { value: 0 }, uDrift: { value: 0 }, uBoost: { value: 0 }, uSizeK: { value: 1 },
+      uAlpha: { value: 1 }, uTm: { value: 0 }, uDrift: { value: 0 }, uBoost: { value: 0 }, uSizeK: { value: 1 }, uRipple: { value: 0 }, uCrop: crop,
       // маска читаемости текста глав - те же uniform-объекты, что у поля сцены (cfg.mask), если переданы
       maskRect: cfg.mask ? cfg.mask.maskRect : { value: new THREE.Vector4(-1, -1, -1, -1) },
       maskOn: cfg.mask ? cfg.mask.maskOn : { value: 0 },
@@ -160,7 +161,7 @@ export async function init(cfg) {
     vertexShader: `precision highp float; precision highp int; precision highp sampler2D;
       uniform sampler2D tPos, tNrm;
       uniform float uBase, uDpr, uRefDist, uBand, uBand0, uFill, uKeyGain, uExposure, uAlpha, uTm, uDrift, uBoost, uSizeK;
-      uniform vec2 uSize, uClamp; uniform vec3 uKey, uAlbedo, uJitter;
+      uniform vec2 uSize, uClamp, uCrop; uniform float uRipple; uniform vec3 uKey, uAlbedo, uJitter;
       in vec2 aBary; out vec3 vColor; out float vA;
       vec3 fp(float i){ int k = int(i); return texelFetch(tPos, ivec2(k % ${TW}, k / ${TW}), 0).xyz; }
       vec3 fn(float i){ int k = int(i); return texelFetch(tNrm, ivec2(k % ${TW}, k / ${TW}), 0).xyz; }
@@ -170,6 +171,12 @@ export async function init(cfg) {
         vec3 p = w0 * fp(position.x) + aBary.x * fp(position.y) + aBary.y * fp(position.z);
         vec3 n = w0 * fn(position.x) + aBary.x * fn(position.y) + aBary.y * fn(position.z);
         float id = float(gl_VertexID);
+        float fade = smoothstep(uCrop.x, uCrop.x + uCrop.y, p.y);
+        float ripple = 0.0;
+        if (uRipple > 0.0) {
+          ripple = 0.5 + 0.5 * sin(p.y * 55.0 + p.x * 12.0 - uTm * 3.3);
+          p += normalize(n) * ripple * uRipple * mix(.013, .005, fade);
+        }
         vec4 wp = modelMatrix * vec4(p, 1.0);
         // глава 4, фаза A: точки поднимаются и расходятся в поле (как было у точек человека на CPU)
         if (uDrift > 0.0) {
@@ -195,7 +202,7 @@ export async function init(cfg) {
         vec3 warm = mix(vec3(1.0), vec3(1.0, 0.86, 0.68), uJitter.z);
         vColor = uAlbedo * mix(warm, vec3(1.0), smoothstep(0.0, 0.7, L)) * L;
         // смена с точек интро: точки проявляются вразнобой по номеру, без общего «наплыва»
-        vA = smoothstep(0.0, 0.25, uAlpha * 1.25 - hash(id + 23.0) * 1.0);
+        vA = fade * (1.0 - uRipple * 0.33 * ripple) * smoothstep(0.0, 0.25, uAlpha * 1.25 - hash(id + 23.0));
       }`,
     fragmentShader: `precision highp float; in vec3 vColor; in float vA; layout(location = 0) out vec4 outColor;
       uniform vec4 maskRect; uniform float maskOn;
@@ -240,6 +247,7 @@ export async function init(cfg) {
       if (s.drift !== undefined) u.uDrift.value = s.drift;
       if (s.boost !== undefined) u.uBoost.value = s.boost;
       if (s.sizeK !== undefined) u.uSizeK.value = s.sizeK;
+      if (s.ripple !== undefined) u.uRipple.value = s.ripple;
     },
     /** Качество: имя пресета и/или число точек (тыс.). */
     setQuality(q) {

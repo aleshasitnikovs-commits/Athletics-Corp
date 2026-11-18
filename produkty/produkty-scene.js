@@ -1,17 +1,12 @@
-// Страница «Продукты»: один WebGL-рендерер и четыре области .stage[data-obj].
-// На компьютере холст общий, на телефоне кадр копируется в холст своего блока:
-//   spine - позвоночник из точек (createSpinePoints из spine-page.js, как на странице анализа);
-//   duo   - две фигуры из точек (human-points.js, поза idle), правая чуть повёрнута к левой;
-//   masterclass - ведущий у доски и пять слушателей, позы из Blender;
-//   stat  - 3D-логотип СТАТЬ: SVG (_assets/img/stat-logo.svg) -> SVGLoader -> ExtrudeGeometry, матовый.
-// Рисуются только объекты, чья область на экране; нет ни одного - холст очищается и не рисуется.
-// В скрытой вкладке requestAnimationFrame не идёт. Lenis (produkty-page.js) крутится в этом же кадре.
-// Тема СТАТЬ (<html data-theme="stat">): логотип белый -> графитовый, фон тела фигур и затухание
-// позвоночника - цвет фона страницы; переход 0,6 с, как у CSS-переменных (при reduced motion сразу).
+// Общий WebGL-рендерер каталога. Сцена загружается при выборе направления.
+// В витрине и на мобильном кадр живёт внутри блока и прокручивается вместе с ним.
+// На широком экране подробности используют общий холст. Модели вне экрана не обновляются.
 import * as THREE from 'three';
 import { SVGLoader } from '../_assets/vendor/three/loaders/SVGLoader.js';
 import { createSpinePoints } from '../_assets/3d/spine-page.js';
-import { init as initHuman } from '../_assets/3d/human-points.js?v=20261112-2';
+import { init as initHuman, loadHumanAssets } from '../_assets/3d/human-points.js?v=20261118-catalog';
+import { clone as cloneSkeleton } from '../_assets/vendor/three/utils/SkeletonUtils.js';
+import { featureScenes } from './catalog-choreography.js?v=20261118-3';
 import { createMasterclassPoints } from '../_assets/3d/masterclass-points.js?v=20261116-visuals';
 import { NOTEBOOK_PAGES, PENCIL_TIP, palmFrame, constrainWriting } from '../_assets/3d/coach-writing.js?v=20261112-6';
 
@@ -129,12 +124,34 @@ function init() {
   }
 
   // -------------------------------------------------------------- фигуры
+  const humanAssets = new Map();
+  let runClip;
+  async function loadCharacter(opt) {
+    const model = ['coach_notes', 'chest_open'].includes(opt.clip) ? 'products-specialists' : 'human';
+    if (!humanAssets.has(model)) {
+      humanAssets.set(model, loadHumanAssets('../_assets/3d/' + model + '.glb', '../_assets/3d/human-samples.bin'));
+    }
+    const [gltf, samples] = await humanAssets.get(model);
+    const animations = gltf.animations.slice();
+    if (opt.clip === 'catalog_run') {
+      runClip ??= fetch('../_assets/3d/catalog-run.json?v=ual1').then(async response => {
+        if (!response.ok) throw new Error('catalog-run: HTTP ' + response.status);
+        const { times, rotations, hips } = await response.json();
+        const tracks = Object.entries(rotations).map(([name, values]) =>
+          new THREE.QuaternionKeyframeTrack(name + '.quaternion', times, values));
+        tracks.push(new THREE.VectorKeyframeTrack('mixamorigHips.position', times, hips));
+        return new THREE.AnimationClip('catalog_run', -1, tracks);
+      });
+      animations.push(await runClip);
+    }
+    return [{ ...gltf, scene: cloneSkeleton(gltf.scene), animations }, samples];
+  }
   // Фигура высотой 1 (S = 1 / рост), стопы на y = 0; x, z, yaw - в росте фигуры.
   async function human(parent, opt) {
     const inst = await initHuman({
-      renderer, scene: parent, mobile, preset: 'зерно-8k', n: opt.n, refDist: 5,
-      modelUrl: opt.clip ? '../_assets/3d/products-specialists.glb' : '../_assets/3d/human.glb',
-      samplesUrl: '../_assets/3d/human-samples.bin',
+      renderer, scene: parent, mobile, preset: 'зерно-8k',
+      n: opt.n ?? (mobile ? 4.2 : 5.3), refDist: opt.portrait ? 5.1 : 4.65,
+      portrait: opt.portrait, assets: loadCharacter(opt),
     });
     inst.actions.idle.time = opt.t0 || 0;
     inst.mixer.update(0); inst.model.updateMatrixWorld(true);
@@ -149,7 +166,7 @@ function init() {
       (window.__clips = window.__clips || {})[opt.clip] = a;           // для автотестов
       inst.mixer.update(0); inst.model.updateMatrixWorld(true);
       inst.mesh.boundingBox = null;
-      foot = new THREE.Box3().setFromObject(inst.mesh).min.y;
+      if (opt.clip !== 'catalog_run') foot = new THREE.Box3().setFromObject(inst.mesh).min.y;
     }
     const [p0, ...more] = opt.at;
     inst.setTransform(S, foot, p0[0], p0[1], Math.cos(p0[2]), Math.sin(p0[2]));
@@ -165,15 +182,29 @@ function init() {
       for (const [o, src] of [[pts, inst.points], [occ, inst.occ]]) { o.frustumCulled = false; o.matrixAutoUpdate = false; o.renderOrder = src.renderOrder; parent.add(o); }
       return { pl, pts, occ };
     });
-    let on = true;
+    if (!opt.clip) {
+      inst.actions.idle.play();
+      inst.actions.idle.time = opt.t0 || 0;
+    }
+    inst.setProgress({ sizeK: opt.portrait ? .98 : .92 });
+    const bones = new Map(inst.mesh.skeleton.bones.map(b => [b.name.replace(/^mixamorig:?/, ''), b]));
+    const look = new THREE.Euler(0, 0, 0, 'YXZ');
+    const orient = new THREE.Quaternion();
+    let aimX = 0, aimY = 0, on = true;
     return {
       inst,
+      aim(x, y) { aimX = x; aimY = y; },
+      bone(name, out) { return bones.get(name).getWorldPosition(out).applyMatrix4(placement); },
       dpr() { inst.setQuality({ n: inst.n }); for (const pr of props) pr.dpr(); },
       frame(dt, vis) {
         if (!vis) { if (on) { inst.pause(); for (const c of copies) c.pts.visible = c.occ.visible = false; for (const pr of props) pr.pts.visible = false; on = false; } return; }
         if (!on) { inst.resume(); on = true; }
         writing?.restore();
-        if (!reduce) inst.mixer.update(dt);
+        if (!reduce) inst.mixer.update(dt * (opt.speed || 1));
+        if (opt.portrait) {
+          bones.get('Neck').quaternion.multiply(orient.setFromEuler(look.set(aimY * .32, aimX * .28, 0)));
+          bones.get('Head').quaternion.multiply(orient.setFromEuler(look.set(aimY * .68, aimX * .72, -aimX * .08)));
+        }
         inst.model.updateMatrixWorld(true);
         writing?.apply(inst.actions.coach_notes.time);
         inst.update();
@@ -277,12 +308,15 @@ function init() {
     };
   }
   // группа фигур: g - в центре области, inner - стопы на полу, наклон камеры сверху
-  async function addFigures(k, figs, fit, tiltX) {
+  async function addFigures(k, figs, fit, tiltX, decorate, centerY = .5, draggable = true) {
     const el = stage(k); if (!el) return;
     const g = new THREE.Group(), inner = new THREE.Group(); g.visible = false; g.add(inner); scene.add(g);
     inner.rotation.x = tiltX;
-    const hs = await Promise.all(figs.map((f) => human(inner, f)));
-    const s = spin(el);
+    const hs = await Promise.all(figs.map(f => human(inner, f)));
+    const motion = decorate?.(inner, hs, el);
+    const after = typeof motion === 'function' ? motion : motion?.after;
+    const s = draggable ? spin(el) : { rot: 0, tilt: 0, drag: false };
+    let t = 0;
     objs.push({
       k, el, g,
       quality() { for (const h of hs) h.dpr(); },
@@ -290,8 +324,11 @@ function init() {
         if (!reduce && !s.drag) { s.rot *= Math.pow(0.1, dt); s.vx = 0; }  // повёрнутые рукой фигуры возвращаются
         inner.rotation.y = s.rot; inner.rotation.x = tiltX + s.tilt * 0.5;
         if (!s.drag) s.tilt += (0 - s.tilt) * Math.min(1, dt * 2.5);
-        const sc = fit(a); g.scale.setScalar(sc); inner.position.y = -0.5;
+        g.scale.setScalar(fit(a)); inner.position.y = -centerY;
+        t += dt;
+        motion?.before?.(t, dt);
         for (const h of hs) h.frame(dt, a.vis);
+        after?.(t);
       },
       hide() { for (const h of hs) h.frame(0, false); },
     });
@@ -302,9 +339,16 @@ function init() {
   // ручкой; клиент справа, на три четверти лицом к тренеру, упражнение chest_open. Руки клиента в
   // раскрытии (полуразмах ~0,45 роста) до тренера не доходят: зазор ~0,5 роста.
   const addDuo = () => addFigures('duo', [
-    { n: 8, t0: 0.0, clip: 'coach_notes', props: ['notebook', 'pen'], at: [[-0.50, -0.18, 50 * D]] },
-    { n: 8, t0: 0.0, clip: 'chest_open', at: [[0.48, 0.05, -40 * D]] },
+    { clip: 'coach_notes', props: ['notebook', 'pen'], at: [[-0.50, -0.18, 50 * D]] },
+    { clip: 'chest_open', at: [[0.48, 0.05, -40 * D]] },
   ], (a) => Math.min(a.h * 0.72, a.w / 2.0), 0.02);
+  function addFeature(k) {
+    const feature = featureScenes[k];
+    return addFigures(k, feature.figures,
+      a => Math.min(a.h * .86 / (feature.height || 1), a.w * .90 / feature.width),
+      feature.tilt || .035, feature.decorate, feature.centerY, k !== 'ai');
+  }
+
   async function addClass() {
     // Новый ключ не даёт старому скрипту рисовать фигуры поверх статичного кадра.
     const el = stage('masterclass'); if (!el) return;
@@ -326,7 +370,6 @@ function init() {
         workshop.frame(reduce ? 0 : dt, bg);
       },
     });
-    if (!local) el.classList.remove('fallback');
   }
 
   // -------------------------------------------------------------- 3D-логотип СТАТЬ
@@ -375,7 +418,7 @@ function init() {
   }
 
   function resize() {
-    local = stageSurfaces.matches;
+    local = stageSurfaces.matches || !!document.querySelector('.catalog-exhibit-stage .stage');
     root.classList.toggle('products-local', local);
     const rect = canvas.getBoundingClientRect();
     W = rect.width || innerWidth; H = rect.height || innerHeight;
@@ -401,6 +444,7 @@ function init() {
     if (local) for (const o of objs) sizeOutput(o, dpr);
     for (const o of objs) if (o.quality) o.quality(dpr);
     dirty = true;
+    loadVisibleStages();
   }
 
   function drawInStage(o, a, dt, k) {
@@ -444,7 +488,11 @@ function init() {
       if (!local) o.g.visible = o.inView;
       if (o.inView) {
         if (local) any = drawInStage(o, a, dt, k) || any;
-        else { any = true; o.frame(dt, a, k); }
+        else {
+          any = true;
+          o.frame(dt, a, k);
+          o.el.classList.remove('fallback');
+        }
       } else if (o.hide) o.hide();
     }
     if (any) {
@@ -456,16 +504,25 @@ function init() {
     }
   }
   addEventListener('resize', resize);
+  addEventListener('catalog:layout', resize);
   stageSurfaces.addEventListener('change', resize);
   const invalidate = () => { dirty = true; };
   window.visualViewport?.addEventListener('resize', invalidate);
   window.visualViewport?.addEventListener('scroll', invalidate);
-  resize();
-  requestAnimationFrame(frame);
-
-  const jobs = { spine: addSpine(), duo: addDuo(), masterclass: addClass(), stat: addStat() };
-  for (const [k, p] of Object.entries(jobs)) p.then(() => { resize(); }, fallback(k));
-  Promise.allSettled(Object.values(jobs)).then(() => { api.ready = true; });
+  const factories = { spine: addSpine, duo: addDuo, masterclass: addClass, stat: addStat };
+  const requested = new Set();
+  function loadVisibleStages() {
+    for (const el of document.querySelectorAll('.stage[data-obj]')) {
+      const id = el.dataset.obj;
+      if (requested.has(id) || !el.getClientRects().length) continue;
+      requested.add(id);
+      const load = factories[id] || (() => addFeature(id));
+      load().then(() => {
+        api.ready = true;
+        resize();
+      }, fallback(id));
+    }
+  }
 
   // для автотестов
   const api = window.__scene = {
@@ -473,4 +530,6 @@ function init() {
     drawn: () => drawn, blank: () => blank, theme: () => tk,
     fps() { if (frames.length < 2) return 0; return 1000 * (frames.length - 1) / (frames[frames.length - 1] - frames[0]); },
   };
+  resize();
+  requestAnimationFrame(frame);
 }
