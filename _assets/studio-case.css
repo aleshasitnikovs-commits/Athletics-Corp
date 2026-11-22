@@ -1,0 +1,27 @@
+.studio-case {
+  display: grid;
+  gap: 4px;
+  max-width: 54ch;
+  padding: 12px clamp(12px, 2.2vw, 20px) 14px;
+  margin-block: 0 14px;
+  border: 1px solid var(--line);
+  border-inline-start: 2px solid var(--fg);
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+  color: var(--soft);
+  font: 400 .94rem/1.45 var(--font-text);
+}
+.studio-case-label {
+  font: 450 .72rem/1.4 var(--font-mono);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.studio-case-name {
+  color: var(--fg);
+  font: 550 clamp(1.15rem, 2vw, 1.5rem)/1.28 var(--font-text);
+}
+.studio-case-name a {
+  text-decoration: underline;
+  text-decoration-color: var(--soft);
+  text-underline-offset: .18em;
+}
+.landing-intro .studio-case { margin-block: var(--sp-5) 0; }

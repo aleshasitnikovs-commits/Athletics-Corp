@@ -17,6 +17,7 @@ const picker = exhibit.querySelector('select');
 const canvas = artwork.querySelector('canvas');
 const paint = canvas.getContext('2d');
 const caption = exhibit.querySelector('.catalog-exhibit-summary');
+const caseSlot = exhibit.querySelector('.catalog-exhibit-case');
 const more = caption.querySelector('.catalog-link');
 const gameLaunch = caption.querySelector('[data-dank-game]');
 const detailGameLaunch = document.querySelector('#p-dank-hub [data-dank-game]');
@@ -120,6 +121,9 @@ function selectProduct(item) {
   caption.querySelector('.catalog-stage').textContent = item.status;
   caption.querySelector('h2').textContent = item.title;
   caption.querySelector('.catalog-card-copy').textContent = item.copy;
+  const studioCase = detailById.get(item.id)?.querySelector('.studio-case');
+  caseSlot.replaceChildren(...(studioCase ? [studioCase.cloneNode(true)] : []));
+  caseSlot.hidden = !studioCase;
   gameLaunch.hidden = item.id !== 'p-dank-hub';
   more.href = '#' + item.id;
   more.setAttribute('aria-label', 'Подробнее: ' + item.title);

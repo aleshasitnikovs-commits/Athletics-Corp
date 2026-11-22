@@ -264,6 +264,7 @@ html.no-webgl .static.stat,.stage.fallback .static.stat{width:80%;height:auto;as
 html.reduce *{scroll-behavior:auto!important}
 </style>
 <link rel="stylesheet" href="catalog.css?v=20261122-5">
+<link rel="stylesheet" href="../_assets/studio-case.css?v=1">
 <link rel="stylesheet" href="../_assets/brand-marks.css?v=20261122-4">
 </head>
 <body>
@@ -353,7 +354,7 @@ html.reduce *{scroll-behavior:auto!important}
         <article class="catalog-card">
           <p class="catalog-stage">Пилот по согласованию</p>
           <h2>Анализ осанки для студий</h2>
-          <p class="catalog-card-copy">Помогаем студиям встроить анализ осанки в работу с клиентами. Один из проектов реализовали в «XSBody Варшавская».</p>
+          <p class="catalog-card-copy">Помогаем студиям встроить анализ осанки в работу с клиентами.</p>
           <a href="#p-studio" class="catalog-link" aria-label="Подробнее: Анализ осанки для студий">Подробнее <span aria-hidden="true">↗</span></a>
         </article>
         <article class="catalog-card">
@@ -454,6 +455,7 @@ html.reduce *{scroll-behavior:auto!important}
           <span>Выберите направление</span>
           <select aria-controls="catalog-exhibit-summary"></select>
         </label>
+        <div class="catalog-exhibit-case" hidden></div>
         <div class="catalog-exhibit-stage" aria-hidden="true">
           <canvas width="860" height="430"></canvas>
         </div>
@@ -557,9 +559,13 @@ html.reduce *{scroll-behavior:auto!important}
           <a class="catalog-link catalog-back" href="#catalog-available">← К каталогу</a>
           <p class="catalog-stage">Пилот по согласованию</p>
           <h2 id="p-studio-heading">Анализ осанки для студий</h2>
+          <p class="studio-case">
+            <span class="studio-case-label">Кейс внедрения</span>
+            <strong class="studio-case-name">XSBody Варшавская</strong>
+            <span>Внедрили анализ осанки и обучили команду студии.</span>
+          </p>
           <p class="catalog-detail-lead">Внедрение анализа в работу студии с её клиентами.</p>
           <p class="catalog-detail-copy">На пилоте студия работает с клиентом, команда Атлетикс Корп помогает с отчётами. После обучения отчёты может готовить тренер студии. Текущие условия обсуждаем перед запуском.</p>
-          <p class="catalog-detail-copy"><strong>XSBody Варшавская.</strong> Внедрили анализ осанки в работу студии и обучили её команду.</p>
           <a class="btn" href="mailto:ac@athleticscorp.ru?subject=%D0%9F%D0%B8%D0%BB%D0%BE%D1%82%20%D0%B0%D0%BD%D0%B0%D0%BB%D0%B8%D0%B7%D0%B0%20%D0%BE%D1%81%D0%B0%D0%BD%D0%BA%D0%B8%20%D0%B4%D0%BB%D1%8F%20%D1%81%D1%82%D1%83%D0%B4%D0%B8%D0%B8">Обсудить пилот по почте</a>
         </div>
         <div class="stage fallback" data-obj="studio" data-hit role="img" aria-label="Измерения фигуры в кадре складываются в схему отчёта"><img class="static" src="../_assets/img/catalog/studio.webp" loading="lazy" alt=""></div>
@@ -811,6 +817,6 @@ html.reduce *{scroll-behavior:auto!important}
 { "imports": { "three": "../_assets/vendor/three/three.module.min.js" } }
 </script>
 <script src="produkty-page.js?v=20261118"></script>
-<script type="module" src="catalog.js?v=20261122-5"></script>
+<script type="module" src="catalog.js?v=20261122-7"></script>
 </body>
 </html>
