@@ -8,6 +8,7 @@ const company = document.querySelector('.home-company');
 const scene = document.querySelector('.home-scene');
 const stage = document.querySelector('.home-stage');
 const figure = document.querySelector('.home-motion');
+const tagline = figure.querySelector('.home-tagline');
 function arrangeScene() {
   opening.classList.toggle('home-panoramic', desktop.matches);
   if (desktop.matches) stage.append(scene);
@@ -57,7 +58,16 @@ function prepareObservation() {
     const viewport = document.documentElement.clientHeight;
     const top = company.getBoundingClientRect().top;
     const progress = Math.max(0, Math.min(1, (viewport * .93 - top) / (viewport * .8)));
-    chapter.ch3 = desktop.matches ? progress * progress * (3 - 2 * progress) * .60 : 0;
+    const wide = desktop.matches;
+    chapter.ch3 = wide ? progress * progress * (3 - 2 * progress) * .60 : 0;
+
+    // На широком экране подпись уходит с началом смены ракурса.
+    // На телефоне она остаётся читаемой, пока фигура и подпись в кадре.
+    const edge = wide ? top : tagline.parentElement.getBoundingClientRect().top;
+    const end = viewport * (wide ? .73 : .22);
+    const range = viewport * (wide ? .21 : .24);
+    const opacity = Math.max(0, Math.min(1, (edge - end) / range));
+    tagline.style.opacity = opacity * opacity * (3 - 2 * opacity);
   }
   function queuePosition() {
     if (pending) return;
