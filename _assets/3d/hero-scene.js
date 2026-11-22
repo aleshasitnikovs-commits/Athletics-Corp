@@ -306,7 +306,9 @@ function skin(out,outL,list,count,applyXf,xf){
 
 function loadModel(done){
  if(!USE_XBOT){
-  HUMAN.init({renderer:R,scene:scene,modelUrl:HUMAN_URL,samplesUrl:HUMAN_SAMPLES,preset:mob?HUMAN_PRESET_PHONE:HUMAN_PRESET,mobile:mob,refDist:mob?5.9:6.1,renderOrder:5,mask:{maskRect:MAT.uniforms.maskRect,maskOn:MAT.uniforms.maskOn}})
+  const preset=mob?HUMAN_PRESET_PHONE:HUMAN_PRESET;
+  const samplesUrl=embedded&&preset==='зерно-8k'?'_assets/3d/human-samples-25k.bin':HUMAN_SAMPLES;
+  HUMAN.init({renderer:R,scene:scene,modelUrl:HUMAN_URL,samplesUrl,preset,mobile:mob,refDist:mob?5.9:6.1,renderOrder:5,mask:{maskRect:MAT.uniforms.maskRect,maskOn:MAT.uniforms.maskOn}})
    .then(function(h){HUM=h;window.__human=h;/* для автотестов: касания, пол, число точек */setupModel(h.gltf,h.mixer,h.actions,done)}).catch(fail);
   return}
  fetch(MODEL_URL).then(function(r){if(!r.ok)throw new Error('модель: HTTP '+r.status);return r.arrayBuffer()}).then(function(buf){

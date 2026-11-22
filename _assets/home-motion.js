@@ -77,7 +77,7 @@ if (!reduceMotion.matches) {
   prepareSectionWaves(reduceMotion);
   prepareSectionMotion();
   prepareObservation();
-  import('./3d/hero-scene.js?v=20261118').catch(() => {
+  import('./3d/hero-scene.js?v=20261122-5').catch(() => {
     root.classList.add('no-webgl', 'story-static');
     window.__reveal(true);
   });

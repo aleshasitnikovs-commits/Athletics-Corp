@@ -37,7 +37,7 @@ function showScene() {
       } catch {}
       if (!drawing) { failed = true; return; }
     }
-    loading = import('../produkty/produkty-scene.js?v=20261122-2')
+    loading = import('../produkty/produkty-scene.js?v=20261122-5')
       .then(({createProductScenes}) => {
         if (!canPlay()) return;
         runtime = createProductScenes({
@@ -119,7 +119,7 @@ if ('IntersectionObserver' in window) {
   new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;
     showScene();
-  }, { threshold: .08 }).observe(art);
+  }, { rootMargin: '240px 0px' }).observe(art);
 } else {
   visible = true;
   showScene();

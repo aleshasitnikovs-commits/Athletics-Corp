@@ -60,7 +60,7 @@ function requestScene() {
   if (sceneRequested || root.matches('.no-webgl, .reduce') ||
       matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   sceneRequested = true;
-  import('./produkty-scene.js?v=20261122-2')
+  import('./produkty-scene.js?v=20261122-5')
     .then(module => module.startCatalogScenes())
     .catch(() => root.classList.add('no-webgl'));
 }
@@ -195,7 +195,7 @@ if ('IntersectionObserver' in window) {
   const observer = new IntersectionObserver(([entry]) => {
     artworkVisible = entry.isIntersecting;
     if (artworkVisible) requestStage(mounted?.node);
-  });
+  }, { rootMargin: '240px 0px' });
   observer.observe(artwork);
 }
 brandMotion.addEventListener('change', () => {

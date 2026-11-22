@@ -8,7 +8,7 @@ import { init as initHuman, loadHumanAssets } from '../_assets/3d/human-points.j
 import { clone as cloneSkeleton } from '../_assets/vendor/three/utils/SkeletonUtils.js';
 import { featureScenes } from './catalog-choreography.js?v=20261122';
 import { catalogPose, neutralGaze } from './catalog-poses.js?v=20261122';
-import { createMasterclassPoints } from '../_assets/3d/masterclass-points.js?v=20261116-visuals';
+import { createMasterclassPoints } from '../_assets/3d/masterclass-points.js?v=20261122-5';
 import { NOTEBOOK_PAGES, PENCIL_TIP, palmFrame, constrainWriting } from '../_assets/3d/coach-writing.js?v=20261112-6';
 
 const STAT_TURN = 12;                 // с на оборот логотипа
@@ -142,7 +142,7 @@ export function createProductScenes({
   async function loadCharacter(opt) {
     const model = ['coach_notes', 'chest_open'].includes(opt.clip) ? 'products-specialists' : 'human';
     if (!humanAssets.has(model)) {
-      humanAssets.set(model, loadHumanAssets(asset('3d/' + model + '.glb'), asset('3d/human-samples.bin')));
+      humanAssets.set(model, loadHumanAssets(asset('3d/' + model + '.glb'), asset('3d/human-samples-25k.bin')));
     }
     const [gltf, samples] = await humanAssets.get(model);
     const animations = gltf.animations.slice();

@@ -99,7 +99,7 @@ function updateProps(props, data, frame, mix) {
 export async function createMasterclassPoints({ renderer, mobile, propMat }) {
   const group = new THREE.Group();
   const asset = name => new URL(name, import.meta.url).href;
-  const assets = loadHumanAssets(asset('products-specialists.glb'), asset('human-samples.bin'));
+  const assets = loadHumanAssets(asset('products-specialists.glb'), asset('human-samples-25k.bin'));
   const [data] = await Promise.all([loadWorkshop(), assets]);
   const figures = await Promise.all(Array.from({ length: ACTORS }, (_, i) => initHuman({
     renderer, scene: group, mobile, assets, bakedPose: true,

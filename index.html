@@ -65,12 +65,13 @@
 </script>
 <!-- favicon: костяной знак на тёмной плашке (чисто белый знак пропал бы на светлой панели вкладок) -->
 <link rel="icon" type="image/png" href="_assets/img/favicon-ac-64.png">
-<link rel="stylesheet" href="_assets/tokens.css">
-<link rel="stylesheet" href="_assets/header.css?v=20261112-5">
-<script src="_assets/header.js?v=20261112-5"></script>
-<script src="_assets/site.js"></script>
-<link rel="stylesheet" href="_assets/home.css?v=20261122-4">
-<link rel="stylesheet" href="_assets/brand-marks.css?v=20261122-4">
+<script type="importmap">
+{
+  "imports": {
+    "three": "./_assets/vendor/three/three.module.min.js"
+  }
+}
+</script>
 <script>
 (function () {
   const root = document.documentElement;
@@ -88,7 +89,25 @@
     root.classList.remove('home-intro-active');
   };
 
-  if (location.hash || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  root.classList.add('home-scene-loading');
+
+  function preload(rel, href, as) {
+    const link = document.createElement('link');
+    link.rel = rel;
+    link.href = href;
+    if (as) {
+      link.as = as;
+      link.crossOrigin = 'anonymous';
+    }
+    document.head.append(link);
+  }
+  preload('modulepreload', '_assets/3d/hero-scene.js?v=20261122-5');
+  preload('modulepreload', '_assets/vendor/three/three.core.min.js');
+  preload('preload', '_assets/3d/human.glb', 'fetch');
+  preload('preload', '_assets/3d/human-samples-25k.bin', 'fetch');
+
+  if (location.hash) return;
   try {
     if (sessionStorage.getItem('ac-home-intro')) return;
     const context = document.createElement('canvas').getContext('webgl2');
@@ -103,6 +122,14 @@
   }, 3000);
 })();
 </script>
+<script type="module" src="_assets/home-motion.js?v=20261122-5"
+        onerror="document.documentElement.classList.add('no-webgl', 'story-static'); window.__reveal(true)"></script>
+<link rel="stylesheet" href="_assets/tokens.css">
+<link rel="stylesheet" href="_assets/header.css?v=20261112-5">
+<script src="_assets/header.js?v=20261112-5"></script>
+<script src="_assets/site.js"></script>
+<link rel="stylesheet" href="_assets/home.css?v=20261122-5">
+<link rel="stylesheet" href="_assets/brand-marks.css?v=20261122-4">
 </head>
 <body>
 <!-- header:start - шаблон _assets/_header-template.mjs, правки там, затем node _assets/_header-apply.mjs -->
@@ -158,7 +185,7 @@
     </div>
     <figure class="home-motion">
       <div class="home-scene">
-        <img src="_assets/img/home-walk-poster.png" alt="" width="390" height="458" fetchpriority="high">
+        <img src="_assets/img/home-walk-poster.webp" alt="" width="390" height="458" fetchpriority="low">
         <canvas id="cv" aria-hidden="true"></canvas>
       </div>
       <figcaption>Понимать человека. Через движение.</figcaption>
@@ -327,14 +354,6 @@
   <span class="ftr-legal"><a href="privacy-policy/">Политика конфиденциальности</a><a href="personal-data-policy/">Согласие на обработку данных</a><a href="oferta/">Публичная оферта</a></span>
 </footer>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "./_assets/vendor/three/three.module.min.js"
-  }
-}
-</script>
-<script type="module" src="_assets/home-motion.js?v=20261122-4"></script>
-<script type="module" src="_assets/home-showcase.js?v=20261122-2"></script>
+<script type="module" src="_assets/home-showcase.js?v=20261122-5"></script>
 </body>
 </html>

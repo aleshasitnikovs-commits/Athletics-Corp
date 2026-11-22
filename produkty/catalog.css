@@ -238,9 +238,6 @@
 .catalog-game-launch[hidden] { display: none; }
 
 .catalog-brand-stage {
-  --pink: #f89f9b;
-  --blue: #acd7f9;
-  --yellow: #fdc453;
   --green: #19b64b;
   isolation: isolate;
   overflow: hidden;
@@ -258,36 +255,31 @@
   transform: translate(-50%, -50%);
 }
 .catalog-brand-stage span { position: absolute; display: block; }
-.brand-ladder {
-  left: 6%;
-  bottom: 11%;
-  width: 35%;
-  height: 22%;
-  border-block: 3px solid var(--yellow);
-  background: repeating-linear-gradient(90deg, var(--yellow) 0 2px, transparent 2px 21%);
-  transform: perspective(140px) rotateX(42deg) rotateZ(-13deg);
-  transform-origin: center bottom;
+.catalog-brand-stage.is-neuro > .brand-gear {
+  position: absolute;
+  z-index: 1;
+  inset: auto;
+  height: auto;
+  pointer-events: none;
 }
-.brand-markers {
-  right: 6%;
-  bottom: 11%;
-  width: 13%;
-  height: 16%;
-  background:
-    radial-gradient(ellipse 17% 24% at 21% 65%, var(--pink) 93%, transparent),
-    radial-gradient(ellipse 19% 24% at 77% 67%, var(--blue) 93%, transparent),
-    radial-gradient(ellipse 16% 24% at 47% 23%, var(--yellow) 93%, transparent);
-  transform: rotate(-12deg);
+.catalog-brand-stage.is-neuro > .brand-ladder {
+  left: 2.5%;
+  bottom: 2%;
+  width: 38%;
 }
-.brand-ball {
-  right: 12%;
-  top: 19%;
-  width: clamp(18px, 5vw, 42px);
-  aspect-ratio: 1;
-  border: 1.5px solid var(--pink);
-  border-radius: 50%;
-  background: repeating-linear-gradient(115deg, transparent 0 5px, var(--pink) 5px 6px);
+.catalog-brand-stage.is-neuro > .brand-ball {
+  right: 10%;
+  top: 13%;
+  width: min(10%, 78px);
 }
+.catalog-brand-stage.is-neuro > .brand-balls {
+  right: 5%;
+  bottom: 5%;
+  width: 19%;
+}
+#p-neurogames .catalog-brand-stage .brand-ladder,
+#p-neurogames .catalog-brand-stage .brand-balls { bottom: 16%; }
+#p-neurogames .catalog-brand-stage .brand-ball { top: 28%; }
 .brand-track {
   inset: auto 7% 8%;
   height: 27%;
