@@ -26,6 +26,29 @@ function prepareSectionMotion() {
   for (const visual of document.querySelectorAll('[data-home-motion]')) observer.observe(visual);
 }
 
+function prepareInstituteMarks() {
+  if (!('IntersectionObserver' in window)) return;
+  const section = document.getElementById('institute');
+  if (!section) return;
+  let visible = false;
+  let requested = false;
+  function start() {
+    if (!visible || requested || reduceMotion.matches) return;
+    requested = true;
+    observer.disconnect();
+    reduceMotion.removeEventListener('change', start);
+    import('./3d/home-institute-marks.js?v=20261122-3')
+      .then(module => module.startInstituteMarks(section, reduceMotion))
+      .catch(error => console.warn('Логотипы главной: показаны статичные знаки', error));
+  }
+  const observer = new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting;
+    start();
+  });
+  observer.observe(section);
+  reduceMotion.addEventListener('change', start);
+}
+
 function prepareObservation() {
   const chapter = window.CH = {ch3: 0};
   let pending = false;
@@ -49,6 +72,7 @@ function prepareObservation() {
 
 arrangeScene();
 desktop.addEventListener('change', arrangeScene);
+prepareInstituteMarks();
 if (!reduceMotion.matches) {
   prepareSectionWaves(reduceMotion);
   prepareSectionMotion();
