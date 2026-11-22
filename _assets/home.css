@@ -203,19 +203,27 @@ html:not(.no-webgl) .home-scene canvas.is-ready { opacity: 1; }
   border: 1px solid var(--rule);
 }
 .home-showcase[data-preview-active="stat"] .home-showcase-art { background: #f2f0eb; }
-.home-showcase-art :is(img, video, canvas) {
+.home-showcase-art .stage {
+  position: absolute;
+  inset: 0;
+  touch-action: pan-y pinch-zoom;
+}
+.home-showcase-art :is(.static, .stage-canvas) {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
+  pointer-events: none;
 }
-.home-showcase-art img.is-illustration {
-  width: 50%;
-  height: 78%;
-  inset: 11% auto auto 25%;
-  opacity: .8;
-  mask-image: radial-gradient(ellipse 76% 76%, #000 56%, transparent 78%);
+.home-showcase-art .static { display: none; }
+.home-showcase-art .fallback .static { display: block; }
+.home-showcase-art .fallback .stage-canvas { visibility: hidden; }
+.home-showcase-art .stage:not(.fallback)[data-hit] { cursor: grab; }
+.home-showcase-art .stage:not(.fallback)[data-hit]:active { cursor: grabbing; }
+@media (prefers-reduced-motion: reduce) {
+  .home-showcase-art .stage .static { display: block; }
+  .home-showcase-art .stage .stage-canvas { display: none; }
 }
 .home-showcase-art [hidden] { display: none; }
 .home-showcase-preview figcaption {

@@ -17,7 +17,10 @@ const canvas = artwork.querySelector('canvas');
 const paint = canvas.getContext('2d');
 const caption = exhibit.querySelector('.catalog-exhibit-summary');
 const more = caption.querySelector('.catalog-link');
+const gameLaunch = caption.querySelector('[data-dank-game]');
+const detailGameLaunch = document.querySelector('#p-dank-hub [data-dank-game]');
 let sceneRequested = false;
+let gameModule;
 let mounted;
 let currentGroup;
 let selected;
@@ -55,7 +58,9 @@ function requestScene() {
   if (sceneRequested || root.matches('.no-webgl, .reduce') ||
       matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   sceneRequested = true;
-  import('./produkty-scene.js?v=20261118-scenes-3').catch(() => root.classList.add('no-webgl'));
+  import('./produkty-scene.js?v=20261122-2')
+    .then(module => module.startCatalogScenes())
+    .catch(() => root.classList.add('no-webgl'));
 }
 
 function restoreStage() {
@@ -101,6 +106,7 @@ function selectProduct(item) {
   caption.querySelector('.catalog-stage').textContent = item.status;
   caption.querySelector('h2').textContent = item.title;
   caption.querySelector('.catalog-card-copy').textContent = item.copy;
+  gameLaunch.hidden = item.id !== 'p-dank-hub';
   more.href = '#' + item.id;
   more.setAttribute('aria-label', 'Подробнее: ' + item.title);
 
@@ -112,7 +118,7 @@ function selectProduct(item) {
     artwork.append(mounted.node);
     const fallback = mounted.node.querySelector('img');
     if (fallback) fallback.loading = 'eager';
-    if (artworkVisible) requestScene();
+    if (artworkVisible && mounted.node.dataset.obj) requestScene();
   } else {
     drawArtwork(item);
   }
@@ -144,7 +150,7 @@ function applyRoute(scroll) {
   const item = group.products.find(product => product.id === hash) || choices.get(group) || group.products[0];
   selectProduct(item);
   if (detail) {
-    if (stages.has(detail.id)) requestScene();
+    if (stages.get(detail.id)?.node.dataset.obj) requestScene();
     dispatchEvent(new Event('catalog:layout'));
     if (scroll) requestAnimationFrame(() => {
       if (detail.hidden) return;
@@ -174,11 +180,26 @@ picker.addEventListener('change', () => {
 if ('IntersectionObserver' in window) {
   const observer = new IntersectionObserver(([entry]) => {
     artworkVisible = entry.isIntersecting;
-    if (artworkVisible && mounted) requestScene();
+    if (artworkVisible && mounted?.node.dataset.obj) requestScene();
   });
   observer.observe(artwork);
 }
 addEventListener('hashchange', () => applyRoute(true));
+for (const button of [gameLaunch, detailGameLaunch]) {
+  button.addEventListener('click', async () => {
+    button.disabled = true;
+    try {
+      gameModule ??= import('./dank-game.js?v=20261122');
+      (await gameModule).openGame(button);
+    } catch {
+      gameModule = null;
+      button.textContent = 'Повторить запуск';
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
+detailGameLaunch.hidden = false;
 exhibit.hidden = false;
 layout.classList.add('is-exhibit');
 applyRoute(true);

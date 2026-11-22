@@ -232,3 +232,131 @@
   .catalog-filters a { min-height: 40px; padding-inline: 9px; font-size: .88rem; }
   .catalog-group { scroll-margin-top: 85px; }
 }
+
+.catalog-exhibit-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 14px; flex: none; }
+.catalog-exhibit-actions .btn { padding: 8px 14px; }
+.catalog-game-launch[hidden] { display: none; }
+
+.catalog-brand-stage {
+  --pink: #f89f9b;
+  --blue: #acd7f9;
+  --yellow: #fdc453;
+  --green: #19b64b;
+  perspective: 840px;
+  isolation: isolate;
+  overflow: hidden;
+}
+.catalog-exhibit[data-stage="paused"] .catalog-exhibit-stage:has(.catalog-brand-stage) { opacity: .85; }
+.catalog-brand-stage .catalog-brand-logo {
+  position: absolute;
+  z-index: 2;
+  top: 49%;
+  left: 50%;
+  width: min(66%, 440px);
+  aspect-ratio: 2.12;
+  transform-style: preserve-3d;
+  transform: translate(-50%, -50%) rotateY(0);
+  animation: catalog-logo-turn 15s ease-in-out infinite;
+}
+.catalog-brand-stage .catalog-brand-logo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  backface-visibility: hidden;
+  transform: translateZ(3px);
+  border-radius: 6%;
+}
+.catalog-brand-stage .catalog-brand-logo img + img { transform: rotateY(180deg) translateZ(3px); }
+.catalog-brand-stage.is-run .catalog-brand-logo { mix-blend-mode: screen; }
+.catalog-brand-stage span { position: absolute; display: block; }
+.brand-ladder {
+  left: 6%;
+  bottom: 11%;
+  width: 35%;
+  height: 22%;
+  border-block: 3px solid var(--yellow);
+  background: repeating-linear-gradient(90deg, var(--yellow) 0 2px, transparent 2px 21%);
+  transform: perspective(140px) rotateX(42deg) rotateZ(-13deg);
+  transform-origin: center bottom;
+}
+.brand-markers {
+  right: 6%;
+  bottom: 11%;
+  width: 13%;
+  height: 16%;
+  background:
+    radial-gradient(ellipse 17% 24% at 21% 65%, var(--pink) 93%, transparent),
+    radial-gradient(ellipse 19% 24% at 77% 67%, var(--blue) 93%, transparent),
+    radial-gradient(ellipse 16% 24% at 47% 23%, var(--yellow) 93%, transparent);
+  transform: rotate(-12deg);
+}
+.brand-ball {
+  right: 12%;
+  top: 19%;
+  width: clamp(18px, 5vw, 42px);
+  aspect-ratio: 1;
+  border: 1.5px solid var(--pink);
+  border-radius: 50%;
+  background: repeating-linear-gradient(115deg, transparent 0 5px, var(--pink) 5px 6px);
+}
+.brand-track {
+  inset: auto 7% 8%;
+  height: 27%;
+  background: repeating-linear-gradient(0deg, var(--green) 0 1px, transparent 1px 17%);
+  opacity: .55;
+  transform: perspective(180px) rotateX(54deg);
+  transform-origin: bottom;
+  mask-image: linear-gradient(90deg, transparent, #000 21% 79%, transparent);
+}
+@keyframes catalog-logo-turn {
+  0%, 12% { transform: translate(-50%,-50%) rotateY(0); }
+  88%, 100% { transform: translate(-50%,-50%) rotateY(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .catalog-brand-stage .catalog-brand-logo { animation: none; }
+}
+
+.dank-game {
+  width: min(820px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: clamp(14px, 3vw, 28px);
+  border: 1px solid var(--line-2);
+  background: var(--bg);
+  color: var(--fg);
+  border-radius: 12px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.dank-game::backdrop { background: rgba(0,0,0,.77); }
+html:has(.dank-game[open]) { overflow: hidden; }
+.dank-close { float: right; margin-left: 12px; }
+.dank-close button, .dank-stations button {
+  min-height: 44px;
+  min-width: 44px;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+}
+.dank-close button { font-size: 1.6rem; line-height: 1; }
+.dank-game h2 { font-size: clamp(1.22rem, 3.1vw, 2rem); margin-block: 3px 9px; }
+.dank-instruction, .dank-reward { color: var(--soft); font-size: .92rem; }
+.dank-score { display: flex; gap: 11px 25px; flex-wrap: wrap; margin-top: 12px; }
+.dank-score strong { margin-inline-start: 4px; font-variant-numeric: tabular-nums; }
+.dank-game canvas { display: block; width: 100%; height: auto; margin: 3px 0 10px; background: radial-gradient(ellipse at 50% 73%, #151512, transparent 66%); }
+.dank-stations, .dank-controls { display: flex; gap: 7px 11px; flex-wrap: wrap; align-items: center; }
+.dank-stations button { font: 500 .88rem var(--font-text); padding-inline: 9px; }
+.dank-stations button[aria-pressed="true"] { border-color: var(--mark); }
+.dank-stations button:disabled { opacity: .6; }
+.dank-controls { margin-top: 14px; }
+.dank-controls .btn { touch-action: none; user-select: none; }
+.dank-controls .btn[aria-disabled="true"] { opacity: .65; cursor: wait; }
+.dank-power { display: inline-flex; align-items: center; gap: 7px; font-variant-numeric: tabular-nums; }
+.dank-power meter { width: min(24vw, 110px); accent-color: var(--mark); }
+.dank-result { margin-block: 10px; min-height: 1.4em; }
+.dank-reward details { margin-top: 6px; }
+.dank-reward summary { color: var(--fg); cursor: pointer; text-decoration: underline; text-underline-offset: .25em; }

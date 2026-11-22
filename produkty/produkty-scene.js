@@ -6,7 +6,8 @@ import { SVGLoader } from '../_assets/vendor/three/loaders/SVGLoader.js';
 import { createSpinePoints } from '../_assets/3d/spine-page.js';
 import { init as initHuman, loadHumanAssets } from '../_assets/3d/human-points.js?v=20261118-catalog';
 import { clone as cloneSkeleton } from '../_assets/vendor/three/utils/SkeletonUtils.js';
-import { featureScenes } from './catalog-choreography.js?v=20261118-3';
+import { featureScenes } from './catalog-choreography.js?v=20261122';
+import { catalogPose, neutralGaze } from './catalog-poses.js?v=20261122';
 import { createMasterclassPoints } from '../_assets/3d/masterclass-points.js?v=20261116-visuals';
 import { NOTEBOOK_PAGES, PENCIL_TIP, palmFrame, constrainWriting } from '../_assets/3d/coach-writing.js?v=20261112-6';
 
@@ -17,8 +18,7 @@ const DARK = [10 / 255, 10 / 255, 8 / 255], LIGHT = [242 / 255, 240 / 255, 235 /
 const LOGO_DARK = new THREE.Color('#F2F0EB'), LOGO_LIGHT = new THREE.Color('#2B2A26');   // белый / графит (СТАТЬ-черный.svg)
 
 const root = document.documentElement;
-const reduce = root.classList.contains('reduce');
-const canvas = document.getElementById('scene');
+const asset = path => new URL('../_assets/' + path, import.meta.url).href;
 const phone = () => innerWidth < 860;
 const stageSurfaces = matchMedia('(max-width: 860px), (pointer: coarse)');
 // Без WebGL или при ошибке сцены: Lenis крутится сам, у областей - статичные картинки
@@ -26,16 +26,29 @@ function lenisAlone() {
   const l = window.__lenis; if (!l || lenisAlone.on) return; lenisAlone.on = true;
   (function raf(t) { l.raf(t); requestAnimationFrame(raf); })(performance.now());
 }
-function fail(e) {
-  root.classList.add('no-webgl'); if (canvas) canvas.style.display = 'none';
-  if (e) console.warn('produkty: 3D выключено, показаны картинки', e);
-  lenisAlone();
+export function startCatalogScenes() {
+  if (root.classList.contains('no-webgl')) return;
+  const canvas = document.getElementById('scene');
+  if (!canvas) return;
+  try {
+    window.__scene = createProductScenes({ canvas });
+  } catch (error) {
+    root.classList.add('no-webgl');
+    canvas.style.display = 'none';
+    console.warn('produkty: 3D выключено, показаны картинки', error);
+    lenisAlone();
+  }
 }
-if (!root.classList.contains('no-webgl') && canvas) { try { init(); } catch (e) { fail(e); } }
 
-function init() {
+export function createProductScenes({
+  canvas, context, scope = document, embedded = false, enabled = () => true,
+  light = () => root.dataset.theme === 'stat',
+}) {
+  const reduce = !embedded && root.classList.contains('reduce');
+  const allStages = () => scope.querySelectorAll('.stage[data-obj]');
   const mobile = stageSurfaces.matches;
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !mobile, alpha: true, powerPreference: 'high-performance' });
+  const game = document.getElementById('dank-game');
+  const renderer = new THREE.WebGLRenderer({ canvas, context, antialias: !mobile, alpha: true, powerPreference: 'high-performance' });
   renderer.setClearColor(0x000000, 0);
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
@@ -96,14 +109,14 @@ function init() {
     s.rot += (2 * Math.PI / turn) * dt;
     s.tilt += (0 - s.tilt) * Math.min(1, dt * 2.5);
   }
-  const stage = (k) => document.querySelector(`.stage[data-obj="${k}"]`);
+  const stage = (k) => scope.querySelector(`.stage[data-obj="${k}"]`);
   // объект не загрузился - его область показывает статичную картинку, остальные работают
   const fallback = (k) => (e) => { const el = stage(k); if (el) el.classList.add('fallback'); console.warn('produkty: объект ' + k + ' не загрузился, показана картинка', e); };
 
   // -------------------------------------------------------------- позвоночник
   async function addSpine() {
     const el = stage('spine'); if (!el) return;
-    const sp = await createSpinePoints('../_assets/3d/');
+    const sp = await createSpinePoints(asset('3d/'));
     const tilt = new THREE.Group(); tilt.add(sp.points);
     const g = new THREE.Group(); g.add(tilt); scene.add(g);
     const s = spin(el); s.rot = 0.6;
@@ -129,12 +142,12 @@ function init() {
   async function loadCharacter(opt) {
     const model = ['coach_notes', 'chest_open'].includes(opt.clip) ? 'products-specialists' : 'human';
     if (!humanAssets.has(model)) {
-      humanAssets.set(model, loadHumanAssets('../_assets/3d/' + model + '.glb', '../_assets/3d/human-samples.bin'));
+      humanAssets.set(model, loadHumanAssets(asset('3d/' + model + '.glb'), asset('3d/human-samples.bin')));
     }
     const [gltf, samples] = await humanAssets.get(model);
     const animations = gltf.animations.slice();
     if (opt.clip === 'catalog_run') {
-      runClip ??= fetch('../_assets/3d/catalog-run.json?v=ual1').then(async response => {
+      runClip ??= fetch(asset('3d/catalog-run.json?v=ual1')).then(async response => {
         if (!response.ok) throw new Error('catalog-run: HTTP ' + response.status);
         const { times, rotations, hips } = await response.json();
         const tracks = Object.entries(rotations).map(([name, values]) =>
@@ -153,11 +166,14 @@ function init() {
       n: opt.n ?? (mobile ? 4.2 : 5.3), refDist: opt.portrait ? 5.1 : 4.65,
       portrait: opt.portrait, assets: loadCharacter(opt),
     });
+    const bones = new Map(inst.mesh.skeleton.bones.map(b => [b.name.replace(/^mixamorig:?/, ''), b]));
+    const gaze = opt.portrait || opt.gaze || !opt.clip ? neutralGaze(bones) : null;
+    const still = opt.still ?? !opt.clip;
     inst.actions.idle.time = opt.t0 || 0;
     inst.mixer.update(0); inst.model.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(inst.mesh);
     let foot = inst.floors.idle;
-    const S = 1 / Math.max(0.01, box.max.y - foot);
+    const S = (opt.scale || 1) / Math.max(0.01, box.max.y - foot);
     // свой клип (chest_open, coach_notes): играет он один; пол - нижняя точка тела в его первом кадре
     // (ноги в этих клипах неподвижны, см. build_human.py, раздел 6b)
     if (opt.clip && inst.actions[opt.clip]) {
@@ -168,6 +184,7 @@ function init() {
       inst.mesh.boundingBox = null;
       if (opt.clip !== 'catalog_run') foot = new THREE.Box3().setFromObject(inst.mesh).min.y;
     }
+    foot -= (opt.elevation || 0) / S;
     const [p0, ...more] = opt.at;
     inst.setTransform(S, foot, p0[0], p0[1], Math.cos(p0[2]), Math.sin(p0[2]));
     const placement = new THREE.Matrix4().compose(new THREE.Vector3(p0[0], -foot * S, p0[1]), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), p0[2]), new THREE.Vector3(S, S, S));
@@ -185,26 +202,26 @@ function init() {
     if (!opt.clip) {
       inst.actions.idle.play();
       inst.actions.idle.time = opt.t0 || 0;
+      inst.mixer.update(0);
+      inst.model.updateMatrixWorld(true);
     }
+    const pose = catalogPose(opt.pose,bones);
+    if (opt.portrait) inst.points.material.uniforms.uKey.value.set(.12,.38,.92).normalize();
     inst.setProgress({ sizeK: opt.portrait ? .98 : .92 });
-    const bones = new Map(inst.mesh.skeleton.bones.map(b => [b.name.replace(/^mixamorig:?/, ''), b]));
-    const look = new THREE.Euler(0, 0, 0, 'YXZ');
-    const orient = new THREE.Quaternion();
-    let aimX = 0, aimY = 0, on = true;
+    let [aimX, aimY] = opt.gaze || [0,0];
+    let on = true;
     return {
       inst,
       aim(x, y) { aimX = x; aimY = y; },
       bone(name, out) { return bones.get(name).getWorldPosition(out).applyMatrix4(placement); },
       dpr() { inst.setQuality({ n: inst.n }); for (const pr of props) pr.dpr(); },
-      frame(dt, vis) {
+      frame(dt, vis, t = 0) {
         if (!vis) { if (on) { inst.pause(); for (const c of copies) c.pts.visible = c.occ.visible = false; for (const pr of props) pr.pts.visible = false; on = false; } return; }
         if (!on) { inst.resume(); on = true; }
         writing?.restore();
-        if (!reduce) inst.mixer.update(dt * (opt.speed || 1));
-        if (opt.portrait) {
-          bones.get('Neck').quaternion.multiply(orient.setFromEuler(look.set(aimY * .32, aimX * .28, 0)));
-          bones.get('Head').quaternion.multiply(orient.setFromEuler(look.set(aimY * .68, aimX * .72, -aimX * .08)));
-        }
+        if (!reduce && !still) inst.mixer.update(dt * (opt.speed || 1));
+        pose?.(t);
+        gaze?.(aimX,aimY);
         inst.model.updateMatrixWorld(true);
         writing?.apply(inst.actions.coach_notes.time);
         inst.update();
@@ -327,7 +344,7 @@ function init() {
         g.scale.setScalar(fit(a)); inner.position.y = -centerY;
         t += dt;
         motion?.before?.(t, dt);
-        for (const h of hs) h.frame(dt, a.vis);
+        for (const h of hs) h.frame(dt, a.vis, t);
         after?.(t);
       },
       hide() { for (const h of hs) h.frame(0, false); },
@@ -375,7 +392,7 @@ function init() {
   // -------------------------------------------------------------- 3D-логотип СТАТЬ
   async function addStat() {
     const el = stage('stat'); if (!el) return;
-    const txt = await fetch('../_assets/img/stat-logo.svg').then((r) => { if (!r.ok) throw new Error('stat-logo ' + r.status); return r.text(); });
+    const txt = await fetch(asset('img/stat-logo.svg')).then((r) => { if (!r.ok) throw new Error('stat-logo ' + r.status); return r.text(); });
     const shapes = new SVGLoader().parse(txt).paths.flatMap((p) => p.toShapes(true));
     // толщина 48 при высоте знака 313 (единицы SVG), мягкая фаска 7; силуэт не толстеет (bevelOffset)
     const geo = new THREE.ExtrudeGeometry(shapes, { depth: 48, curveSegments: 20, bevelEnabled: true, bevelThickness: 7, bevelSize: 7, bevelOffset: -7, bevelSegments: 6 });
@@ -418,15 +435,15 @@ function init() {
   }
 
   function resize() {
-    local = stageSurfaces.matches || !!document.querySelector('.catalog-exhibit-stage .stage');
-    root.classList.toggle('products-local', local);
+    local = embedded || stageSurfaces.matches || !!scope.querySelector('.catalog-exhibit-stage .stage');
+    if (!embedded) root.classList.toggle('products-local', local);
     const rect = canvas.getBoundingClientRect();
     W = rect.width || innerWidth; H = rect.height || innerHeight;
     const dpr = Math.min(devicePixelRatio || 1, local ? 1.25 : 1.5);
     let width = W, height = H;
     if (local) {
       width = height = 1;
-      for (const el of document.querySelectorAll('.stage[data-obj]')) {
+      for (const el of allStages()) {
         const r = el.getBoundingClientRect();
         width = Math.max(width, Math.ceil(r.width));
         height = Math.max(height, Math.ceil(r.height));
@@ -444,7 +461,7 @@ function init() {
     if (local) for (const o of objs) sizeOutput(o, dpr);
     for (const o of objs) if (o.quality) o.quality(dpr);
     dirty = true;
-    loadVisibleStages();
+    if (enabled()) loadVisibleStages();
   }
 
   function drawInStage(o, a, dt, k) {
@@ -468,12 +485,13 @@ function init() {
   const ease = (x) => x * x * (3 - 2 * x);
   function frame(now) {
     requestAnimationFrame(frame);
-    if (window.__lenis) window.__lenis.raf(now);
+    if (!embedded && window.__lenis) window.__lenis.raf(now);
     const dt = Math.min(1 / 30, Math.max(0, (now - last) / 1000)); last = now;
     // тема: 0 - тёмная, 1 - СТАТЬ; та же длительность, что у переменных CSS
-    const target = root.getAttribute('data-theme') === 'stat' ? 1 : 0;
+    if (game?.open || !enabled()) return;
+    const target = light() ? 1 : 0;
     const was = tk;
-    tk = reduce ? target : target > tk ? Math.min(target, tk + dt / THEME_T) : Math.max(target, tk - dt / THEME_T);
+    tk = reduce || embedded ? target : target > tk ? Math.min(target, tk + dt / THEME_T) : Math.max(target, tk - dt / THEME_T);
     const k = ease(tk);
     for (let i = 0; i < 3; i++) bg.setComponent(i, DARK[i] + (LIGHT[i] - DARK[i]) * k);
     // reduced motion: перерисовка только при прокрутке, смене размера и темы
@@ -504,7 +522,7 @@ function init() {
     }
   }
   addEventListener('resize', resize);
-  addEventListener('catalog:layout', resize);
+  if (!embedded) addEventListener('catalog:layout', resize);
   stageSurfaces.addEventListener('change', resize);
   const invalidate = () => { dirty = true; };
   window.visualViewport?.addEventListener('resize', invalidate);
@@ -512,7 +530,7 @@ function init() {
   const factories = { spine: addSpine, duo: addDuo, masterclass: addClass, stat: addStat };
   const requested = new Set();
   function loadVisibleStages() {
-    for (const el of document.querySelectorAll('.stage[data-obj]')) {
+    for (const el of allStages()) {
       const id = el.dataset.obj;
       if (requested.has(id) || !el.getClientRects().length) continue;
       requested.add(id);
@@ -525,11 +543,13 @@ function init() {
   }
 
   // для автотестов
-  const api = window.__scene = {
+  const api = {
+    refresh: resize,
     ready: false, objects: () => objs.map((o) => o.k), visible: () => objs.filter((o) => o.inView).map((o) => o.k),
     drawn: () => drawn, blank: () => blank, theme: () => tk,
     fps() { if (frames.length < 2) return 0; return 1000 * (frames.length - 1) / (frames[frames.length - 1] - frames[0]); },
   };
   resize();
   requestAnimationFrame(frame);
+  return api;
 }

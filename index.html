@@ -69,7 +69,7 @@
 <link rel="stylesheet" href="_assets/header.css?v=20261112-5">
 <script src="_assets/header.js?v=20261112-5"></script>
 <script src="_assets/site.js"></script>
-<link rel="stylesheet" href="_assets/home.css?v=20261118-5">
+<link rel="stylesheet" href="_assets/home.css?v=20261122">
 <script>
 (function () {
   const root = document.documentElement;
@@ -195,17 +195,20 @@
               <li><button type="button" data-preview="spine" data-summary="Измерения и разбор специалиста." aria-pressed="true" aria-controls="home-product-preview" disabled>Анализ осанки и движения</button></li>
               <li><button type="button" data-preview="duo" data-summary="Индивидуальная работа со специалистом по движению." aria-pressed="false" aria-controls="home-product-preview" disabled>Персональные занятия</button></li>
               <li><button type="button" data-preview="concierge" data-summary="Выездная оценка, консультация и индивидуальное сопровождение." aria-pressed="false" aria-controls="home-product-preview" disabled>Health Concierge</button></li>
-              <li><button type="button" data-preview="group" data-summary="Занятия по осанке и движению для групп от четырёх человек." aria-pressed="false" aria-controls="home-product-preview" disabled>Практические мастер-классы</button></li>
-              <li><button type="button" data-preview="masterclass" data-summary="Программы по работе с осанкой, биомеханике и тестированию." aria-pressed="false" aria-controls="home-product-preview" disabled>Научно-практические семинары</button></li>
+              <li><button type="button" data-preview="masterclass" data-summary="Занятия по осанке и движению для групп от четырёх человек." aria-pressed="false" aria-controls="home-product-preview" disabled>Практические мастер-классы</button></li>
+              <li><button type="button" data-preview="seminar" data-summary="Программы по работе с осанкой, биомеханике и тестированию." aria-pressed="false" aria-controls="home-product-preview" disabled>Научно-практические семинары</button></li>
+              <li><button type="button" data-preview="studio" data-status="Пилот по согласованию" data-summary="Внедрение анализа в работу студии с её клиентами." aria-pressed="false" aria-controls="home-product-preview" disabled>Анализ осанки для студий</button></li>
+              <li><button type="button" data-preview="coworking" data-summary="Запускаем и управляем коворкингом на площадке партнёра." aria-pressed="false" aria-controls="home-product-preview" disabled>Оздоровительный коворкинг</button></li>
             </ul>
           </div>
           <div class="home-showcase-group" id="technology">
             <h3>В разработке</h3>
             <ul>
               <li><button type="button" data-preview="stat" data-summary="Устройство обратной связи о положении тела." data-status="Финальный этап разработки" aria-pressed="false" aria-controls="home-product-preview" disabled>СТАТЬ</button></li>
-              <li><button type="button" data-preview="sport" data-summary="Технологии анализа движения для спорта." aria-pressed="false" aria-controls="home-product-preview" disabled>SportTech</button></li>
+              <li><button type="button" data-preview="sport" data-summary="Технологии анализа и управления движением в спорте." aria-pressed="false" aria-controls="home-product-preview" disabled>SportTech</button></li>
               <li><button type="button" data-preview="realtime" data-summary="Направление анализа осанки и движения в реальном времени." aria-pressed="false" aria-controls="home-product-preview" disabled>Анализ движения в реальном времени</button></li>
               <li><button type="button" data-preview="management" data-summary="Образовательная программа для руководителей команд." aria-pressed="false" aria-controls="home-product-preview" disabled>Управление фитнес-командами</button></li>
+              <li><button type="button" data-preview="ai" data-status="Проектирование" data-summary="Открытый помощник по теме движения." aria-pressed="false" aria-controls="home-product-preview" disabled>Бесплатный ИИ-помощник</button></li>
             </ul>
           </div>
         </div>
@@ -215,9 +218,9 @@
         </label>
         <figure class="home-showcase-preview" id="home-product-preview">
           <div class="home-showcase-art" aria-hidden="true">
-            <img src="_assets/img/showcase/spine.webp" width="640" height="384" loading="lazy" alt="">
-            <video muted playsinline preload="none" hidden></video>
-            <canvas hidden></canvas>
+            <div class="stage fallback" data-obj="spine" data-hit>
+              <img class="static" src="_assets/img/showcase/spine.webp" width="640" height="384" loading="lazy" alt="">
+            </div>
           </div>
           <figcaption aria-live="polite">
             <p class="home-showcase-status">Доступно сегодня</p>
@@ -336,6 +339,6 @@
 }
 </script>
 <script type="module" src="_assets/home-motion.js?v=20261118-2"></script>
-<script type="module" src="_assets/home-showcase.js?v=20261118"></script>
+<script type="module" src="_assets/home-showcase.js?v=20261122-2"></script>
 </body>
 </html>

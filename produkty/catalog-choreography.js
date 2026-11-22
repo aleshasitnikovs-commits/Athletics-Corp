@@ -50,57 +50,100 @@ function wave(group, count, sample, style) {
 const actor = (x, z, angle, extra = {}) => ({ at: [[x, z, angle * D]], ...extra });
 const jointNames = ['LeftShoulder','RightShoulder','LeftArm','RightArm','LeftForeArm','RightForeArm',
   'LeftHand','RightHand','Hips','LeftUpLeg','RightUpLeg','LeftLeg','RightLeg','LeftFoot','RightFoot'];
-const links = [[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,7],[0,8],[1,8],[8,9],[8,10],[9,11],[10,12],[11,13],[12,14]];
-
-function trackPose(group, figure, realtime) {
-  const coords = jointNames.map(() => new THREE.Vector3());
-  const dots = pointBuffer(group, coords.length, { color: brass, opacity: .9, size: 3 });
-  const lines = pointBuffer(group, 10 * links.length, { color: brass, opacity: .64, size: 1.45 });
+function markStudioPose(group, figure) {
+  const point = new THREE.Vector3();
+  const dots = pointBuffer(group, jointNames.length, { color: brass, opacity: .9, size: 3 });
   return () => {
-    coords.forEach((point, i) => {
-      figure.bone(jointNames[i], point);
-      point.z += realtime ? .125 : .08;
-      dots.position.setXYZ(i, point.x, point.y, point.z);
+    jointNames.forEach((name, i) => {
+      figure.bone(name, point);
+      dots.position.setXYZ(i, point.x, point.y, point.z + .08);
     });
-    if (realtime) {
-      links.forEach(([a, b], index) => {
-        for (let j = 0; j < 10; j++) {
-          const t = j / 10, start = coords[a], end = coords[b];
-          lines.position.setXYZ(index * 10 + j, lerp(start.x, end.x, t), lerp(start.y, end.y, t), lerp(start.z, end.z, t));
-        }
-      });
-      lines.position.needsUpdate = true;
-    } else {
-      lines.shape.visible = false;
-    }
     dots.position.needsUpdate = true;
   };
 }
 
-function seminar(group) {
-  paths(group, [rect(-.05,.20,.72,.66,-.14),
-    [[.31,.24,-.13],[.31,.81,-.13]], [[.02,.40,-.13],[.59,.40,-.13]],
-    [[.02,.61,-.13],[.59,.61,-.13]]], {opacity:.33});
-  const shape = [[.28,.72],[.27,.67],[.17,.62],[.16,.55],[.20,.42],[.23,.39],
-    [.23,.28],[.30,.27],[.32,.43],[.36,.43],[.40,.27],[.47,.28],[.45,.40],
-    [.48,.49],[.49,.63],[.38,.67],[.37,.72]];
-  const head = Array.from({length:37}, (_, i) => {
-    const a = i * Math.PI * 2 / 36;
-    return [.325 + .049 * Math.sin(a), .753 + .061 * Math.cos(a), -.11];
+const reveal = (a,b,t) => THREE.MathUtils.smoothstep(t,a,b);
+
+function segment(buffer, a, b, ratio = 1) {
+  const count = buffer.position.count;
+  for (let i=0; i<count; i++) {
+    const t=i/(count-1);
+    buffer.position.setXYZ(i,lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t));
+  }
+  buffer.position.needsUpdate=true;
+  buffer.shape.geometry.setDrawRange(0,Math.round(count*ratio));
+}
+
+function caption(group,x,y,width,text,size=37) {
+  const bitmap=document.createElement('canvas');
+  bitmap.width=512; bitmap.height=76;
+  const context=bitmap.getContext('2d');
+  const texture=new THREE.CanvasTexture(bitmap);
+  texture.colorSpace=THREE.SRGBColorSpace;
+  const material=new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false});
+  const object=new THREE.Mesh(new THREE.PlaneGeometry(width,width*76/512),material);
+  object.position.set(x+width/2,y,.13);
+  group.add(object);
+  let previous;
+  function update(value) {
+    if (value===previous) return;
+    previous=value;
+    context.clearRect(0,0,512,76);
+    context.font='600 '+size+'px system-ui';
+    context.textBaseline='middle';
+    context.fillStyle=white;
+    context.fillText(value,5,38,503);
+    texture.needsUpdate=true;
+  }
+  update(text);
+  return {material,update};
+}
+
+function ellipse(x,y,z,rx,rz) {
+  return Array.from({length:61},(_,i)=>{
+    const a=i*Math.PI/30;
+    return [x+rx*Math.cos(a),y,z+rz*Math.sin(a)];
   });
-  const arc = Array.from({length:31}, (_, i) => {
-    const a = .16 + i / 30 * .7;
-    return [.20 + Math.cos(a) * .17, .581 + Math.sin(a) * .17, -.09];
-  });
-  paths(group, [shape.map(([x, y]) => [x,y,-.12]),head], {opacity:.59});
-  paths(group, [[[.17,.59,-.11],[.48,.63,-.11]], [[.22,.43,-.11],[.45,.45,-.11]], arc],
-    {color:brass,opacity:.84,size:1.85});
-  const cursor = pointBuffer(group, 2, {color:brass,opacity:.88,size:3.2});
-  return t => {
-    const y = .44 + (1 - Math.cos(t * 1.2)) * .095;
-    cursor.position.setXYZ(0, .17, y, -.09);
-    cursor.position.setXYZ(1, .50, y + .03, -.09);
-    cursor.position.needsUpdate = true;
+}
+
+function surface(x,y,z,w,d) {
+  return [[x-w/2,y,z-d/2],[x+w/2,y,z-d/2],[x+w/2,y,z+d/2],[x-w/2,y,z+d/2],[x-w/2,y,z-d/2]];
+}
+
+function furniture(group,x,z,w,d,h,{back=false,opacity=.64}={}) {
+  const top=surface(x,h,z,w,d);
+  const feet=top.slice(0,4).map(([px,py,pz])=>[[px,.012,pz],[px,py,pz]]);
+  if (back) feet.push([[x-w/2,h,z-d/2],[x-w/2,h+.24,z-d/2],[x+w/2,h+.24,z-d/2],[x+w/2,h,z-d/2]]);
+  paths(group,[top,...feet],{opacity,size:1.7});
+}
+
+function seminar(group, [presenter, model]) {
+  paths(group, [rect(-.06,.10,.78,.83,-.35)], {opacity:.47});
+  const labels = caption(group,.02,.86,.54,'Линия плеч');
+  const gold = pointBuffer(group, 28, {color:brass,opacity:.92,size:1.8});
+  const base = pointBuffer(group, 32, {opacity:.63,size:1.48});
+  const markers = pointBuffer(group, 2, {color:brass,opacity:1,size:4.4});
+  const left = new THREE.Vector3(), right = new THREE.Vector3();
+  return {
+    before(t) {
+      const phase = t % 6.8;
+      model.inst.setProgress({alpha:.18 + .82 * reveal(.08,1.22,phase),occ:.85});
+      presenter.aim(.12 + .15 * reveal(.4,2,phase),-.06);
+    },
+    after(t) {
+      const phase = t % 6.8;
+      model.bone('RightArm',left);
+      model.bone('LeftArm',right);
+      const y = Math.min(left.y,right.y);
+      const z = Math.max(left.z,right.z) + .105;
+      segment(gold,[left.x,left.y,z],[right.x,right.y,z],reveal(2.0,3.12,phase));
+      segment(base,[left.x-.11,y,z-.024],[right.x+.11,y,z-.024],reveal(3.2,4.28,phase));
+      markers.position.setXYZ(0,left.x,left.y,z);
+      markers.position.setXYZ(1,right.x,right.y,z);
+      markers.position.needsUpdate = true;
+      markers.material.opacity = reveal(1.52,2.05,phase);
+      labels.material.opacity = .85 * reveal(2.9,4.05,phase);
+    },
   };
 }
 
@@ -111,6 +154,12 @@ function concierge(group) {
     [[-.82,0,-.59],[.74,0,-.59],[.74,0,-.09]]], {opacity:.53,size:1.65});
   paths(group, [[[.52,.03,-.30],[.52,.33,-.30],[.68,.33,-.30],[.68,.03,-.30]],
     [[.52,.19,-.29],[.68,.19,-.29]]], {opacity:.3});
+  paths(group, [rect(.18,.59,.45,.34,-.55),
+    [[.405,.59,-.54],[.405,.93,-.54]], [[.18,.758,-.54],[.63,.758,-.54]],
+    [[.15,.565,-.53],[.66,.565,-.53]], rect(-.30,.77,.14,.17,-.54)],
+    {opacity:.61,size:1.7});
+  paths(group, [[[.27,.05,-.46],[.27,.26,-.46],[.60,.26,-.46],[.60,.05,-.46]],
+    surface(.43,.13,-.32,.36,.25)],{opacity:.41});
   const route = paths(group, [[[-.74,.01,-.47],[-.65,.01,-.24],[-.43,.01,.06],[-.11,.01,.16],[.15,.01,.09]]], {opacity:.30});
   const pulse = wave(group, 18, (p, i, t) => {
     const k = (t * .30 + i * .013) % 1;
@@ -125,7 +174,7 @@ function studio(group, [client]) {
     [[.47,.75,-.12],[.80,.75,-.12]], [[.47,.35,-.12],[.82,.35,-.12]]], {opacity:.47});
   paths(group, [[[.48,.43,-.10],[.55,.48,-.10],[.61,.47,-.10],[.68,.58,-.10],[.82,.56,-.10]],
     [[.47,.63,-.10],[.67,.63,-.10]]], {color:brass,opacity:.78,size:1.83});
-  const bind = trackPose(group, client, false);
+  const bind = markStudioPose(group, client);
   const transfer = wave(group, 14, (p, i, t) => {
     const u = (t * .35 + i * .023) % 1;
     p.setXYZ(i, lerp(-.19,.35,u), .43 + Math.sin(u * Math.PI) * .10, -.04);
@@ -149,57 +198,88 @@ function sport(group) {
 }
 
 function realtime(group, [client]) {
-  paths(group, [rect(.27,.20,.63,.61,-.14), [[.32,.34,-.13],[.84,.34,-.13]],
-    [[.32,.49,-.13],[.84,.49,-.13]], [[.32,.65,-.13],[.84,.65,-.13]],
-    [[.21,.24,-.14],[.21,.76,-.14]]], {opacity:.31});
-  const bind = trackPose(group, client, true);
-  const shoulder = new THREE.Vector3(), wrist = new THREE.Vector3();
-  const history = [];
-  let previous;
-  const trace = wave(group, 110, (p, i) => {
-    const j = Math.floor(i / 2);
-    const u = i / 109;
-    const first = history[j] ?? history[0] ?? .45;
-    const next = history[j+1] ?? first;
-    p.setXYZ(i, .32 + u * .53, lerp(first, next, i % 2 * .5), -.095);
-  }, {color:brass,opacity:.95,size:2.0});
-  const marker = pointBuffer(group, 1, {color:brass,opacity:1,size:4.0});
-  return t => {
-    bind();
-    client.bone('RightShoulder', shoulder);
-    client.bone('RightHand', wrist);
-    const reading = .46 + clamp((wrist.y - shoulder.y) * .8 + (wrist.z - shoulder.z) * .50, -.17, .23);
-    if (previous === undefined) history.push(...Array(55).fill(reading));
-    const tick = Math.floor(t * 16);
-    if (tick !== previous) { history.shift(); history.push(reading); previous = tick; }
-    trace(t);
-    marker.position.setXYZ(0,.85,reading,-.09);
-    marker.position.needsUpdate = true;
+  paths(group, [rect(.24,.22,.67,.57,-.16), [[.30,.34,-.15],[.86,.34,-.15]],
+    [[.30,.47,-.15],[.86,.47,-.15]], [[.30,.60,-.15],[.86,.60,-.15]]], {opacity:.31});
+  const title=caption(group,.25,.83,.69,'Сгибание локтя');
+  const value=caption(group,.66,.71,.29,'',59);
+  title.material.opacity=.9;
+  const shoulder=new THREE.Vector3(), elbow=new THREE.Vector3(), wrist=new THREE.Vector3();
+  const arm1=new THREE.Vector3(), arm2=new THREE.Vector3();
+  const nodes=pointBuffer(group,3,{color:brass,opacity:1,size:5.5});
+  const core=pointBuffer(group,3,{opacity:1,size:2.0});
+  const upper=pointBuffer(group,28,{color:brass,opacity:.84,size:1.85});
+  const lower=pointBuffer(group,28,{color:brass,opacity:.84,size:1.85});
+  const wire=pointBuffer(group,30,{color:brass,opacity:.65,size:1.55});
+  const trace=pointBuffer(group,66,{color:brass,opacity:1,size:2.0});
+  const marker=pointBuffer(group,1,{color:brass,opacity:1,size:4.5});
+  const history=[];
+  let previous=-1;
+  return t=>{
+    client.bone('RightArm',shoulder);
+    client.bone('RightForeArm',elbow);
+    client.bone('RightHand',wrist);
+    const flex=180-THREE.MathUtils.radToDeg(arm1.copy(shoulder).sub(elbow).angleTo(arm2.copy(wrist).sub(elbow)));
+    const pts=[shoulder,elbow,wrist].map((p,i)=>{
+      nodes.position.setXYZ(i,p.x,p.y,p.z+.12);
+      core.position.setXYZ(i,p.x,p.y,p.z+.124);
+      return [p.x,p.y,p.z+.12];
+    });
+    nodes.position.needsUpdate=core.position.needsUpdate=true;
+    segment(upper,pts[0],pts[1]);
+    segment(lower,pts[1],pts[2]);
+    segment(wire,pts[1],[.25,.52,-.11]);
+    const y=.31+.29*clamp(flex/125,0,1);
+    if(!history.length) history.push(...Array(66).fill(y));
+    const tick=Math.floor(t*17);
+    if(tick!==previous){history.shift();history.push(y);previous=tick;}
+    history.forEach((h,i)=>trace.position.setXYZ(i,lerp(.30,.86,i/65),h,-.105));
+    trace.position.needsUpdate=true;
+    marker.position.setXYZ(0,.86,y,-.10);
+    marker.position.needsUpdate=true;
+    value.update(Math.round(flex)+'°');
   };
 }
 
-function management(group) {
-  const nodes = [[-.60,.18],[-.18,-.23],[.30,-.27],[.60,.17]];
-  const routes = [];
-  for (let i = 0; i < nodes.length - 1; i++) {
-    const [x,z] = nodes[i], [x1,z1] = nodes[i+1];
-    routes.push([[x,.013,z],[x1,.013,z1]]);
-  }
-  const ring = (x,z,r) => Array.from({length:49}, (_, i) => {
-    const a = i / 48 * 2 * Math.PI;
-    return [x + r * Math.cos(a), .014, z + r * Math.sin(a)];
-  });
-  paths(group, routes, {opacity:.37});
-  paths(group, nodes.map(([x,z], i) => ring(x,z,i===0 ? .19 : .14)), {opacity:.47});
-  const signal = pointBuffer(group, 42, {opacity:.85,size:2.1});
-  return t => {
-    for (let i = 0; i < 42; i++) {
-      const [x,z] = nodes[0];
-      const [endX,endZ] = nodes[1 + i % 3];
-      const u = (t * .54 + Math.floor(i / 3) * .024) % 1;
-      signal.position.setXYZ(i,lerp(x,endX,u),.025 + .25 * Math.sin(Math.PI * u),lerp(z,endZ,u));
-    }
-    signal.position.needsUpdate = true;
+function management(group, people) {
+  const pathsAbove=[[0,1,.23,0],[0,2,.32,.55],[0,3,.44,1.1],[1,2,.18,2.8],[2,3,.19,3.4]];
+  const links=pathsAbove.map(([from,to,height,offset])=>({
+    from,to,height,offset,
+    route:pointBuffer(group,54,{opacity:.25,size:1.65}),
+    pulse:pointBuffer(group,13,{opacity:.95,size:2.4}),
+  }));
+  const positions=people.map(()=>new THREE.Vector3());
+  const mark=pointBuffer(group,4,{opacity:.81,size:3.7});
+  const cycle=5.65;
+  return {
+    before(t) {
+      const phase=t%cycle;
+      people[0].aim(.14,-.06);
+      people[1].aim(-.19+.45*reveal(2.40,3.05,phase)*(1-reveal(4.30,5.1,phase)),.04);
+      people[2].aim(-.15+.31*reveal(2.8,3.3,phase)*(1-reveal(4.3,5.1,phase)),.03);
+      people[3].aim(-.20,.04);
+    },
+    after(t) {
+      people.forEach((person,i)=>{
+        person.bone('Head',positions[i]);
+        positions[i].y+=.15;
+        positions[i].z+=.03;
+        mark.position.setXYZ(i,positions[i].x,positions[i].y,positions[i].z);
+      });
+      mark.position.needsUpdate=true;
+      for(const {from,to,height,offset,route,pulse} of links){
+        const start=positions[from],end=positions[to];
+        const phase=(t%cycle-offset)/1.08;
+        const pass=(p,i,u)=>{
+          p.setXYZ(i,lerp(start.x,end.x,u),lerp(start.y,end.y,u)+Math.sin(Math.PI*u)*height,lerp(start.z,end.z,u));
+        };
+        const visible=phase>=0 && phase<1.2;
+        route.material.opacity=visible ? .46 : .14;
+        for(let i=0;i<54;i++) pass(route.position,i,i/53);
+        for(let i=0;i<13;i++) pass(pulse.position,i,clamp(phase-i*.016,0,1));
+        pulse.shape.visible=visible;
+        route.position.needsUpdate=pulse.position.needsUpdate=true;
+      }
+    },
   };
 }
 
@@ -226,7 +306,7 @@ function assistant(group, [figure], el) {
       const response = 1 - Math.exp(-9 * dt);
       x += (targetX - x) * response;
       y += (targetY - y) * response;
-      figure.aim(x + Math.sin(t * .69) * .045, y);
+      figure.aim(x, y);
       figure.inst.setProgress({ tm: t, ripple: 1 });
     },
     after: flow,
@@ -234,17 +314,16 @@ function assistant(group, [figure], el) {
 }
 
 function coworking(group) {
-  const layout = rect(-1.06, .015, 2.12, .72, 0).map(([x,y]) => [x,.015,y-.50]);
-  paths(group, [layout,
-    [[-1.06,.015,-.485],[-1.06,1.03,-.485],[1.06,1.03,-.485],[1.06,.015,-.485]],
-    [[-.36,1.03,-.485],[-.36,.015,-.485],[-.36,.015,.09]],
-    [[.36,1.03,-.485],[.36,.015,-.485],[.36,.015,.09]],
-    rect(-.21,.22,.42,.48,-.482)], {opacity:.42});
-  paths(group, [[[-.96,.02,.14],[.96,.02,.14]]], {opacity:.24});
-  return wave(group, 24, (p, i, t) => {
-    const u = (t * .32 + i * .017) % 1;
-    p.setXYZ(i, lerp(-.96,.96,u), .025, .14);
-  }, {opacity:.82,size:1.7});
+  paths(group, [surface(0,.013,-.03,2.18,.75),
+    [[-1.08,.015,-.42],[-1.08,1.03,-.42],[1.08,1.03,-.42],[1.08,.015,-.42]],
+    [[-.37,.12,-.42],[-.37,1.03,-.42]], [[.39,.12,-.42],[.39,1.03,-.42]],
+    surface(.02,.016,.08,.57,.52)],{opacity:.32});
+  furniture(group,-.78,-.10,.25,.25,.265,{back:true,opacity:.54});
+  furniture(group,-.66,.25,.46,.30,.475,{opacity:.64});
+  return wave(group, 14, (p,i,t)=>{
+    const u=(t*.24+i*.025)%1;
+    p.setXYZ(i,lerp(-.30,.30,u),.025,.36);
+  },{opacity:.59,size:1.5});
 }
 
 function dank(group) {
@@ -273,10 +352,74 @@ function dank(group) {
   }, {opacity:.88,size:1.65});
 }
 
+
+function trainer(group) {
+  paths(group,[rect(-.83,.17,.70,.66,-.14),
+    [[-.76,.58,-.12],[-.23,.58,-.12]], [[-.76,.38,-.12],[-.23,.38,-.12]],
+    [[-.76,.29,-.12],[-.43,.29,-.12]]],{opacity:.41});
+  caption(group,-.77,.75,.60,'План занятия');
+  const variation=caption(group,-.77,.50,.64,'Приседание');
+  const transfer=wave(group,21,(p,i,t)=>{
+    const u=(t*.33+i*.017)%1;
+    p.setXYZ(i,lerp(-.08,.29,u),.53+Math.sin(u*Math.PI)*.08,-.04);
+  },{color:brass,opacity:.8,size:1.8});
+  return t=>{
+    variation.update(t%9.6<4.8?'Приседание':'Сгибание руки');
+    transfer(t);
+  };
+}
+
+function food(group) {
+  furniture(group,-.70,-.20,.27,.27,.27,{back:true,opacity:.42});
+  furniture(group,-.34,.17,.81,.52,.49,{opacity:.58});
+  const plate=ellipse(-.23,.507,.23,.179,.135);
+  const inner=ellipse(-.23,.514,.23,.128,.097);
+  const apple=pointBuffer(group,156,{opacity:.94,size:1.8});
+  for(let i=0;i<156;i++){
+    const depth=1-2*i/155, a=i*2.39996, r=Math.sqrt(1-depth*depth)*.061;
+    apple.position.setXYZ(i,-.23+Math.cos(a)*r,.587+depth*.061,.235+Math.sin(a)*r);
+  }
+  paths(group,[plate,inner,[[-.23,.643,.23],[-.22,.67,.23],[-.18,.67,.24]],rect(.27,.25,.54,.46,-.22),
+    [[.29,.43,-.21],[.79,.43,-.21]]],{opacity:.54});
+  caption(group,.31,.66,.46,'Ритм привычек');
+  const set=[.375,.54,.705];
+  const cues=set.map(x=>paths(group,[[[x-.034,.365,-.20],[x-.008,.33,-.20],[x+.045,.399,-.20]]],
+    {color:brass,opacity:0,size:2.1}));
+  return t=>cues.forEach((cue,i)=>{cue.material.opacity=.85*reveal(i+.35,i+.75,t%4.8);});
+}
+
+function awareness(group) {
+  const ribbon=wave(group,520,(p,i,t)=>{
+    const row=Math.floor(i/104),u=i%104/103;
+    const envelope=Math.sin(Math.PI*u);
+    p.setXYZ(i,lerp(-.91,.26,u),.48+.16*envelope*Math.sin(u*7.4-t*1.16+row*.45)+row*.036,
+      -.18 + .12*Math.sin(row*.74+u*4));
+  },{opacity:.51,size:1.65});
+  const left=[[.09,.21,.25],[.42,.19,.32],[.44,.66,-.08],[.11,.68,-.11],[.09,.21,.25]];
+  const right=[[.42,.19,.32],[.83,.23,.25],[.82,.69,-.11],[.44,.66,-.08],[.42,.19,.32]];
+  paths(group,[left,right],{opacity:.73});
+  const entries=[0,1,2,3].map(i=>{
+    const y=.56-i*.073,z=.014+i*.052;
+    return paths(group,[[[.49,y,z],[.75-(i===3?.10:0),y+.017,z]]],{opacity:.65});
+  });
+  return t=>{
+    ribbon(t);
+    entries.forEach((entry,i)=>{entry.shape.geometry.setDrawRange(0,
+      Math.floor(entry.position.count*reveal(.68+i*.6,1.35+i*.6,t%5.2)));});
+  };
+}
+
 export const featureScenes = {
+  trainer: {figures:[actor(.43,-.02,32,{pose:'trainer',still:true,gaze:[0,0],scale:.89})],
+    decorate:trainer,width:1.90},
+  food: {figures:[actor(-.70,-.19,48,{pose:'seated',still:true,gaze:[.02,.21]})],
+    decorate:food,width:1.91,centerY:.46},
+  awareness: {figures:[],decorate:awareness,width:1.87,height:.72,centerY:.47},
+
   coworking: {
-    figures: [actor(-.72,-.14,53,{clip:'coach_notes',props:['notebook','pen'],n:4.7}),
-      actor(0,-.02,-17,{clip:'chest_open',n:4.7,t0:1.1}), actor(.71,-.12,-24,{n:4.7,t0:1.3})],
+    figures: [actor(-.80,-.10,32,{clip:'coach_notes',props:['notebook','pen'],pose:'seated',n:4.9}),
+      actor(0,.07,29,{pose:'squat',still:true,gaze:[0,-.08],n:4.8}),
+      actor(.74,-.13,-65,{pose:'observer',still:true,gaze:[.06,.09],n:4.6})],
     decorate: coworking,
     tilt: .13,
     width: 2.32,
@@ -289,12 +432,13 @@ export const featureScenes = {
     centerY: .61,
   },
   seminar: {
-    figures: [actor(-.46,.06,67,{t0:.7})],
+    figures: [actor(-.47,.10,58,{still:true,gaze:[0,0]}),
+      actor(.33,-.10,0,{still:true,gaze:[0,0],pose:'reference',scale:.69,elevation:.15,n:5.6})],
     decorate: seminar,
     width: 1.57,
   },
   concierge: {
-    figures: [actor(-.29,.08,63,{clip:'coach_notes', props:['notebook','pen']}), actor(.27,.00,-49,{t0:.8})],
+    figures: [actor(-.29,.08,63,{clip:'coach_notes', props:['notebook','pen']}), actor(.29,.03,-52,{still:true,gaze:[-.49,.015]})],
     decorate: concierge,
     width: 1.79,
   },
@@ -311,17 +455,20 @@ export const featureScenes = {
     centerY: .47,
   },
   realtime: {
-    figures: [actor(-.41,.03,32,{clip:'chest_open',t0:1.30})],
+    figures: [actor(-.43,.06,48,{pose:'curl',still:true,gaze:[.02,.03]})],
     decorate: realtime,
     width: 1.90,
   },
   management: {
-    figures: [actor(-.60,.18,81,{n:4.2,t0:.2}),
-      actor(-.18,-.23,-21,{n:3.8,t0:.98}), actor(.30,-.27,-47,{n:3.8,t0:1.8}),
-      actor(.60,.17,-108,{n:3.8,t0:2.4})],
+    figures: [actor(-.73,.08,53,{n:4.7,still:true,gaze:[.14,0]}),
+      actor(-.24,-.08,-13,{n:4.2,still:true,gaze:[-.16,0],scale:.86}),
+      actor(.26,-.15,-35,{n:4.2,still:true,gaze:[-.12,0],scale:.86}),
+      actor(.73,.02,-54,{n:4.2,still:true,gaze:[-.18,0],scale:.86})],
     decorate: management,
-    tilt: .17,
-    width: 1.80,
+    tilt: .055,
+    width: 1.86,
+    height: 1.6,
+    centerY: .72,
   },
   ai: {
     figures: [actor(0,0,0,{n:10, portrait:true})],
