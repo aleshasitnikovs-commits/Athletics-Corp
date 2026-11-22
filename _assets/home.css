@@ -295,25 +295,6 @@ html:not(.no-webgl) .home-scene canvas.is-ready { opacity: 1; }
   max-width: 100%;
   overflow: hidden;
 }
-.home-institute-mark img {
-  width: 82%;
-  height: 76%;
-  object-fit: contain;
-}
-.home-institute-mark canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  visibility: hidden;
-}
-.home-institute-mark.is-3d img { visibility: hidden; }
-.home-institute-mark.is-3d canvas { visibility: visible; }
-@media (prefers-reduced-motion: reduce) {
-  .home-institute-mark.is-3d img { visibility: visible; }
-  .home-institute-mark.is-3d canvas { visibility: hidden; }
-}
-
 /* Финальный знак растворён в фоне и не перекрывает текст. */
 .home-contact { position: relative; isolation: isolate; overflow: clip; min-height: min(620px, 80svh); display: grid; align-items: center; }
 .home-contact .home-intro h2 { font-size: clamp(2.2rem, 5.6vw, 5.5rem); }

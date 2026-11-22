@@ -37,8 +37,8 @@ function prepareInstituteMarks() {
     requested = true;
     observer.disconnect();
     reduceMotion.removeEventListener('change', start);
-    import('./3d/home-institute-marks.js?v=20261122-3')
-      .then(module => module.startInstituteMarks(section, reduceMotion))
+    import('./3d/brand-marks.js?v=20261122-4')
+      .then(module => module.startBrandMarks(section, reduceMotion))
       .catch(error => console.warn('Логотипы главной: показаны статичные знаки', error));
   }
   const observer = new IntersectionObserver(([entry]) => {

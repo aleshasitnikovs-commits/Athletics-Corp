@@ -1,0 +1,22 @@
+.brand-mark {
+  overflow: hidden;
+}
+.brand-mark[data-brand] > img {
+  position: static;
+  width: 82%;
+  height: 76%;
+  object-fit: contain;
+}
+.brand-mark > canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  visibility: hidden;
+}
+.brand-mark.is-3d > img { visibility: hidden; }
+.brand-mark.is-3d > canvas { visibility: visible; }
+@media (prefers-reduced-motion: reduce) {
+  .brand-mark.is-3d > img { visibility: visible; }
+  .brand-mark.is-3d > canvas { visibility: hidden; }
+}

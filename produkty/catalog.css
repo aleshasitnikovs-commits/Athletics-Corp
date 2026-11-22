@@ -242,7 +242,6 @@
   --blue: #acd7f9;
   --yellow: #fdc453;
   --green: #19b64b;
-  perspective: 840px;
   isolation: isolate;
   overflow: hidden;
 }
@@ -254,22 +253,10 @@
   left: 50%;
   width: min(66%, 440px);
   aspect-ratio: 2.12;
-  transform-style: preserve-3d;
-  transform: translate(-50%, -50%) rotateY(0);
-  animation: catalog-logo-turn 15s ease-in-out infinite;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%);
 }
-.catalog-brand-stage .catalog-brand-logo img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  backface-visibility: hidden;
-  transform: translateZ(3px);
-  border-radius: 6%;
-}
-.catalog-brand-stage .catalog-brand-logo img + img { transform: rotateY(180deg) translateZ(3px); }
-.catalog-brand-stage.is-run .catalog-brand-logo { mix-blend-mode: screen; }
 .catalog-brand-stage span { position: absolute; display: block; }
 .brand-ladder {
   left: 6%;
@@ -310,14 +297,6 @@
   transform-origin: bottom;
   mask-image: linear-gradient(90deg, transparent, #000 21% 79%, transparent);
 }
-@keyframes catalog-logo-turn {
-  0%, 12% { transform: translate(-50%,-50%) rotateY(0); }
-  88%, 100% { transform: translate(-50%,-50%) rotateY(360deg); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .catalog-brand-stage .catalog-brand-logo { animation: none; }
-}
-
 .dank-game {
   width: min(820px, calc(100vw - 24px));
   max-height: calc(100dvh - 24px);

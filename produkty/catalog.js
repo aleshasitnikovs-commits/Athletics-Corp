@@ -1,4 +1,5 @@
 const root = document.documentElement;
+const brandMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const filters = [...document.querySelectorAll('.catalog-filters a')];
 const groups = [...document.querySelectorAll('.catalog-group')];
 const details = [...document.querySelectorAll('.catalog-detail')];
@@ -20,6 +21,7 @@ const more = caption.querySelector('.catalog-link');
 const gameLaunch = caption.querySelector('[data-dank-game]');
 const detailGameLaunch = document.querySelector('#p-dank-hub [data-dank-game]');
 let sceneRequested = false;
+let brandsRequested = false;
 let gameModule;
 let mounted;
 let currentGroup;
@@ -61,6 +63,18 @@ function requestScene() {
   import('./produkty-scene.js?v=20261122-2')
     .then(module => module.startCatalogScenes())
     .catch(() => root.classList.add('no-webgl'));
+}
+
+function requestStage(node) {
+  if (node?.dataset.obj) {
+    requestScene();
+    return;
+  }
+  if (!node?.classList.contains('catalog-brand-stage') || brandsRequested || brandMotion.matches) return;
+  brandsRequested = true;
+  import('../_assets/3d/brand-marks.js?v=20261122-4')
+    .then(module => module.startBrandMarks(document, brandMotion))
+    .catch(error => console.warn('Логотипы каталога: показаны статичные знаки', error));
 }
 
 function restoreStage() {
@@ -118,7 +132,7 @@ function selectProduct(item) {
     artwork.append(mounted.node);
     const fallback = mounted.node.querySelector('img');
     if (fallback) fallback.loading = 'eager';
-    if (artworkVisible && mounted.node.dataset.obj) requestScene();
+    if (artworkVisible) requestStage(mounted.node);
   } else {
     drawArtwork(item);
   }
@@ -150,7 +164,7 @@ function applyRoute(scroll) {
   const item = group.products.find(product => product.id === hash) || choices.get(group) || group.products[0];
   selectProduct(item);
   if (detail) {
-    if (stages.get(detail.id)?.node.dataset.obj) requestScene();
+    requestStage(stages.get(detail.id)?.node);
     dispatchEvent(new Event('catalog:layout'));
     if (scroll) requestAnimationFrame(() => {
       if (detail.hidden) return;
@@ -180,10 +194,14 @@ picker.addEventListener('change', () => {
 if ('IntersectionObserver' in window) {
   const observer = new IntersectionObserver(([entry]) => {
     artworkVisible = entry.isIntersecting;
-    if (artworkVisible && mounted?.node.dataset.obj) requestScene();
+    if (artworkVisible) requestStage(mounted?.node);
   });
   observer.observe(artwork);
 }
+brandMotion.addEventListener('change', () => {
+  if (layout.hidden) requestStage(stages.get(selected?.id)?.node);
+  else if (artworkVisible) requestStage(mounted?.node);
+});
 addEventListener('hashchange', () => applyRoute(true));
 for (const button of [gameLaunch, detailGameLaunch]) {
   button.addEventListener('click', async () => {

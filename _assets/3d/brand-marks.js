@@ -3,11 +3,14 @@ import { SVGLoader } from '../vendor/three/loaders/SVGLoader.js';
 
 const turn = Math.PI * 2 / 8.5;
 const geometrySettings = {
-  ifach: { depth: 27, bevel: 1.15, angle: -.32 },
-  ac: { depth: 66, bevel: 3, angle: .38 },
+  ifach: { depth: 27, bevel: 1.15 },
+  ac: { depth: 66, bevel: 3 },
+  neurogames: { depth: 25, bevel: .9 },
+  'corp-run': { depth: 29, bevel: 1.1 },
 };
 
-export function startInstituteMarks(section, reduceMotion) {
+export function startBrandMarks(scope, reduceMotion) {
+  if (!('IntersectionObserver' in window)) return;
   const buffer = document.createElement('canvas');
   const gl = buffer.getContext('webgl2', { alpha: true, antialias: true });
   if (!gl) return;
@@ -24,12 +27,8 @@ export function startInstituteMarks(section, reduceMotion) {
     light.position.set(x, y, z);
     scene.add(light);
   }
-  const material = [
-    new THREE.MeshStandardMaterial({ color: '#f2f0eb', roughness: .53, metalness: .11 }),
-    new THREE.MeshStandardMaterial({ color: '#aaa79f', roughness: .48, metalness: .18 }),
-  ];
   const marks = new Map();
-  let animation = 0, previous = 0, lost = false;
+  let animation = 0, previous = 0, elapsed = 0, lost = false;
 
   function canDraw() {
     return !lost && !reduceMotion.matches && !document.hidden
@@ -48,6 +47,9 @@ export function startInstituteMarks(section, reduceMotion) {
     if (!canDraw()) return;
     const dt = Math.min(.05, (now - previous) / 1000);
     previous = now;
+    elapsed += dt;
+    const angle = -.32 + elapsed * turn;
+    const lift = .055 * Math.sin(elapsed * 1.65);
     for (const mark of marks.values()) {
       if (!mark.visible || !mark.model) continue;
       const ratio = Math.min(devicePixelRatio || 1, 1.6);
@@ -60,12 +62,11 @@ export function startInstituteMarks(section, reduceMotion) {
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
 
-      mark.elapsed += dt;
       const { model, bounds } = mark;
       const scale = Math.min(fullHeight * .76 / bounds.y, fullHeight * camera.aspect * .82 / bounds.x);
       model.scale.set(scale, -scale, scale);
-      model.rotation.set(-.07, mark.angle + mark.elapsed * turn, 0);
-      model.position.y = .055 * Math.sin(mark.elapsed * 1.65 + mark.angle);
+      model.rotation.set(-.07, angle, 0);
+      model.position.y = lift;
       scene.add(model);
       renderer.render(scene, camera);
       scene.remove(model);
@@ -81,14 +82,25 @@ export function startInstituteMarks(section, reduceMotion) {
     const response = await fetch(mark.source);
     if (!response.ok) throw new Error('Форма логотипа: HTTP ' + response.status);
     const logo = new SVGLoader().parse(await response.text());
-    const shapes = logo.paths.flatMap(shape => shape.toShapes());
-    if (!shapes.length) throw new Error('Форма логотипа пуста');
-    const geometry = new THREE.ExtrudeGeometry(shapes, {
-      depth, curveSegments: 5, bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel / 2, bevelSegments: 2,
-    });
-    geometry.center();
-    mark.bounds = geometry.boundingBox.getSize(new THREE.Vector3());
-    mark.model = new THREE.Mesh(geometry, material);
+    const face = new THREE.Group();
+    for (const path of logo.paths) {
+      const shapes = path.toShapes();
+      if (!shapes.length) continue;
+      const geometry = new THREE.ExtrudeGeometry(shapes, {
+        depth, curveSegments: 5, bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel / 2, bevelSegments: 2,
+      });
+      const material = [
+        new THREE.MeshStandardMaterial({ color: path.color, roughness: .53, metalness: .11 }),
+        new THREE.MeshStandardMaterial({ color: path.color.clone().multiplyScalar(.62), roughness: .48, metalness: .18 }),
+      ];
+      face.add(new THREE.Mesh(geometry, material));
+    }
+    if (!face.children.length) throw new Error('Форма логотипа пуста');
+    const bounds = new THREE.Box3().setFromObject(face);
+    face.position.copy(bounds.getCenter(new THREE.Vector3())).negate();
+    mark.bounds = bounds.getSize(new THREE.Vector3());
+    mark.model = new THREE.Group();
+    mark.model.add(face);
     schedule();
   }
 
@@ -103,14 +115,13 @@ export function startInstituteMarks(section, reduceMotion) {
     }
     schedule();
   });
-  for (const host of section.querySelectorAll('.home-institute-mark')) {
+  for (const host of scope.querySelectorAll('.brand-mark[data-brand]')) {
     const canvas = document.createElement('canvas');
     const output = canvas.getContext('2d');
     if (!output) continue;
     canvas.setAttribute('aria-hidden', 'true');
     const source = host.querySelector('img').src;
-    const { angle } = geometrySettings[host.dataset.brand];
-    marks.set(host, { host, canvas, output, source, angle, elapsed: 0, visible: false });
+    marks.set(host, { host, canvas, output, source, visible: false });
     host.append(canvas);
     observer.observe(host);
   }
