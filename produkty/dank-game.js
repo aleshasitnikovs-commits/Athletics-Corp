@@ -1,3 +1,7 @@
+import {
+  ballR, board, createShot, handY, netDepth, netExit, rimRadius, rimX, rimY, stepShot, stepTime,
+} from './dank-physics.js';
+
 const dialog = document.querySelector('#dank-game');
 const canvas = dialog.querySelector('canvas');
 const ctx = canvas.getContext('2d');
@@ -11,21 +15,20 @@ const reward = dialog.querySelector('[data-reward]');
 const stations = [...dialog.querySelectorAll('[data-station]')];
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 const court = [{distance:3.1,points:2},{distance:6.7,points:3},{distance:12.8,points:5}];
-const rimX = 14.2, rimY = 3.05, handY = 1.78;
-const ballR = .16, gravity = 9.81, direction = 55 * Math.PI / 180;
 const duration = 1450;
 const cream = '#f2f0eb', gold = '#dda74f';
+const meshRows = 4, meshColumns = 5;
 let station = 0, made = 0, shots = 0, score = 0;
-let charge, flight, frame = 0, previous = 0;
+let charge, flight, frame = 0, previous = 0, timeBank = 0;
 
 function project(x, y, z=0) {
   return [76 + x*44 + z*39, 310 - y*62 - z*33];
 }
 
-function line(vertices, color, opacity, dashed = true) {
+function line(vertices, color, opacity, dashed = true, width = 1.6) {
   ctx.globalAlpha = opacity;
   ctx.strokeStyle = color;
-  ctx.lineWidth = 1.6;
+  ctx.lineWidth = width;
   ctx.setLineDash(dashed ? [2,5] : []);
   ctx.beginPath();
   vertices.forEach((vertex,i) => {
@@ -36,14 +39,47 @@ function line(vertices, color, opacity, dashed = true) {
   ctx.stroke();
 }
 
-function circle(x,y,z,r,color,opacity) {
-  const [px,py]=project(x,y,z);
-  ctx.globalAlpha=opacity;
-  ctx.strokeStyle=color;
+function drawBall(x, y) {
+  const [px, py] = project(x, y);
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = gold;
+  ctx.fillStyle = '#4e351d';
+  ctx.lineWidth = 1.45;
   ctx.setLineDash([]);
   ctx.beginPath();
-  ctx.ellipse(px,py,r*44,r*55,0,0,Math.PI*2);
+  ctx.ellipse(px, py, ballR * 50, ballR * 62, 0, 0, Math.PI * 2);
+  ctx.fill();
   ctx.stroke();
+  line([[x - ballR * .78, y, 0], [x + ballR * .78, y, 0]], gold, .65, false, .9);
+}
+
+function drawHoop(near) {
+  const contact = flight?.netContact;
+  const age = contact ? flight.elapsed - contact.time : 0;
+  const swing = contact ? Math.sin(age * 19) * Math.exp(-age * 6) : 0;
+  const sector = Math.PI / meshColumns;
+  const start = near ? Math.PI : 0;
+  function knot(angle, row) {
+    const t = row / meshRows;
+    const radius = rimRadius + (netExit - rimRadius + Math.abs(swing) * .032) * t;
+    return [
+      rimX + Math.cos(angle) * radius + swing * .14 * t,
+      rimY - netDepth * t + (contact ? swing * contact.x * .6 * t : 0),
+      Math.sin(angle) * radius,
+    ];
+  }
+  for (let row = 0; row < meshRows; row++) {
+    const base = row + (row % 2);
+    const mid = 2 * row + 1 - base;
+    for (let i = 0; i < meshColumns; i++) {
+      const angle = start + i * sector;
+      line([knot(angle, base), knot(angle + sector / 2, mid), knot(angle + sector, base)],
+        cream, near ? .79 : .40, false, 1.05);
+    }
+  }
+  const arc = row => Array.from({ length: 19 }, (_, i) => knot(start + Math.PI * i / 18, row));
+  line(arc(meshRows), cream, near ? .86 : .45, false, 1.1);
+  line(arc(0), gold, near ? 1 : .82, false, 2.2);
 }
 
 function draw() {
@@ -51,31 +87,21 @@ function draw() {
   ctx.clearRect(0,0,canvas.width,canvas.height);
   line([[.8,0,-.45],[15.2,0,-.45],[15.2,0,1.1],[.8,0,1.1],[.8,0,-.45]],cream,.5);
   line([[13.9,0,-.45],[13.9,0,1.1]],cream,.21,false);
-  line([[15.1,0,.12],[15.1,3.63,.12],[14.66,3.63,.12]],cream,.37);
-  line([[14.66,2.75,-.23],[14.66,3.67,-.23],[14.66,3.67,.62],[14.66,2.75,.62],[14.66,2.75,-.23]],cream,.72);
-  line([[13.96,3.02,.01],[14.02,2.55,.01],[14.36,2.55,.01],[14.45,3.02,.01]],cream,.56);
-  line([[14.07,3.02,.08],[14.11,2.55,.08],[14.28,2.55,.08],[14.33,3.02,.08]],cream,.28);
-  const [rx,ry]=project(rimX,rimY);
-  ctx.globalAlpha=.95;
-  ctx.strokeStyle=gold;
-  ctx.setLineDash([]);
-  ctx.beginPath();
-  ctx.ellipse(rx,ry,20,5,0,0,Math.PI*2);
-  ctx.stroke();
+  line([[15.1,0,.12],[15.1,board.top-.04,.12],[board.x,board.top-.04,.12]],cream,.37);
+  const { x, bottom, top, depth } = board;
+  line([[x,bottom,-depth],[x,top,-depth],[x,top,depth],[x,bottom,depth],[x,bottom,-depth]],cream,.78,false);
+  line([[x,rimY,-.19],[x,rimY+.35,-.19],[x,rimY+.35,.19],[x,rimY,.19],[x,rimY,-.19]],cream,.5,false,1.1);
+  line([[rimX+rimRadius,rimY,0],[x,rimY,0]],gold,.72,false,2.2);
   court.forEach(({distance},i)=>{
     const x=rimX-distance;
     line([[x-.12,0,-.11],[x+.12,0,-.11],[x+.12,0,.11],[x-.12,0,.11],[x-.12,0,-.11]],
       i===station?gold:cream,i===station ? .98 : .38,false);
   });
-  if(flight) {
-    const points=flight.trace;
-    if(points.length>1) line(points,gold,.35);
-    circle(flight.x,flight.y,0,ballR,gold,.98);
-    line([[flight.x-ballR*.82,flight.y,0],[flight.x+ballR*.82,flight.y,0]],gold,.72,false);
-  } else {
-    line([[start,0,0],[start,handY-.25,0]],cream,.23);
-    circle(start,handY,0,ballR,gold,1);
-  }
+  if (flight?.trace.length > 1) line(flight.trace, gold, .35);
+  if (!flight) line([[start,0,0],[start,handY-.25,0]],cream,.23);
+  drawHoop(false);
+  drawBall(flight?.x ?? start, flight?.y ?? handY);
+  drawHoop(true);
   ctx.globalAlpha=1;
 }
 
@@ -97,37 +123,44 @@ function queue() {
   if(!frame) frame=requestAnimationFrame(update);
 }
 
+function finishShot(ball) {
+  const points = court[station].points;
+  shots++;
+  if (ball.basket) {
+    made++;
+    score += points;
+    const result = ball.bank ? 'Попадание от щита!' : 'Попадание!';
+    readout.textContent = result + ' +' + points + ' ' + (points === 5 ? 'очков.' : 'очка.');
+  } else if (ball.rimHit || ball.boardHit) {
+    readout.textContent = ball.rimHit ? 'Мяч отскочил от дужки.' : 'Мяч отскочил от щита.';
+  } else {
+    readout.textContent = ball.short ? 'Недолёт. Попробуйте добавить силы.' : 'Перелёт. Попробуйте отпустить раньше.';
+  }
+  readout.textContent += ' Сила ' + ball.strength + '%.';
+  if (score >= 10 && reward.hidden) readout.textContent += ' Открыта памятка по съёмке прыжка.';
+  flight = null;
+  timeBank = 0;
+  shoot.removeAttribute('aria-disabled');
+  stations.forEach(button => button.disabled = false);
+  paintPower(0);
+  scoreboard();
+}
+
 function update(now) {
   frame=0;
   if(!dialog.open) return;
   const dt = previous ? Math.min(.04,(now-previous)/1000) : 0;
   previous=now;
   if(charge) paintPower(power(now));
-  if(flight) {
-    flight.elapsed += reduce.matches ? flight.total : dt;
-    const time=flight.elapsed;
-    flight.x=flight.start+flight.vx*time;
-    flight.y=Math.max(ballR,handY+flight.vy*time-.5*gravity*time*time);
-    flight.trace.push([flight.x,flight.y,0]);
-    if(flight.trace.length>25) flight.trace.shift();
-    if(time>=flight.land) {
-      const { result, strength } = flight;
-      const points=court[station].points;
-      flight=null;
-      shots++;
-      if(result==='hit') {
-        made++;
-        score+=points;
-        readout.textContent='Попадание! +'+points+' '+(points===5?'очков.':'очка.');
-      } else {
-        readout.textContent=result==='short'?'Недолёт. Попробуйте добавить силы.':'Перелёт. Попробуйте отпустить раньше.';
-      }
-      readout.textContent+=' Сила '+strength+'%.';
-      if(score>=10 && reward.hidden) readout.textContent+=' Открыта памятка по съёмке прыжка.';
-      shoot.removeAttribute('aria-disabled');
-      stations.forEach(button=>button.disabled=false);
-      paintPower(0);
-      scoreboard();
+  if (flight) {
+    timeBank += reduce.matches ? 6 : dt;
+    while (flight && timeBank >= stepTime) {
+      timeBank -= stepTime;
+      if (stepShot(flight)) finishShot(flight);
+    }
+    if (flight) {
+      flight.trace.push([flight.x, flight.y, 0]);
+      if (flight.trace.length > 25) flight.trace.shift();
     }
   }
   draw();
@@ -148,17 +181,7 @@ function release(id) {
   const p=power(performance.now());
   charge=null;
   paintPower(p);
-  const speed=4.7 + p*10.65;
-  const vx=speed*Math.cos(direction), vy=speed*Math.sin(direction);
-  const start=rimX-court[station].distance;
-  const discriminant=vy*vy-2*gravity*(rimY-handY);
-  const crossing=discriminant>0 ? start+vx*(vy+Math.sqrt(discriminant))/gravity : start;
-  const difference=crossing-rimX;
-  const result=Math.abs(difference)<.47?'hit':difference<0?'short':'long';
-  const atRim=discriminant>0 ? (vy+Math.sqrt(discriminant))/gravity : 0;
-  const ground=(vy+Math.sqrt(vy*vy+2*gravity*(handY-ballR)))/gravity;
-  const land=result==='hit'? atRim+.32 : Math.min(ground+.12,(16-start)/vx);
-  flight={elapsed:0,total:land,land,result,start,vx,vy,x:start,y:handY,trace:[],strength:Math.round(p*100)};
+  flight = { ...createShot(court[station].distance, p), trace: [], strength: Math.round(p * 100) };
   readout.textContent='Мяч в воздухе…';
   shoot.setAttribute('aria-disabled','true');
   stations.forEach(button=>button.disabled=true);
@@ -215,7 +238,7 @@ export function openGame(button) {
 }
 dialog.addEventListener('close',()=>{
   charge=flight=null;
-  previous=0;
+  previous=timeBank=0;
   cancelAnimationFrame(frame);
   frame=0;
   stations.forEach(button=>button.disabled=false);

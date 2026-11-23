@@ -211,7 +211,7 @@ for (const button of [gameLaunch, detailGameLaunch]) {
   button.addEventListener('click', async () => {
     button.disabled = true;
     try {
-      gameModule ??= import('./dank-game.js?v=20261122');
+      gameModule ??= import('./dank-game.js?v=20261123-1');
       (await gameModule).openGame(button);
     } catch {
       gameModule = null;
